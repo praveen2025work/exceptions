@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Filter, Search, Settings, User } from "lucide-react";
 import ExceptionDashboard from "@/components/ExceptionDashboard";
+import WorkflowTab from "@/components/WorkflowTab";
 
 export default function Home() {
   return (
@@ -64,6 +65,7 @@ export default function Home() {
                 <TabsList>
                   <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                   <TabsTrigger value="exceptions">Exceptions</TabsTrigger>
+                  <TabsTrigger value="workflow">Workflow</TabsTrigger>
                   <TabsTrigger value="reports">Reports</TabsTrigger>
                   <TabsTrigger value="admin">Admin</TabsTrigger>
                 </TabsList>
@@ -97,20 +99,24 @@ export default function Home() {
                 <ExceptionDashboard />
               </TabsContent>
 
+              <TabsContent value="workflow" className="mt-6">
+                <WorkflowTab />
+              </TabsContent>
+
               <TabsContent value="reports" className="mt-6">
                 <Card>
                   <CardHeader>
                     <CardTitle>Reports</CardTitle>
                     <CardDescription>
-                      Generate and view compliance reports
+                      Generate and view regulatory compliance reports (no exceptions data)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-lg">Exception Aging Report</CardTitle>
-                          <CardDescription>View exceptions by aging buckets</CardDescription>
+                          <CardTitle className="text-lg">Regulatory Filing Report</CardTitle>
+                          <CardDescription>Generate regulatory compliance filings</CardDescription>
                         </CardHeader>
                         <CardContent>
                           <Button className="w-full">Generate Report</Button>
@@ -118,8 +124,8 @@ export default function Home() {
                       </Card>
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-lg">SLA Compliance Report</CardTitle>
-                          <CardDescription>Track SLA performance metrics</CardDescription>
+                          <CardTitle className="text-lg">Risk Assessment Report</CardTitle>
+                          <CardDescription>Comprehensive risk analysis and metrics</CardDescription>
                         </CardHeader>
                         <CardContent>
                           <Button className="w-full">Generate Report</Button>
@@ -127,8 +133,35 @@ export default function Home() {
                       </Card>
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-lg">Workflow Status Report</CardTitle>
-                          <CardDescription>Monitor workflow processing status</CardDescription>
+                          <CardTitle className="text-lg">Audit Trail Report</CardTitle>
+                          <CardDescription>System audit logs and compliance tracking</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <Button className="w-full">Generate Report</Button>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Performance Metrics</CardTitle>
+                          <CardDescription>System performance and operational metrics</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <Button className="w-full">Generate Report</Button>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Data Quality Report</CardTitle>
+                          <CardDescription>Data integrity and quality assessments</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <Button className="w-full">Generate Report</Button>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Compliance Summary</CardTitle>
+                          <CardDescription>Executive summary of compliance status</CardDescription>
                         </CardHeader>
                         <CardContent>
                           <Button className="w-full">Generate Report</Button>

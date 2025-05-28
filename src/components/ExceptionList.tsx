@@ -43,6 +43,7 @@ import {
   Exception,
   PositionException,
   mapPositionToException,
+  generateSampleExceptions,
 } from "@/types/exception";
 
 interface ExceptionListProps {
@@ -60,7 +61,7 @@ interface ExceptionListProps {
 }
 
 const ExceptionList: React.FC<ExceptionListProps> = ({
-  exceptions = defaultExceptions,
+  exceptions = generateSampleExceptions(100), // Use generated sample data
   onExceptionSelect = () => {},
   onBulkAction = () => {},
   filters = {
@@ -407,6 +408,20 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
+                onClick={() => handleSort("level6")}
+              >
+                <div className="flex items-center">
+                  Level 6
+                  {sortField === "level6" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
                 onClick={() => handleSort("slaStatus")}
               >
                 <div className="flex items-center">
@@ -462,6 +477,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center">{exception.daysOpen}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {exception.level6}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <Badge className={getSLAStatusColor(exception.slaStatus)}>
                       {exception.slaStatus}
@@ -553,8 +573,19 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </TableRow>
                 {expandedRows.includes(exception.id) && (
                   <TableRow>
-                    <TableCell colSpan={11} className="bg-gray-50 p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <TableCell colSpan={12} className="bg-gray-50 p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                          <h4 className="font-medium mb-2 text-sm">Level Hierarchy</h4>
+                          <div className="space-y-1 text-xs">
+                            <p><span className="font-medium">Level 1:</span> {exception.level1}</p>
+                            <p><span className="font-medium">Level 2:</span> {exception.level2}</p>
+                            <p><span className="font-medium">Level 3:</span> {exception.level3}</p>
+                            <p><span className="font-medium">Level 4:</span> {exception.level4}</p>
+                            <p><span className="font-medium">Level 5:</span> {exception.level5}</p>
+                            <p><span className="font-medium">Level 6:</span> {exception.level6}</p>
+                          </div>
+                        </div>
                         <div>
                           <h4 className="font-medium mb-2 text-sm">Position Details</h4>
                           <div className="space-y-1 text-xs">
@@ -582,6 +613,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                             <p><span className="font-medium">SDS Book Path:</span> {exception.sdsBookPath}</p>
                             <p><span className="font-medium">As of Time:</span> {exception.asOfTime ? new Date(exception.asOfTime).toLocaleString() : 'N/A'}</p>
                             <p><span className="font-medium">Last Modified:</span> {new Date(exception.lastModified).toLocaleString()}</p>
+                            <p><span className="font-medium">Assigned To:</span> {exception.assignedTo || 'Unassigned'}</p>
                           </div>
                           <div className="flex gap-2 mt-3">
                             <Button
@@ -615,7 +647,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             ))}
             {paginatedExceptions.length === 0 && (
               <TableRow>
-                <TableCell colSpan={11} className="text-center py-8">
+                <TableCell colSpan={12} className="text-center py-8">
                   No exceptions found
                 </TableCell>
               </TableRow>
