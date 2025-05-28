@@ -68,10 +68,12 @@ export function mapPositionToException(position: PositionException): Exception {
     priority = "Medium";
   }
 
-  // Calculate days open (random for demo purposes)
-  const daysOpen = Math.floor(Math.random() * 14) + 1;
+  // Calculate days open based on "As of time"
+  const asOfDate = new Date(position["As of time"]);
+  const currentDate = new Date();
+  const daysOpen = Math.floor((currentDate.getTime() - asOfDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  // If days open > 10, mark as breached
+  // Adjust SLA status based on days open
   if (daysOpen > 10) {
     slaStatus = "Breached";
     priority = "Critical";
@@ -87,7 +89,7 @@ export function mapPositionToException(position: PositionException): Exception {
     bookCode: position["SDS Book Code"],
     classification: position["Position TBBB Classification"],
     status,
-    createdDate: new Date(position["As of time"]).toISOString(),
+    createdDate: position["As of time"],
     lastModified: new Date().toISOString(),
     daysOpen,
     slaStatus,

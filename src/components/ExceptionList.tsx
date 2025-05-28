@@ -337,6 +337,20 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
+                onClick={() => handleSort("system")}
+              >
+                <div className="flex items-center">
+                  System
+                  {sortField === "system" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
                 onClick={() => handleSort("classification")}
               >
                 <div className="flex items-center">
@@ -405,20 +419,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                     ))}
                 </div>
               </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("createdDate")}
-              >
-                <div className="flex items-center">
-                  Created Date
-                  {sortField === "createdDate" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
               <TableHead className="w-10">Actions</TableHead>
               <TableHead className="w-[120px]">Workflow</TableHead>
             </TableRow>
@@ -441,9 +441,16 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       }
                     />
                   </TableCell>
-                  <TableCell>{exception.instrumentId}</TableCell>
-                  <TableCell>{exception.bookCode}</TableCell>
-                  <TableCell>{exception.classification}</TableCell>
+                  <TableCell className="font-mono text-sm">{exception.instrumentId}</TableCell>
+                  <TableCell className="font-mono text-sm">{exception.bookCode}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {exception.system}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate" title={exception.classification}>
+                    {exception.classification}
+                  </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(exception.status)}>
                       {exception.status}
@@ -454,14 +461,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       {exception.priority}
                     </Badge>
                   </TableCell>
-                  <TableCell>{exception.daysOpen}</TableCell>
+                  <TableCell className="text-center">{exception.daysOpen}</TableCell>
                   <TableCell>
                     <Badge className={getSLAStatusColor(exception.slaStatus)}>
                       {exception.slaStatus}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(exception.createdDate).toLocaleDateString()}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center">
@@ -549,50 +553,37 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </TableRow>
                 {expandedRows.includes(exception.id) && (
                   <TableRow>
-                    <TableCell colSpan={10} className="bg-gray-50 p-4">
-                      <div className="grid grid-cols-2 gap-4">
+                    <TableCell colSpan={11} className="bg-gray-50 p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                          <h4 className="font-medium mb-2">
-                            Exception Details
-                          </h4>
-                          <p className="text-sm">
-                            <span className="font-medium">Last Modified:</span>{" "}
-                            {new Date(exception.lastModified).toLocaleString()}
-                          </p>
-                          <p className="text-sm">
-                            <span className="font-medium">Assigned To:</span>{" "}
-                            {exception.assignedTo || "Unassigned"}
-                          </p>
-                          {exception.system && (
-                            <p className="text-sm">
-                              <span className="font-medium">System:</span>{" "}
-                              {exception.system}
-                            </p>
-                          )}
-                          {exception.legalEntity && (
-                            <p className="text-sm">
-                              <span className="font-medium">Legal Entity:</span>{" "}
-                              {exception.legalEntity}
-                            </p>
-                          )}
-                          {exception.regulator && (
-                            <p className="text-sm">
-                              <span className="font-medium">Regulator:</span>{" "}
-                              {exception.regulator}
-                            </p>
-                          )}
-                          {exception.instrumentName && (
-                            <p className="text-sm">
-                              <span className="font-medium">
-                                Instrument Name:
-                              </span>{" "}
-                              {exception.instrumentName}
-                            </p>
-                          )}
+                          <h4 className="font-medium mb-2 text-sm">Position Details</h4>
+                          <div className="space-y-1 text-xs">
+                            <p><span className="font-medium">Instrument Name:</span> {exception.instrumentName}</p>
+                            <p><span className="font-medium">Equity Class:</span> {exception.equityClassType}</p>
+                            <p><span className="font-medium">Instrument Type:</span> {exception.instrumentType}</p>
+                            <p><span className="font-medium">Position Qty:</span> {exception.positionQty}</p>
+                            <p><span className="font-medium">Position AV:</span> {exception.positionAV}</p>
+                          </div>
                         </div>
                         <div>
-                          <h4 className="font-medium mb-2">Actions</h4>
-                          <div className="flex gap-2">
+                          <h4 className="font-medium mb-2 text-sm">System Information</h4>
+                          <div className="space-y-1 text-xs">
+                            <p><span className="font-medium">Legal Entity:</span> {exception.legalEntity}</p>
+                            <p><span className="font-medium">Regulator:</span> {exception.regulator}</p>
+                            <p><span className="font-medium">BB Underlying:</span> {exception.bbUnderlying}</p>
+                            <p><span className="font-medium">SOD Delta:</span> {exception.sodDelta}</p>
+                            <p><span className="font-medium">Look Through:</span> {exception.lookThrough}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2 text-sm">Exception Details</h4>
+                          <div className="space-y-1 text-xs">
+                            <p><span className="font-medium">Reason:</span> {exception.reason}</p>
+                            <p><span className="font-medium">SDS Book Path:</span> {exception.sdsBookPath}</p>
+                            <p><span className="font-medium">As of Time:</span> {exception.asOfTime ? new Date(exception.asOfTime).toLocaleString() : 'N/A'}</p>
+                            <p><span className="font-medium">Last Modified:</span> {new Date(exception.lastModified).toLocaleString()}</p>
+                          </div>
+                          <div className="flex gap-2 mt-3">
                             <Button
                               size="sm"
                               onClick={(e) => {
@@ -602,25 +593,13 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                             >
                               View Full Details
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onBulkAction("update-status", [exception.id]);
-                              }}
-                            >
-                              Update Status
-                            </Button>
                             {!workflowStatus[exception.id] && (
                               <Button
                                 size="sm"
                                 variant="default"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onBulkAction("trigger-workflow", [
-                                    exception.id,
-                                  ]);
+                                  onBulkAction("trigger-workflow", [exception.id]);
                                 }}
                               >
                                 Start Workflow
@@ -636,7 +615,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             ))}
             {paginatedExceptions.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} className="text-center py-8">
+                <TableCell colSpan={11} className="text-center py-8">
                   No exceptions found
                 </TableCell>
               </TableRow>
@@ -704,7 +683,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   );
 };
 
-// Position data from the provided dataset
+// Your actual position data
 const positionData: PositionException[] = [
   {
     "SDS Book Code": "1014444",
@@ -787,45 +766,54 @@ const positionData: PositionException[] = [
 // Convert position data to exceptions
 const defaultExceptions: Exception[] = positionData.map(mapPositionToException);
 
-// Add some of the original mock data to supplement
+// Add some additional mock data to supplement
 defaultExceptions.push(
   {
     id: "10",
     instrumentId: "INST010",
     bookCode: "BC432",
-    classification: "Compliance",
+    classification: "Compliance Review",
     status: "Open",
-    createdDate: "2023-06-09T08:45:00",
-    lastModified: "2023-06-09T08:45:00",
-    daysOpen: 11,
-    slaStatus: "Breached",
-    priority: "Critical",
+    createdDate: "2025-05-20T08:45:00",
+    lastModified: "2025-05-20T08:45:00",
+    daysOpen: 8,
+    slaStatus: "At Risk",
+    priority: "High",
+    system: "COMPASS",
+    legalEntity: "BCINC",
+    regulator: "FRB",
   },
   {
     id: "11",
     instrumentId: "INST011",
     bookCode: "BC765",
-    classification: "Regulatory",
+    classification: "Regulatory Exception",
     status: "In Progress",
-    createdDate: "2023-06-10T13:30:00",
-    lastModified: "2023-06-12T09:20:00",
+    createdDate: "2025-05-18T13:30:00",
+    lastModified: "2025-05-25T09:20:00",
     daysOpen: 10,
     slaStatus: "At Risk",
     assignedTo: "Olivia Martin",
     priority: "High",
+    system: "AMM",
+    legalEntity: "BBPLC",
+    regulator: "PRA",
   },
   {
     id: "12",
     instrumentId: "INST012",
     bookCode: "BC098",
-    classification: "Compliance",
-    status: "Closed",
-    createdDate: "2023-06-04T15:45:00",
-    lastModified: "2023-06-11T10:30:00",
+    classification: "Position Reconciliation",
+    status: "Resolved",
+    createdDate: "2025-05-15T15:45:00",
+    lastModified: "2025-05-22T10:30:00",
     daysOpen: 7,
     slaStatus: "Within SLA",
     assignedTo: "James Taylor",
-    priority: "Low",
+    priority: "Medium",
+    system: "Atlas",
+    legalEntity: "BCINC",
+    regulator: "FRB",
   },
 );
 
