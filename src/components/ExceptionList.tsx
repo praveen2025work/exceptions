@@ -159,8 +159,15 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   // Sort filtered exceptions
   const sortedExceptions = [...filteredExceptions].sort((a, b) => {
-    if (a[sortField] < b[sortField]) return sortDirection === "asc" ? -1 : 1;
-    if (a[sortField] > b[sortField]) return sortDirection === "asc" ? 1 : -1;
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    
+    if (aValue === undefined || bValue === undefined) {
+      return 0;
+    }
+    
+    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
     return 0;
   });
 
