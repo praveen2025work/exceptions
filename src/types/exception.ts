@@ -112,7 +112,7 @@ const EXCEPTION_TYPES = [
   "Risk Limit Exceeded", "Reconciliation Break"
 ];
 
-const USERS: User[] = [
+export const USERS: User[] = [
   { id: "u1", name: "John Smith", email: "john.smith@company.com", role: "Manager", department: "Trading" },
   { id: "u2", name: "Sarah Johnson", email: "sarah.johnson@company.com", role: "Analyst", department: "Risk" },
   { id: "u3", name: "Mike Chen", email: "mike.chen@company.com", role: "Admin", department: "Operations" },

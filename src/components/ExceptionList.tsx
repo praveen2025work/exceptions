@@ -814,6 +814,7 @@ defaultExceptions.push(
     system: "COMPASS",
     legalEntity: "BCINC",
     regulator: "FRB",
+    level6: "Technology",
   },
   {
     id: "11",
@@ -830,6 +831,7 @@ defaultExceptions.push(
     system: "AMM",
     legalEntity: "BBPLC",
     regulator: "PRA",
+    level6: "Healthcare",
   },
   {
     id: "12",
@@ -846,6 +848,7 @@ defaultExceptions.push(
     system: "Atlas",
     legalEntity: "BCINC",
     regulator: "FRB",
+    level6: "Financial Services",
   },
 );
 
