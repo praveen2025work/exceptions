@@ -1,5 +1,5 @@
-// This is a placeholder file to satisfy Next.js build
-// The actual application is built with Vite
+import '../src/index.css';
+
 function MyApp({ Component, pageProps }) {
   return <Component {...pageProps} />;
 }
