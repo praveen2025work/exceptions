@@ -439,18 +439,30 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
       <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-1/4' : 'w-full'}`}>
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
+            <div className="space-y-3">
               <CardTitle className="text-lg">Level 6 Categories</CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2">
                 <Input
                   placeholder="Search categories..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-48"
+                  className="w-full"
                 />
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
-                </Button>
+                {selectedGroup && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground truncate">
+                      Selected: {selectedGroup.level6}
+                    </span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => setSelectedGroup(null)}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardHeader>
