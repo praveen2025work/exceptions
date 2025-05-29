@@ -69,8 +69,8 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <TabsList>
                   <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                  <TabsTrigger value="exceptions">Workflow</TabsTrigger>
-                  <TabsTrigger value="workflow">Exceptions</TabsTrigger>
+                  <TabsTrigger value="exceptions">Exceptions</TabsTrigger>
+                  <TabsTrigger value="workflow">Workflow</TabsTrigger>
                   <TabsTrigger value="reports">Reports</TabsTrigger>
                   <TabsTrigger value="admin">Admin</TabsTrigger>
                 </TabsList>
@@ -101,11 +101,11 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="exceptions" className="mt-6">
-                <WorkflowTab />
+                <WorkflowStepTab />
               </TabsContent>
 
               <TabsContent value="workflow" className="mt-6">
-                <WorkflowStepTab />
+                <WorkflowTab />
               </TabsContent>
 
               <TabsContent value="reports" className="mt-6">
