@@ -122,8 +122,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     }
   }, [propExceptions]);
 
-  const totalPages = Math.ceil(filteredExceptions.length / itemsPerPage);
-
   const handleSort = (field: keyof Exception) => {
     if (field === sortField) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -240,6 +238,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     return 0;
   });
 
+  const totalPages = Math.ceil(filteredExceptions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedExceptions = sortedExceptions.slice(
     startIndex,
