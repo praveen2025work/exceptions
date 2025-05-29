@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,6 +14,29 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export default function Home() {
+  const [userImage, setUserImage] = useState("");
+
+  // Fetch user image from API
+  useEffect(() => {
+    const fetchUserImage = async () => {
+      try {
+        // Replace this URL with your actual API endpoint
+        // Example: const response = await fetch('/api/user/profile');
+        // const userData = await response.json();
+        // setUserImage(userData.profileImage);
+        
+        // For now, using a placeholder API - you can change this URL
+        const apiUrl = "https://api.dicebear.com/7.x/avataaars/svg?seed=praveen";
+        setUserImage(apiUrl);
+      } catch (error) {
+        console.error("Failed to fetch user image:", error);
+        // Fallback to default image
+        setUserImage("https://api.dicebear.com/7.x/avataaars/svg?seed=praveen");
+      }
+    };
+
+    fetchUserImage();
+  }, []);
   return (
     <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
       <Head>
@@ -46,13 +69,13 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <Avatar>
                   <AvatarImage
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=user123"
+                    src={userImage}
                     alt="User"
                   />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>PK</AvatarFallback>
                 </Avatar>
                 <div className="hidden md:block">
-                  <p className="text-sm font-medium">John Doe</p>
+                  <p className="text-sm font-medium">Praveen Kumar</p>
                   <p className="text-xs text-muted-foreground">
                     Compliance Officer
                   </p>
@@ -223,17 +246,7 @@ export default function Home() {
           </div>
         </main>
 
-        {/* Footer */}
-        <footer className="border-t bg-background">
-          <div className="container flex h-14 items-center justify-between px-4">
-            <p className="text-sm text-muted-foreground">
-              © 2025 Exception Management System
-            </p>
-            <div className="flex items-center gap-4">
-              <p className="text-sm text-muted-foreground">Version 1.0.0</p>
-            </div>
-          </div>
-        </footer>
+
       </div>
     </ThemeProvider>
   );
