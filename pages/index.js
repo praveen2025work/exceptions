@@ -9,10 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Filter, Search, Settings, User } from "lucide-react";
 import ExceptionDashboard from "@/components/ExceptionDashboard";
 import WorkflowTab from "@/components/WorkflowTab";
+import WorkflowStepTab from "@/components/WorkflowStepTab";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export default function Home() {
   return (
-    <>
+    <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
       <Head>
         <title>Exception Management System - Regulatory Compliance Platform</title>
         <meta name="description" content="Comprehensive exception management system for regulatory compliance, automated processing, and workflow integration" />
@@ -32,6 +35,8 @@ export default function Home() {
                 <Bell className="h-5 w-5" />
                 <span className="sr-only">Notifications</span>
               </Button>
+
+              <ThemeToggle />
 
               <Button variant="ghost" size="icon">
                 <Settings className="h-5 w-5" />
@@ -64,8 +69,8 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <TabsList>
                   <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                  <TabsTrigger value="exceptions">Exceptions</TabsTrigger>
-                  <TabsTrigger value="workflow">Workflow</TabsTrigger>
+                  <TabsTrigger value="exceptions">Workflow</TabsTrigger>
+                  <TabsTrigger value="workflow">Exceptions</TabsTrigger>
                   <TabsTrigger value="reports">Reports</TabsTrigger>
                   <TabsTrigger value="admin">Admin</TabsTrigger>
                 </TabsList>
@@ -96,11 +101,11 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="exceptions" className="mt-6">
-                <ExceptionDashboard />
+                <WorkflowTab />
               </TabsContent>
 
               <TabsContent value="workflow" className="mt-6">
-                <WorkflowTab />
+                <WorkflowStepTab />
               </TabsContent>
 
               <TabsContent value="reports" className="mt-6">
@@ -230,6 +235,6 @@ export default function Home() {
           </div>
         </footer>
       </div>
-    </>
+    </ThemeProvider>
   );
 }
