@@ -323,6 +323,47 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
     }
   };
 
+  const getAgingColor = (daysOpen: number, slaStatus: string) => {
+    // Color based on SLA status and days open
+    if (slaStatus === "Breached" || daysOpen > 14) {
+      return {
+        bg: "bg-red-50 border-red-200",
+        text: "text-red-900",
+        badge: "bg-red-100 text-red-800 border-red-300",
+        indicator: "bg-red-500"
+      };
+    } else if (slaStatus === "At Risk" || daysOpen > 7) {
+      return {
+        bg: "bg-orange-50 border-orange-200",
+        text: "text-orange-900",
+        badge: "bg-orange-100 text-orange-800 border-orange-300",
+        indicator: "bg-orange-500"
+      };
+    } else if (daysOpen > 3) {
+      return {
+        bg: "bg-yellow-50 border-yellow-200",
+        text: "text-yellow-900",
+        badge: "bg-yellow-100 text-yellow-800 border-yellow-300",
+        indicator: "bg-yellow-500"
+      };
+    } else {
+      return {
+        bg: "bg-green-50 border-green-200",
+        text: "text-green-900",
+        badge: "bg-green-100 text-green-800 border-green-300",
+        indicator: "bg-green-500"
+      };
+    }
+  };
+
+  const getAgingLabel = (daysOpen: number, slaStatus: string) => {
+    if (slaStatus === "Breached") return "SLA Breached";
+    if (slaStatus === "At Risk") return "At Risk";
+    if (daysOpen === 0) return "New";
+    if (daysOpen === 1) return "1 day";
+    return `${daysOpen} days`;
+  };
+
   const handleBulkAction = (action: string) => {
     setBulkActionDialog({ open: true, action });
   };
@@ -513,6 +554,27 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                     </Select>
                   </div>
                 </div>
+                
+                {/* Aging Legend */}
+                <div className="flex items-center gap-4 text-xs">
+                  <span className="font-medium">Aging:</span>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span>0-3 days</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <span>4-7 days</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                    <span>8-14 days / At Risk</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span>15+ days / SLA Breached</span>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -569,6 +631,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                         <TableHead>Exception</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Priority</TableHead>
+                        <TableHead>Aging</TableHead>
                         <TableHead>Workflow</TableHead>
                         <TableHead className="w-20">Actions</TableHead>
                       </TableRow>
@@ -579,8 +642,13 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                           w => w.exceptionId === exception.id
                         );
                         
+                        const agingColors = getAgingColor(exception.daysOpen, exception.slaStatus);
+                        
                         return (
-                          <TableRow key={exception.id}>
+                          <TableRow 
+                            key={exception.id}
+                            className={`${agingColors.bg} hover:opacity-80 transition-opacity`}
+                          >
                             <TableCell>
                               <Checkbox
                                 checked={selectedExceptions.includes(exception.id)}
@@ -611,6 +679,24 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                                   className={`w-2 h-2 rounded-full ${getPriorityColor(exception.priority)}`}
                                 />
                                 <span className="text-sm">{exception.priority}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-3 h-3 rounded-full ${getAgingColor(exception.daysOpen, exception.slaStatus).indicator}`}
+                                />
+                                <div className="flex flex-col">
+                                  <Badge
+                                    variant="outline"
+                                    className={`text-xs ${getAgingColor(exception.daysOpen, exception.slaStatus).badge}`}
+                                  >
+                                    {getAgingLabel(exception.daysOpen, exception.slaStatus)}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground mt-1">
+                                    SLA: {exception.slaStatus}
+                                  </span>
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell>
