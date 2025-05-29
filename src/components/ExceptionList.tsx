@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -26,12 +26,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChevronDown,
   ChevronUp,
   Filter,
   MoreHorizontal,
   Search,
+  Eye,
+  Edit,
+  Trash2,
+  Download,
+  RefreshCw,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -40,10 +46,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Exception,
   PositionException,
   mapPositionToException,
   generateSampleExceptions,
+  USERS,
 } from "@/types/exception";
 
 interface ExceptionListProps {
@@ -61,10 +78,10 @@ interface ExceptionListProps {
 }
 
 const ExceptionList: React.FC<ExceptionListProps> = ({
-  exceptions = generateSampleExceptions(100), // Use generated sample data
+  exceptions: propExceptions,
   onExceptionSelect = () => {},
   onBulkAction = () => {},
-  filters = {
+  filters: propFilters = {
     bookCode: "",
     system: "",
     legalEntity: "",
@@ -73,14 +90,39 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   },
   workflowStatus = {},
 }) => {
+  const [exceptions, setExceptions] = useState<Exception[]>([]);
   const [selectedExceptions, setSelectedExceptions] = useState<string[]>([]);
   const [sortField, setSortField] = useState<keyof Exception>("createdDate");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState(propFilters);
+  const [isLoading, setIsLoading] = useState(false);
+  const [bulkActionDialog, setBulkActionDialog] = useState<{
+    open: boolean;
+    action: string;
+  }>({ open: false, action: "" });
+  const [bulkActionData, setBulkActionData] = useState({
+    status: "",
+    assignee: "",
+    comments: "",
+  });
 
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(exceptions.length / itemsPerPage);
+  const itemsPerPage = 15;
+
+  // Initialize exceptions data
+  useEffect(() => {
+    if (propExceptions) {
+      setExceptions(propExceptions);
+    } else {
+      // Generate sample data if none provided
+      const sampleData = generateSampleExceptions(200);
+      setExceptions(sampleData);
+    }
+  }, [propExceptions]);
+
+  const totalPages = Math.ceil(filteredExceptions.length / itemsPerPage);
 
   const handleSort = (field: keyof Exception) => {
     if (field === sortField) {
@@ -119,11 +161,37 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     }
   };
 
-  // Apply filters to exceptions
+  // Apply search and filters to exceptions
   const filteredExceptions = [...exceptions].filter((exception) => {
+    // Search functionality
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const searchableFields = [
+        exception.instrumentId,
+        exception.bookCode,
+        exception.instrumentName,
+        exception.classification,
+        exception.status,
+        exception.priority,
+        exception.system,
+        exception.legalEntity,
+        exception.regulator,
+        exception.level6,
+        exception.assignedTo,
+        exception.reason
+      ].filter(Boolean);
+      
+      const matchesSearch = searchableFields.some(field => 
+        field?.toString().toLowerCase().includes(searchLower)
+      );
+      
+      if (!matchesSearch) return false;
+    }
+
+    // Apply filters
     if (
       filters.bookCode &&
-      !exception.bookCode.toLowerCase().includes(filters.bookCode.toLowerCase())
+      !exception.bookCode?.toLowerCase().includes(filters.bookCode.toLowerCase())
     ) {
       return false;
     }
@@ -230,26 +298,62 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         <div className="flex space-x-2">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input placeholder="Search exceptions..." className="pl-8 w-64" />
+            <Input 
+              placeholder="Search exceptions..." 
+              className="pl-8 w-64"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           <Button
             variant="outline"
             size="sm"
             className="flex items-center gap-1"
+            onClick={() => {
+              setSearchTerm("");
+              setFilters({
+                bookCode: "",
+                system: "",
+                legalEntity: "",
+                regulator: "",
+                status: "",
+              });
+            }}
           >
-            <Filter className="h-4 w-4" />
-            Filters
+            <RefreshCw className="h-4 w-4" />
+            Clear Filters
           </Button>
-          <Select defaultValue="all">
+          <Select 
+            value={filters.status || "all"} 
+            onValueChange={(value) => 
+              setFilters({...filters, status: value === "all" ? "" : value})
+            }
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="open">Open</SelectItem>
-              <SelectItem value="in-progress">In Progress</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="Open">Open</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Resolved">Resolved</SelectItem>
+              <SelectItem value="Closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={filters.system || "all"} 
+            onValueChange={(value) => 
+              setFilters({...filters, system: value === "all" ? "" : value})
+            }
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="System" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Systems</SelectItem>
+              <SelectItem value="COMPASS">COMPASS</SelectItem>
+              <SelectItem value="AMM">AMM</SelectItem>
+              <SelectItem value="Atlas">Atlas</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -659,8 +763,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       <div className="mt-4 flex justify-between items-center">
         <div className="text-sm text-gray-500">
           Showing {startIndex + 1} to{" "}
-          {Math.min(startIndex + itemsPerPage, exceptions.length)} of{" "}
-          {exceptions.length} exceptions
+          {Math.min(startIndex + itemsPerPage, filteredExceptions.length)} of{" "}
+          {filteredExceptions.length} exceptions
         </div>
         <Pagination>
           <PaginationContent>
