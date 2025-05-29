@@ -36,6 +36,14 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import {
   ChevronDown,
   ChevronRight,
@@ -49,6 +57,11 @@ import {
   Pause,
   Check,
   X,
+  Eye,
+  MessageSquare,
+  FileText,
+  Send,
+  Plus,
 } from "lucide-react";
 import {
   Exception,
@@ -62,6 +75,39 @@ import {
   USERS,
 } from "@/types/exception";
 
+// Define role-based access permissions
+const ROLE_PERMISSIONS = {
+  "FO": ["Open", "In Progress"], // Front Office
+  "PC": ["Open", "In Progress", "Resolved"], // Product Category
+  "RIS": ["Open", "In Progress", "Resolved", "Closed"], // Risk
+  "RIS MR": ["Open", "In Progress", "Resolved", "Closed"], // Risk Management Review
+  "Admin": ["Open", "In Progress", "Resolved", "Closed"],
+  "Manager": ["Open", "In Progress", "Resolved", "Closed"],
+  "Analyst": ["Open", "In Progress"],
+  "Viewer": ["Open", "In Progress", "Resolved", "Closed"]
+};
+
+interface Comment {
+  id: string;
+  exceptionId: string;
+  author: string;
+  content: string;
+  timestamp: string;
+  type: "comment" | "query" | "response";
+}
+
+interface Query {
+  id: string;
+  exceptionId: string;
+  title: string;
+  description: string;
+  status: "open" | "pending" | "resolved";
+  assignedTo: string;
+  createdBy: string;
+  createdDate: string;
+  responses: Comment[];
+}
+
 interface WorkflowTabProps {
   currentUser?: User;
 }
@@ -74,6 +120,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   const [selectedExceptions, setSelectedExceptions] = useState<string[]>([]);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [filterRole, setFilterRole] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [bulkActionDialog, setBulkActionDialog] = useState<{
     open: boolean;
@@ -84,6 +131,15 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
     assignee: "",
     comments: "",
   });
+  
+  // Exception detail view state
+  const [selectedExceptionDetail, setSelectedExceptionDetail] = useState<Exception | null>(null);
+  const [exceptionDetailDialog, setExceptionDetailDialog] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [queries, setQueries] = useState<Query[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [newQuery, setNewQuery] = useState({ title: "", description: "", assignedTo: "" });
+  const [showNewQueryForm, setShowNewQueryForm] = useState(false);
 
   // Initialize with sample data
   useEffect(() => {
@@ -98,7 +154,108 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
     });
     
     setLevel6Groups(groups);
+    
+    // Initialize sample comments and queries
+    generateSampleCommentsAndQueries(sampleExceptions);
   }, []);
+
+  // Generate sample comments and queries for demo
+  const generateSampleCommentsAndQueries = (exceptions: Exception[]) => {
+    const sampleComments: Comment[] = [];
+    const sampleQueries: Query[] = [];
+    
+    exceptions.slice(0, 50).forEach(exc => {
+      // Add some comments
+      if (Math.random() > 0.7) {
+        sampleComments.push({
+          id: `comment-${exc.id}-1`,
+          exceptionId: exc.id,
+          author: USERS[Math.floor(Math.random() * USERS.length)].name,
+          content: "Initial analysis completed. Position reconciliation shows discrepancy in settlement date.",
+          timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+          type: "comment"
+        });
+      }
+      
+      // Add some queries
+      if (Math.random() > 0.8) {
+        const query: Query = {
+          id: `query-${exc.id}-1`,
+          exceptionId: exc.id,
+          title: "Clarification needed on settlement instructions",
+          description: "Please provide additional details on the settlement instructions for this position.",
+          status: Math.random() > 0.5 ? "open" : "pending",
+          assignedTo: USERS[Math.floor(Math.random() * USERS.length)].name,
+          createdBy: currentUser.name,
+          createdDate: new Date(Date.now() - Math.random() * 5 * 24 * 60 * 60 * 1000).toISOString(),
+          responses: []
+        };
+        sampleQueries.push(query);
+      }
+    });
+    
+    setComments(sampleComments);
+    setQueries(sampleQueries);
+  };
+
+  // Get role-based accessible statuses
+  const getAccessibleStatuses = (userRole: string): string[] => {
+    return ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS] || [];
+  };
+
+  // Handle exception detail view
+  const handleViewException = (exception: Exception) => {
+    setSelectedExceptionDetail(exception);
+    setExceptionDetailDialog(true);
+  };
+
+  // Add comment
+  const handleAddComment = () => {
+    if (!newComment.trim() || !selectedExceptionDetail) return;
+    
+    const comment: Comment = {
+      id: `comment-${Date.now()}`,
+      exceptionId: selectedExceptionDetail.id,
+      author: currentUser.name,
+      content: newComment,
+      timestamp: new Date().toISOString(),
+      type: "comment"
+    };
+    
+    setComments([...comments, comment]);
+    setNewComment("");
+  };
+
+  // Add query
+  const handleAddQuery = () => {
+    if (!newQuery.title.trim() || !newQuery.description.trim() || !selectedExceptionDetail) return;
+    
+    const query: Query = {
+      id: `query-${Date.now()}`,
+      exceptionId: selectedExceptionDetail.id,
+      title: newQuery.title,
+      description: newQuery.description,
+      status: "open",
+      assignedTo: newQuery.assignedTo,
+      createdBy: currentUser.name,
+      createdDate: new Date().toISOString(),
+      responses: []
+    };
+    
+    setQueries([...queries, query]);
+    setNewQuery({ title: "", description: "", assignedTo: "" });
+    setShowNewQueryForm(false);
+  };
+
+  // Get comments for exception
+  const getExceptionComments = (exceptionId: string): Comment[] => {
+    return comments.filter(c => c.exceptionId === exceptionId);
+  };
+
+  // Get queries for exception
+  const getExceptionQueries = (exceptionId: string): Query[] => {
+    return queries.filter(q => q.exceptionId === exceptionId);
+  };
 
   const toggleGroupExpansion = (level6: string) => {
     const newExpanded = new Set(expandedGroups);
@@ -216,8 +373,23 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   );
 
   const filteredExceptions = selectedGroup?.exceptions.filter(exc => {
-    if (filterRole === "all") return true;
-    return exc.assignedTo === currentUser.name;
+    // Role-based filtering
+    if (filterRole !== "all" && exc.assignedTo !== currentUser.name) {
+      return false;
+    }
+    
+    // Status filtering based on role permissions
+    const accessibleStatuses = getAccessibleStatuses(currentUser.role);
+    if (!accessibleStatuses.includes(exc.status)) {
+      return false;
+    }
+    
+    // Status filter
+    if (filterStatus !== "all" && exc.status !== filterStatus) {
+      return false;
+    }
+    
+    return true;
   }) || [];
 
   return (
@@ -328,6 +500,17 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                         <SelectItem value="mine">My Tasks</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        {getAccessibleStatuses(currentUser.role).map(status => (
+                          <SelectItem key={status} value={status}>{status}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardHeader>
@@ -387,6 +570,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                         <TableHead>Status</TableHead>
                         <TableHead>Priority</TableHead>
                         <TableHead>Workflow</TableHead>
+                        <TableHead className="w-20">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -450,6 +634,15 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                               ) : (
                                 <span className="text-xs text-muted-foreground">No workflow</span>
                               )}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleViewException(exception)}
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         );
@@ -554,6 +747,281 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
               Cancel
             </Button>
             <Button onClick={executeBulkAction}>Apply Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Exception Detail Dialog */}
+      <Dialog
+        open={exceptionDetailDialog}
+        onOpenChange={setExceptionDetailDialog}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Exception Details - {selectedExceptionDetail?.id}
+            </DialogTitle>
+            <DialogDescription>
+              View and manage exception details, comments, and queries
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedExceptionDetail && (
+            <Tabs defaultValue="details" className="flex-1 overflow-hidden">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="comments" className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Comments ({getExceptionComments(selectedExceptionDetail.id).length})
+                </TabsTrigger>
+                <TabsTrigger value="queries" className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Queries ({getExceptionQueries(selectedExceptionDetail.id).length})
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="details" className="mt-4">
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Instrument Name</Label>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.instrumentName}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Status</Label>
+                        <Badge className={getStatusColor(selectedExceptionDetail.status)}>
+                          {selectedExceptionDetail.status}
+                        </Badge>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Priority</Label>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${getPriorityColor(selectedExceptionDetail.priority)}`} />
+                          <span className="text-sm">{selectedExceptionDetail.priority}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Assigned To</Label>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.assignedTo}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Created Date</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(selectedExceptionDetail.createdDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Days Open</Label>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.daysOpen} days</p>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Level Hierarchy</Label>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>Level 1: {selectedExceptionDetail.level1}</div>
+                        <div>Level 2: {selectedExceptionDetail.level2}</div>
+                        <div>Level 3: {selectedExceptionDetail.level3}</div>
+                        <div>Level 4: {selectedExceptionDetail.level4}</div>
+                        <div>Level 5: {selectedExceptionDetail.level5}</div>
+                        <div>Level 6: {selectedExceptionDetail.level6}</div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Position Details</Label>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>System: {selectedExceptionDetail.system}</div>
+                        <div>Legal Entity: {selectedExceptionDetail.legalEntity}</div>
+                        <div>Regulator: {selectedExceptionDetail.regulator}</div>
+                        <div>Position AV: {selectedExceptionDetail.positionAV}</div>
+                        <div>Position Qty: {selectedExceptionDetail.positionQty}</div>
+                        <div>SOD Delta: {selectedExceptionDetail.sodDelta}</div>
+                      </div>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+
+              <TabsContent value="comments" className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Comments</Label>
+                    <Button
+                      size="sm"
+                      onClick={() => setNewComment("")}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Comment
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Add a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      rows={3}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={handleAddComment}
+                      disabled={!newComment.trim()}
+                      className="flex items-center gap-2"
+                    >
+                      <Send className="h-4 w-4" />
+                      Post Comment
+                    </Button>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-3">
+                      {getExceptionComments(selectedExceptionDetail.id).map((comment) => (
+                        <div key={comment.id} className="border rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-sm">{comment.author}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(comment.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          <p className="text-sm">{comment.content}</p>
+                        </div>
+                      ))}
+                      {getExceptionComments(selectedExceptionDetail.id).length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No comments yet. Add the first comment above.
+                        </p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="queries" className="mt-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Queries</Label>
+                    <Button
+                      size="sm"
+                      onClick={() => setShowNewQueryForm(!showNewQueryForm)}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      New Query
+                    </Button>
+                  </div>
+                  
+                  {showNewQueryForm && (
+                    <Card>
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <Label htmlFor="queryTitle">Query Title</Label>
+                          <Input
+                            id="queryTitle"
+                            placeholder="Enter query title..."
+                            value={newQuery.title}
+                            onChange={(e) => setNewQuery({ ...newQuery, title: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="queryDescription">Description</Label>
+                          <Textarea
+                            id="queryDescription"
+                            placeholder="Describe your query..."
+                            value={newQuery.description}
+                            onChange={(e) => setNewQuery({ ...newQuery, description: e.target.value })}
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="queryAssignee">Assign To</Label>
+                          <Select
+                            value={newQuery.assignedTo}
+                            onValueChange={(value) => setNewQuery({ ...newQuery, assignedTo: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select assignee" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {USERS.map((user) => (
+                                <SelectItem key={user.id} value={user.name}>
+                                  {user.name} ({user.role})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={handleAddQuery}
+                            disabled={!newQuery.title.trim() || !newQuery.description.trim()}
+                          >
+                            Create Query
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setShowNewQueryForm(false)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                  
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-3">
+                      {getExceptionQueries(selectedExceptionDetail.id).map((query) => (
+                        <Card key={query.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium text-sm">{query.title}</h4>
+                              <Badge
+                                variant={query.status === "open" ? "destructive" : 
+                                        query.status === "pending" ? "default" : "secondary"}
+                              >
+                                {query.status}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-2">{query.description}</p>
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>Created by {query.createdBy}</span>
+                              <span>Assigned to {query.assignedTo}</span>
+                              <span>{new Date(query.createdDate).toLocaleDateString()}</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                      {getExceptionQueries(selectedExceptionDetail.id).length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          No queries yet. Create a new query above.
+                        </p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setExceptionDetailDialog(false)}
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
