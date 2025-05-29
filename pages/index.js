@@ -101,11 +101,11 @@ export default function Home() {
               </TabsContent>
 
               <TabsContent value="exceptions" className="mt-6">
-                <WorkflowStepTab />
+                <WorkflowTab />
               </TabsContent>
 
               <TabsContent value="workflow" className="mt-6">
-                <WorkflowTab />
+                <WorkflowStepTab />
               </TabsContent>
 
               <TabsContent value="reports" className="mt-6">
