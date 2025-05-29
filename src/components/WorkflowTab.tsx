@@ -436,7 +436,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   return (
     <div className="flex h-[calc(100vh-200px)] gap-6">
       {/* Left Panel - Level 6 Groups */}
-      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-1/5' : 'w-full'}`}>
+      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-1/4' : 'w-full'}`}>
         <Card>
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center">
@@ -463,32 +463,42 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
               >
                 <CollapsibleTrigger asChild>
                   <div
-                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors ${
+                    className={`p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors ${
                       selectedGroup?.level6 === group.level6 ? "bg-muted border-primary" : ""
                     }`}
                     onClick={() => handleGroupSelect(group)}
                   >
-                    <div className="flex items-center gap-3">
-                      {expandedGroups.has(group.level6) ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                      <div>
-                        <h3 className="font-medium">{group.level6}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {group.count} exceptions
-                        </p>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {expandedGroups.has(group.level6) ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{group.count}</Badge>
-                      {group.workflows.length > 0 && (
-                        <Badge variant="outline" className="flex items-center gap-1">
-                          <Play className="h-3 w-3" />
-                          {group.workflows.length}
-                        </Badge>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-sm leading-tight truncate" title={group.level6}>
+                              {group.level6}
+                            </h3>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {group.count} total
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                              {group.count}
+                            </Badge>
+                            {group.workflows.length > 0 && (
+                              <Badge variant="outline" className="text-xs px-2 py-0.5 flex items-center gap-1">
+                                <Play className="h-2.5 w-2.5" />
+                                {group.workflows.length}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CollapsibleTrigger>
@@ -522,7 +532,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
       </div>
 
       {/* Right Panel - Exception Details */}
-      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-4/5' : 'hidden'}`}>
+      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-3/4' : 'hidden'}`}>
         {selectedGroup ? (
           <>
             <Card>
