@@ -436,7 +436,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   return (
     <div className="flex h-[calc(100vh-200px)] gap-6">
       {/* Left Panel - Level 6 Groups */}
-      <div className="w-3/5 space-y-4">
+      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-1/5' : 'w-full'}`}>
         <Card>
           <CardHeader className="pb-3">
             <div className="flex justify-between items-center">
@@ -522,7 +522,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
       </div>
 
       {/* Right Panel - Exception Details */}
-      <div className="w-2/5 space-y-4">
+      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-4/5' : 'hidden'}`}>
         {selectedGroup ? (
           <>
             <Card>

@@ -280,17 +280,59 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {agingMetrics.map((metric, index) => (
-              <div key={index} className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span>{metric.label}</span>
-                  <span>
-                    {metric.count} exceptions ({metric.percentage}%)
-                  </span>
+            {agingMetrics.map((metric, index) => {
+              // Define aging colors based on the metric label
+              const getAgingColor = (label: string) => {
+                if (label.includes("0-7")) {
+                  return {
+                    bg: "bg-green-50",
+                    indicator: "bg-green-500",
+                    text: "text-green-700"
+                  };
+                } else if (label.includes("8-14")) {
+                  return {
+                    bg: "bg-yellow-50",
+                    indicator: "bg-yellow-500",
+                    text: "text-yellow-700"
+                  };
+                } else if (label.includes("15-30")) {
+                  return {
+                    bg: "bg-orange-50",
+                    indicator: "bg-orange-500",
+                    text: "text-orange-700"
+                  };
+                } else {
+                  return {
+                    bg: "bg-red-50",
+                    indicator: "bg-red-500",
+                    text: "text-red-700"
+                  };
+                }
+              };
+
+              const colors = getAgingColor(metric.label);
+
+              return (
+                <div key={index} className={`space-y-2 p-3 rounded-lg border ${colors.bg}`}>
+                  <div className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${colors.indicator}`}></div>
+                      <span className={`font-medium ${colors.text}`}>{metric.label}</span>
+                    </div>
+                    <span className={colors.text}>
+                      {metric.count} exceptions ({metric.percentage}%)
+                    </span>
+                  </div>
+                  <Progress 
+                    value={metric.percentage} 
+                    className="h-2"
+                    style={{
+                      '--progress-background': colors.indicator.replace('bg-', ''),
+                    } as React.CSSProperties}
+                  />
                 </div>
-                <Progress value={metric.percentage} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

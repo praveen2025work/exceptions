@@ -20,13 +20,17 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, Filter, Search, Settings, User } from "lucide-react";
 import ExceptionDashboard from "./ExceptionDashboard";
+import WorkflowTab from "./WorkflowTab";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="min-h-screen bg-background">
+    <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-10 border-b bg-background">
         <div className="container flex h-16 items-center justify-between px-4">
@@ -39,6 +43,8 @@ const Home = () => {
               <Bell className="h-5 w-5" />
               <span className="sr-only">Notifications</span>
             </Button>
+
+            <ThemeToggle />
 
             <Button variant="ghost" size="icon">
               <Settings className="h-5 w-5" />
@@ -76,6 +82,7 @@ const Home = () => {
               <TabsList>
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="exceptions">Exceptions</TabsTrigger>
+                <TabsTrigger value="workflow">Workflow</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 <TabsTrigger value="admin">Admin</TabsTrigger>
               </TabsList>
@@ -109,6 +116,10 @@ const Home = () => {
 
             <TabsContent value="exceptions" className="mt-6">
               <ExceptionDashboard />
+            </TabsContent>
+
+            <TabsContent value="workflow" className="mt-6">
+              <WorkflowTab />
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
@@ -157,7 +168,8 @@ const Home = () => {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </ThemeProvider>
   );
 };
 
