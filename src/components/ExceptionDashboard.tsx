@@ -131,8 +131,8 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   };
 
   return (
-    <div className="bg-background p-6 h-full w-full">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-background p-3 h-full w-full">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Exception Dashboard</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
@@ -147,10 +147,10 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {metrics.map((metric, index) => (
           <Card key={index}>
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm text-muted-foreground">
@@ -177,135 +177,39 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
         ))}
       </div>
 
-      {/* Filters Section */}
-      <Card className="mb-6">
-        <CardHeader className="pb-3">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-md">Filters</CardTitle>
-            <Button variant="ghost" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Clear Filters
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div>
-              <p className="text-sm mb-2">Book Code</p>
-              <Input
-                placeholder="Search book codes..."
-                value={filters.bookCode}
-                onChange={(e) => handleFilterChange("bookCode", e.target.value)}
-              />
-            </div>
-            <div>
-              <p className="text-sm mb-2">System</p>
-              <Select
-                value={filters.system}
-                onValueChange={(value) => handleFilterChange("system", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select system" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Systems</SelectItem>
-                  <SelectItem value="COMPASS">COMPASS</SelectItem>
-                  <SelectItem value="AMM">AMM</SelectItem>
-                  <SelectItem value="Atlas">Atlas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <p className="text-sm mb-2">Legal Entity</p>
-              <Select
-                value={filters.legalEntity}
-                onValueChange={(value) =>
-                  handleFilterChange("legalEntity", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select entity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Entities</SelectItem>
-                  <SelectItem value="BCINC">BCINC</SelectItem>
-                  <SelectItem value="BBPLC">BBPLC</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <p className="text-sm mb-2">Regulator</p>
-              <Select
-                value={filters.regulator}
-                onValueChange={(value) =>
-                  handleFilterChange("regulator", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select regulator" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Regulators</SelectItem>
-                  <SelectItem value="FRB">FRB</SelectItem>
-                  <SelectItem value="PRA">PRA</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <p className="text-sm mb-2">Status</p>
-              <Select
-                value={filters.status}
-                onValueChange={(value) => handleFilterChange("status", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Resolved">Resolved</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Aging Metrics */}
-      <Card className="mb-6">
-        <CardHeader>
+      <Card className="mb-4">
+        <CardHeader className="pb-2">
           <CardTitle className="text-md">Exception Aging</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-3">
+          <div className="space-y-3">
             {agingMetrics.map((metric, index) => {
               // Define aging colors based on the metric label
               const getAgingColor = (label: string) => {
                 if (label.includes("0-7")) {
                   return {
-                    bg: "bg-green-50",
+                    bg: "bg-green-50 dark:bg-green-900/20 ocean:bg-green-100/50 modern:bg-green-900/30",
                     indicator: "bg-green-500",
-                    text: "text-green-700"
+                    text: "text-green-700 dark:text-green-300 ocean:text-green-800 modern:text-green-400"
                   };
                 } else if (label.includes("8-14")) {
                   return {
-                    bg: "bg-yellow-50",
+                    bg: "bg-yellow-50 dark:bg-yellow-900/20 ocean:bg-yellow-100/50 modern:bg-yellow-900/30",
                     indicator: "bg-yellow-500",
-                    text: "text-yellow-700"
+                    text: "text-yellow-700 dark:text-yellow-300 ocean:text-yellow-800 modern:text-yellow-400"
                   };
                 } else if (label.includes("15-30")) {
                   return {
-                    bg: "bg-orange-50",
+                    bg: "bg-orange-50 dark:bg-orange-900/20 ocean:bg-orange-100/50 modern:bg-orange-900/30",
                     indicator: "bg-orange-500",
-                    text: "text-orange-700"
+                    text: "text-orange-700 dark:text-orange-300 ocean:text-orange-800 modern:text-orange-400"
                   };
                 } else {
                   return {
-                    bg: "bg-red-50",
+                    bg: "bg-red-50 dark:bg-red-900/20 ocean:bg-red-100/50 modern:bg-red-900/30",
                     indicator: "bg-red-500",
-                    text: "text-red-700"
+                    text: "text-red-700 dark:text-red-300 ocean:text-red-800 modern:text-red-400"
                   };
                 }
               };
@@ -339,7 +243,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
 
       {/* Exception List */}
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2">
           <div className="flex justify-between items-center">
             <CardTitle className="text-md">Exception List</CardTitle>
             <Tabs
@@ -360,7 +264,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3">
           <ExceptionList
             onExceptionSelect={handleExceptionSelect}
             onBulkAction={handleBulkAction}

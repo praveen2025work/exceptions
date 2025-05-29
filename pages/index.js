@@ -63,8 +63,8 @@ export default function Home() {
         </header>
 
         {/* Main Content */}
-        <main className="container px-4 py-6">
-          <div className="mb-6">
+        <main className="container px-3 py-3">
+          <div className="mb-3">
             <Tabs defaultValue="dashboard">
               <div className="flex items-center justify-between">
                 <TabsList>
@@ -96,19 +96,19 @@ export default function Home() {
                 </div>
               </div>
 
-              <TabsContent value="dashboard" className="mt-6">
+              <TabsContent value="dashboard" className="mt-3">
                 <ExceptionDashboard />
               </TabsContent>
 
-              <TabsContent value="exceptions" className="mt-6">
+              <TabsContent value="exceptions" className="mt-3">
                 <WorkflowTab />
               </TabsContent>
 
-              <TabsContent value="workflow" className="mt-6">
+              <TabsContent value="workflow" className="mt-3">
                 <WorkflowStepTab />
               </TabsContent>
 
-              <TabsContent value="reports" className="mt-6">
+              <TabsContent value="reports" className="mt-3">
                 <Card>
                   <CardHeader>
                     <CardTitle>Reports</CardTitle>
@@ -177,7 +177,7 @@ export default function Home() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="admin" className="mt-6">
+              <TabsContent value="admin" className="mt-3">
                 <Card>
                   <CardHeader>
                     <CardTitle>Admin Panel</CardTitle>

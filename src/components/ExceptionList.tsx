@@ -248,11 +248,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const getSLAStatusColor = (status: string) => {
     switch (status) {
       case "Within SLA":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
       case "At Risk":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
       case "Breached":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
       default:
         return "";
     }
@@ -261,13 +261,13 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "Low":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
       case "Medium":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
       case "High":
-        return "bg-orange-100 text-orange-800";
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 ocean:bg-orange-200/70 ocean:text-orange-900 modern:bg-orange-900/40 modern:text-orange-400";
       case "Critical":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
       default:
         return "";
     }
@@ -276,90 +276,145 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Open":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
       case "In Progress":
-        return "bg-purple-100 text-purple-800";
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 ocean:bg-purple-200/70 ocean:text-purple-900 modern:bg-purple-900/40 modern:text-purple-400";
       case "Resolved":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
       case "Closed":
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300 ocean:bg-gray-200/70 ocean:text-gray-900 modern:bg-gray-700/40 modern:text-gray-400";
       default:
         return "";
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">
+    <div className="bg-card rounded-lg border w-full">
+      {/* Filters Section */}
+      <Card className="mb-3">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-sm">Filters</CardTitle>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                setSearchTerm("");
+                setFilters({
+                  bookCode: "",
+                  system: "",
+                  legalEntity: "",
+                  regulator: "",
+                  status: "",
+                });
+              }}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Clear Filters
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground">Book Code</p>
+              <Input
+                placeholder="Search book codes..."
+                value={filters.bookCode}
+                onChange={(e) => setFilters({...filters, bookCode: e.target.value})}
+                className="h-8"
+              />
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground">System</p>
+              <Select
+                value={filters.system || "all"}
+                onValueChange={(value) => setFilters({...filters, system: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Select system" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Systems</SelectItem>
+                  <SelectItem value="COMPASS">COMPASS</SelectItem>
+                  <SelectItem value="AMM">AMM</SelectItem>
+                  <SelectItem value="Atlas">Atlas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground">Legal Entity</p>
+              <Select
+                value={filters.legalEntity || "all"}
+                onValueChange={(value) => setFilters({...filters, legalEntity: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Select entity" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Entities</SelectItem>
+                  <SelectItem value="BCINC">BCINC</SelectItem>
+                  <SelectItem value="BBPLC">BBPLC</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground">Regulator</p>
+              <Select
+                value={filters.regulator || "all"}
+                onValueChange={(value) => setFilters({...filters, regulator: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Select regulator" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Regulators</SelectItem>
+                  <SelectItem value="FRB">FRB</SelectItem>
+                  <SelectItem value="PRA">PRA</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground">Status</p>
+              <Select
+                value={filters.status || "all"}
+                onValueChange={(value) => setFilters({...filters, status: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="Open">Open</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Resolved">Resolved</SelectItem>
+                  <SelectItem value="Closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-between items-center mb-3 px-3">
+        <h2 className="text-lg font-semibold">
           Exceptions ({filteredExceptions.length})
         </h2>
         <div className="flex space-x-2">
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search exceptions..." 
-              className="pl-8 w-64"
+              className="pl-8 w-64 h-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1"
-            onClick={() => {
-              setSearchTerm("");
-              setFilters({
-                bookCode: "",
-                system: "",
-                legalEntity: "",
-                regulator: "",
-                status: "",
-              });
-            }}
-          >
-            <RefreshCw className="h-4 w-4" />
-            Clear Filters
-          </Button>
-          <Select 
-            value={filters.status || "all"} 
-            onValueChange={(value) => 
-              setFilters({...filters, status: value === "all" ? "" : value})
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="Open">Open</SelectItem>
-              <SelectItem value="In Progress">In Progress</SelectItem>
-              <SelectItem value="Resolved">Resolved</SelectItem>
-              <SelectItem value="Closed">Closed</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select 
-            value={filters.system || "all"} 
-            onValueChange={(value) => 
-              setFilters({...filters, system: value === "all" ? "" : value})
-            }
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="System" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Systems</SelectItem>
-              <SelectItem value="COMPASS">COMPASS</SelectItem>
-              <SelectItem value="AMM">AMM</SelectItem>
-              <SelectItem value="Atlas">Atlas</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
       {selectedExceptions.length > 0 && (
-        <div className="bg-gray-50 p-2 rounded-md mb-4 flex justify-between items-center">
+        <div className="bg-muted/50 p-2 rounded-md mb-3 mx-3 flex justify-between items-center">
           <span className="text-sm font-medium">
             {selectedExceptions.length} exceptions selected
           </span>
@@ -545,7 +600,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             {paginatedExceptions.map((exception) => (
               <React.Fragment key={exception.id}>
                 <TableRow
-                  className="cursor-pointer hover:bg-gray-50"
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => onExceptionSelect(exception)}
                 >
                   <TableCell
@@ -676,7 +731,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </TableRow>
                 {expandedRows.includes(exception.id) && (
                   <TableRow>
-                    <TableCell colSpan={12} className="bg-gray-50 p-4">
+                    <TableCell colSpan={12} className="bg-muted/30 p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                           <h4 className="font-medium mb-2 text-sm">Level Hierarchy</h4>
@@ -759,8 +814,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         </Table>
       </div>
 
-      <div className="mt-4 flex justify-between items-center">
-        <div className="text-sm text-gray-500">
+      <div className="mt-4 flex justify-between items-center px-3">
+        <div className="text-sm text-muted-foreground">
           Showing {startIndex + 1} to{" "}
           {Math.min(startIndex + itemsPerPage, filteredExceptions.length)} of{" "}
           {filteredExceptions.length} exceptions
