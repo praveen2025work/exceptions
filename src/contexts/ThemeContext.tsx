@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark' | 'system' | 'ocean' | 'modern';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  actualTheme: 'light' | 'dark';
+  actualTheme: 'light' | 'dark' | 'ocean' | 'modern';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -36,12 +36,12 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     return defaultTheme;
   });
 
-  const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
+  const [actualTheme, setActualTheme] = useState<'light' | 'dark' | 'ocean' | 'modern'>('light');
 
   useEffect(() => {
     const root = window.document.documentElement;
 
-    root.classList.remove('light', 'dark');
+    root.classList.remove('light', 'dark', 'ocean', 'modern');
 
     if (theme === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches

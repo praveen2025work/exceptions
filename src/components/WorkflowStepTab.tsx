@@ -360,7 +360,16 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
                   <TableBody>
                     {filteredExceptions.map((exception) => (
                       <TableRow key={exception.id}>
-                        <TableCell className="font-mono text-sm">{exception.id}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          <button
+                            onClick={() => setSelectedExceptionId(
+                              selectedExceptionId === exception.id ? null : exception.id
+                            )}
+                            className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                          >
+                            {exception.id}
+                          </button>
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium text-sm">{exception.instrumentName}</p>

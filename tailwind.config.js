@@ -7,6 +7,18 @@ module.exports = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
   ],
+  safelist: [
+    'ocean',
+    'modern',
+    'ocean:rotate-0',
+    'ocean:scale-100',
+    'modern:rotate-0', 
+    'modern:scale-100',
+    'ocean:-rotate-90',
+    'ocean:scale-0',
+    'modern:-rotate-90',
+    'modern:scale-0'
+  ],
   prefix: "",
   theme: {
     container: {
