@@ -43,6 +43,7 @@ import {
   Search,
   Filter,
   MoreHorizontal,
+  X,
 } from "lucide-react";
 import {
   Exception,
@@ -336,236 +337,263 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
         </CardContent>
       </Card>
 
-      {/* Workflow Steps Legend */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Workflow Steps</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {WORKFLOW_STEPS.map((step, index) => (
-              <div key={step.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                  {step.id}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-sm">{step.name}</h4>
-                  <p className="text-xs text-muted-foreground">{step.description}</p>
-                </div>
-                {index < WORKFLOW_STEPS.length - 1 && (
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                )}
+      {/* Split View: Table and Details Panel */}
+      <div className="flex gap-6 h-[calc(100vh-300px)]">
+        {/* Left Panel - Exceptions Table */}
+        <div className={`transition-all duration-300 ${selectedExceptionId ? 'w-1/2' : 'w-full'}`}>
+          <Card className="h-full">
+            <CardContent className="p-0 h-full">
+              <div className="overflow-auto h-full">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Exception ID</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Overall Status</TableHead>
+                      <TableHead>Current Step</TableHead>
+                      <TableHead>Progress</TableHead>
+                      <TableHead>Assigned To</TableHead>
+                      <TableHead>Days Open</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredExceptions.map((exception) => (
+                      <TableRow key={exception.id}>
+                        <TableCell className="font-mono text-sm">{exception.id}</TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-sm">{exception.instrumentName}</p>
+                            <p className="text-xs text-muted-foreground">{exception.level6}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getOverallStatusColor(exception.overallStatus)}>
+                            {exception.overallStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getStepStatusIcon(exception.stepStatuses[exception.currentStep] || "pending")}
+                            <span className="text-sm">{getCurrentStepName(exception)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <Progress value={getStepProgress(exception)} className="w-20 h-2" />
+                            <span className="text-xs text-muted-foreground">
+                              {Math.round(getStepProgress(exception))}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">
+                              {exception.stepAssignees[exception.currentStep] || "Unassigned"}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm">{exception.daysOpen}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            {exception.currentStep > 0 && exception.currentStep <= 6 && 
+                             exception.stepStatuses[exception.currentStep] === "in_progress" && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleStepAction(exception, exception.currentStep, "approve")}
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleStepAction(exception, exception.currentStep, "reject")}
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setSelectedExceptionId(
+                                selectedExceptionId === exception.id ? null : exception.id
+                              )}
+                            >
+                              {selectedExceptionId === exception.id ? "Hide" : "Details"}
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredExceptions.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-8">
+                          No exceptions found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Exceptions Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Exception ID</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Overall Status</TableHead>
-                  <TableHead>Current Step</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Days Open</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredExceptions.map((exception) => (
-                  <TableRow key={exception.id}>
-                    <TableCell className="font-mono text-sm">{exception.id}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-sm">{exception.instrumentName}</p>
-                        <p className="text-xs text-muted-foreground">{exception.level6}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getOverallStatusColor(exception.overallStatus)}>
-                        {exception.overallStatus}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getStepStatusIcon(exception.stepStatuses[exception.currentStep] || "pending")}
-                        <span className="text-sm">{getCurrentStepName(exception)}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Progress value={getStepProgress(exception)} className="w-20 h-2" />
-                        <span className="text-xs text-muted-foreground">
-                          {Math.round(getStepProgress(exception))}%
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          {exception.stepAssignees[exception.currentStep] || "Unassigned"}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{exception.daysOpen}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        {exception.currentStep > 0 && exception.currentStep <= 6 && 
-                         exception.stepStatuses[exception.currentStep] === "in_progress" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleStepAction(exception, exception.currentStep, "approve")}
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleStepAction(exception, exception.currentStep, "reject")}
-                            >
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setSelectedExceptionId(
-                            selectedExceptionId === exception.id ? null : exception.id
-                          )}
-                        >
-                          {selectedExceptionId === exception.id ? "Hide" : "Details"}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {filteredExceptions.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      No exceptions found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Right Panel - Workflow Details */}
+        {selectedExceptionId && (
+          <div className="w-1/2">
+            <Card className="h-full">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Workflow Details - {selectedExceptionId}</CardTitle>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelectedExceptionId(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="h-[calc(100%-80px)] overflow-auto">
+                {(() => {
+                  const exception = filteredExceptions.find(exc => exc.id === selectedExceptionId);
+                  if (!exception) return null;
 
-      {/* Exception Details */}
-      {selectedExceptionId && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Workflow Details - {selectedExceptionId}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {(() => {
-              const exception = filteredExceptions.find(exc => exc.id === selectedExceptionId);
-              if (!exception) return null;
-
-              return (
-                <div className="space-y-6">
-                  {/* Workflow Steps Progress */}
-                  <div className="space-y-4">
-                    <h4 className="font-medium">Workflow Progress</h4>
-                    <div className="space-y-3">
-                      {WORKFLOW_STEPS.map((step) => {
-                        const status = exception.stepStatuses[step.id] || "pending";
-                        const assignee = exception.stepAssignees[step.id];
-                        const comment = exception.stepComments[step.id];
-                        const completedDate = exception.stepCompletedDates[step.id];
-
-                        return (
-                          <div key={step.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                              {step.id}
-                            </div>
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <h5 className="font-medium">{step.name}</h5>
-                                <div className="flex items-center gap-2">
-                                  {getStepStatusIcon(status)}
-                                  <Badge className={getStepStatusColor(status)}>
-                                    {status.replace("_", " ")}
-                                  </Badge>
-                                </div>
-                              </div>
-                              <p className="text-sm text-muted-foreground">{step.description}</p>
-                              {assignee && (
-                                <p className="text-sm">
-                                  <span className="font-medium">Assigned to:</span> {assignee}
-                                </p>
-                              )}
-                              {comment && (
-                                <p className="text-sm">
-                                  <span className="font-medium">Comments:</span> {comment}
-                                </p>
-                              )}
-                              {completedDate && (
-                                <p className="text-sm">
-                                  <span className="font-medium">Completed:</span>{" "}
-                                  {new Date(completedDate).toLocaleString()}
-                                </p>
-                              )}
-                              {status === "in_progress" && (
-                                <div className="flex gap-2 mt-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleStepAction(exception, step.id, "approve")}
-                                  >
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleStepAction(exception, step.id, "reject")}
-                                  >
-                                    Reject
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleStepAction(exception, step.id, "reassign")}
-                                  >
-                                    Reassign
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleStepAction(exception, step.id, "comment")}
-                                  >
-                                    Add Comment
-                                  </Button>
-                                </div>
-                              )}
+                  return (
+                    <div className="space-y-6">
+                      {/* Exception Summary */}
+                      <div className="space-y-3">
+                        <h4 className="font-medium">Exception Summary</h4>
+                        <div className="grid grid-cols-1 gap-3 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Instrument:</span>
+                            <span className="font-medium">{exception.instrumentName}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Level 6:</span>
+                            <span>{exception.level6}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Overall Status:</span>
+                            <Badge className={getOverallStatusColor(exception.overallStatus)}>
+                              {exception.overallStatus}
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Days Open:</span>
+                            <span>{exception.daysOpen} days</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Overall Progress:</span>
+                            <div className="flex items-center gap-2">
+                              <Progress value={getStepProgress(exception)} className="w-20 h-2" />
+                              <span className="text-xs">{Math.round(getStepProgress(exception))}%</span>
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      {/* Workflow Steps Progress */}
+                      <div className="space-y-4">
+                        <h4 className="font-medium">Workflow Steps Progress</h4>
+                        <div className="space-y-3">
+                          {WORKFLOW_STEPS.map((step) => {
+                            const status = exception.stepStatuses[step.id] || "pending";
+                            const assignee = exception.stepAssignees[step.id];
+                            const comment = exception.stepComments[step.id];
+                            const completedDate = exception.stepCompletedDates[step.id];
+
+                            return (
+                              <div key={step.id} className="border rounded-lg p-4 space-y-3">
+                                <div className="flex items-start gap-3">
+                                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-medium flex-shrink-0">
+                                    {step.id}
+                                  </div>
+                                  <div className="flex-1 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <h5 className="font-medium text-sm">{step.name}</h5>
+                                      <div className="flex items-center gap-2">
+                                        {getStepStatusIcon(status)}
+                                        <Badge className={getStepStatusColor(status)} variant="outline">
+                                          {status.replace("_", " ")}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{step.description}</p>
+                                    {assignee && (
+                                      <p className="text-xs">
+                                        <span className="font-medium">Assigned to:</span> {assignee}
+                                      </p>
+                                    )}
+                                    {comment && (
+                                      <p className="text-xs">
+                                        <span className="font-medium">Comments:</span> {comment}
+                                      </p>
+                                    )}
+                                    {completedDate && (
+                                      <p className="text-xs">
+                                        <span className="font-medium">Completed:</span>{" "}
+                                        {new Date(completedDate).toLocaleDateString()}
+                                      </p>
+                                    )}
+                                    {status === "in_progress" && (
+                                      <div className="flex gap-1 mt-2">
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleStepAction(exception, step.id, "approve")}
+                                        >
+                                          Approve
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleStepAction(exception, step.id, "reject")}
+                                        >
+                                          Reject
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleStepAction(exception, step.id, "reassign")}
+                                        >
+                                          Reassign
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleStepAction(exception, step.id, "comment")}
+                                        >
+                                          Comment
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })()}
-          </CardContent>
-        </Card>
-      )}
+                  );
+                })()}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
 
       {/* Action Dialog */}
       <Dialog open={actionDialog.open} onOpenChange={(open) => 
