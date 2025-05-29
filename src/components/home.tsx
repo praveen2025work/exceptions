@@ -22,6 +22,7 @@ import { Bell, Filter, Search, Settings, User } from "lucide-react";
 import ExceptionDashboard from "./ExceptionDashboard";
 import ExceptionList from "./ExceptionList";
 import WorkflowTab from "./WorkflowTab";
+import WorkflowStepTab from "./WorkflowStepTab";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -120,7 +121,7 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="workflow" className="mt-6">
-              <ExceptionList />
+              <WorkflowStepTab />
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
