@@ -112,7 +112,7 @@ export function transformCoreToFunctional(coreData: CoreException[]): Exception[
       const positionAV = safeNumber(core["Position AV"]);
       const tetbAV = safeNumber(core["TETB AV"]);
       const positionQty = safeNumber(core["Position Qty"]);
-      const tetbQty = safeNumber(core["TETB Qty"]); // Fixed typo
+      const tetbQty = safeNumber(core["TETB ety"]); // Use actual property name from CoreException
       const tetbMatch = safeBoolean(core["TETB Match"], 'match');
       
       // Calculate functional fields
