@@ -112,7 +112,7 @@ export function transformCoreToFunctional(coreData: CoreException[]): Exception[
       const positionAV = safeNumber(core["Position AV"]);
       const tetbAV = safeNumber(core["TETB AV"]);
       const positionQty = safeNumber(core["Position Qty"]);
-      const tetbQty = safeNumber(core["TETB ety"]); // Use actual property name from CoreException
+      const tetbQty = safeNumber(core["TETB Qty"]); // Use actual property name from CoreException
       const tetbMatch = safeBoolean(core["TETB Match"], 'match');
       
       // Calculate functional fields
@@ -127,9 +127,9 @@ export function transformCoreToFunctional(coreData: CoreException[]): Exception[
       // Transform to functional exception using only valid CoreException properties
       const exception: Exception = {
         id: generateExceptionId(index),
-        l04_business_area_name: safeString(core["L04_business_area_name"]),
-        l06_name: safeString(core["L06_name"]),
-        named_no_name: safeString(core["namedpnl_name"]),
+        l04_business_area_name: safeString(core["L04_BUSINESS_AREA_NAME"]),
+        l06_name: safeString(core["L06_NAME"]),
+        named_no_name: safeString(core["NAMEDPNL_NAME"]),
         ads_book_code: safeString(core["SDS Book Code"]),
         ads_book_path: safeString(core["SDS Book Path"]),
         system: safeString(core["System"]),

@@ -1,8 +1,8 @@
 // Core data interface - matches the raw data structure
 export interface CoreException {
-  "L04_business_area_name": string;
-  "L06_name": string;
-  "namedpnl_name": string;
+  "L04_BUSINESS_AREA_NAME": string;
+  "L06_NAME": string;
+  "NAMEDPNL_NAME": string;
   "SDS Book Code": string;
   "SDS Book Path": string;
   "System": string;
@@ -21,7 +21,7 @@ export interface CoreException {
   "Position AV": string;
   "TETB AV": string;
   "Position Qty": string;
-  "TETB ety": string;
+  "TETB Qty": string;
   "TETB Match": string;
 }
 
