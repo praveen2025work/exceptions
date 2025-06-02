@@ -55,11 +55,13 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const [exceptions, setExceptions] = useState<any[]>([]);
   const [filters, setFilters] = useState({
-    bookCode: "",
+    ads_book_code: "",
     system: "",
-    legalEntity: "",
+    legal_entity: "",
     regulator: "",
     status: "",
+    l04_business_area_name: "",
+    l06_name: "",
   });
   const [workflowStatus, setWorkflowStatus] = useState<Record<string, string>>(
     {},
