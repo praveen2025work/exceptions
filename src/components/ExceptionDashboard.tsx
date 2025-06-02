@@ -78,7 +78,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
     const totalExceptions = exceptions.length;
     const completedToday = exceptions.filter(exc => 
-      (exc.status === 'Unwind' || exc.status === 'Centralise') && 
+      (exc.status === 'Unwind' || exc.status === 'Centralise' || exc.status === 'Writedown') && 
       new Date(exc.created_date).toDateString() === new Date().toDateString()
     ).length;
     const slaBreaches = exceptions.filter(exc => exc.sla_status === 'SLA Breach').length;
@@ -302,6 +302,9 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
                 <TabsTrigger value="challenge">Challenge</TabsTrigger>
                 <TabsTrigger value="unwind">Unwind</TabsTrigger>
                 <TabsTrigger value="centralise">Centralise</TabsTrigger>
+                <TabsTrigger value="writedown">Writedown</TabsTrigger>
+                <TabsTrigger value="insufficient-data">Insufficient Data</TabsTrigger>
+                <TabsTrigger value="reassignment">Reassignment</TabsTrigger>
                 <TabsTrigger value="sla-breach" className="flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1 text-destructive" />
                   SLA Breach

@@ -68,14 +68,14 @@ import { loadAndTransformData } from "@/utils/dataTransform";
 
 // Define role-based access permissions
 const ROLE_PERMISSIONS = {
-  "FO": ["Open", "In Progress"], // Front Office
-  "PC": ["Open", "In Progress", "Resolved"], // Product Category
-  "RIS": ["Open", "In Progress", "Resolved", "Closed"], // Risk
-  "RIS MR": ["Open", "In Progress", "Resolved", "Closed"], // Risk Management Review
-  "Admin": ["Open", "In Progress", "Resolved", "Closed"],
-  "Manager": ["Open", "In Progress", "Resolved", "Closed"],
-  "Analyst": ["Open", "In Progress"],
-  "Viewer": ["Open", "In Progress", "Resolved", "Closed"]
+  "FO": ["Unwind", "Centralise"], // Front Office
+  "PC": ["Unwind", "Centralise", "Writedown"], // Product Category
+  "RIS": ["Unwind", "Centralise", "Writedown", "Challenge"], // Risk
+  "RIS MR": ["Unwind", "Centralise", "Writedown", "Challenge", "Reassignment"], // Risk Management Review
+  "Admin": ["Unwind", "Centralise", "Writedown", "Insufficient Data", "Challenge", "Reassignment"],
+  "Manager": ["Unwind", "Centralise", "Writedown", "Insufficient Data", "Challenge", "Reassignment"],
+  "Analyst": ["Insufficient Data", "Challenge"],
+  "Viewer": ["Unwind", "Centralise", "Writedown", "Insufficient Data", "Challenge", "Reassignment"]
 };
 
 interface Comment {
@@ -296,13 +296,17 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Open":
+      case "Unwind":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
-      case "In Progress":
+      case "Centralise":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
-      case "Resolved":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
-      case "Closed":
+      case "Writedown":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
+      case "Insufficient Data":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "Challenge":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      case "Reassignment":
         return "bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300";
       default:
         return "bg-gray-100 text-gray-800";
@@ -800,10 +804,12 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Open">Open</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Resolved">Resolved</SelectItem>
-                    <SelectItem value="Closed">Closed</SelectItem>
+                    <SelectItem value="Unwind">Unwind</SelectItem>
+                    <SelectItem value="Centralise">Centralise</SelectItem>
+                    <SelectItem value="Writedown">Writedown</SelectItem>
+                    <SelectItem value="Insufficient Data">Insufficient Data</SelectItem>
+                    <SelectItem value="Challenge">Challenge</SelectItem>
+                    <SelectItem value="Reassignment">Reassignment</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

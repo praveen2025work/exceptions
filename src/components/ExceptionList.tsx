@@ -262,13 +262,17 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Open":
+      case "Unwind":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
-      case "In Progress":
+      case "Centralise":
         return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 ocean:bg-purple-200/70 ocean:text-purple-900 modern:bg-purple-900/40 modern:text-purple-400";
-      case "Resolved":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
-      case "Closed":
+      case "Writedown":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 ocean:bg-orange-200/70 ocean:text-orange-900 modern:bg-orange-900/40 modern:text-orange-400";
+      case "Insufficient Data":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
+      case "Challenge":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
+      case "Reassignment":
         return "bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300 ocean:bg-gray-200/70 ocean:text-gray-900 modern:bg-gray-700/40 modern:text-gray-400";
       default:
         return "";
@@ -429,10 +433,12 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Resolved">Resolved</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
+                  <SelectItem value="Unwind">Unwind</SelectItem>
+                  <SelectItem value="Centralise">Centralise</SelectItem>
+                  <SelectItem value="Writedown">Writedown</SelectItem>
+                  <SelectItem value="Insufficient Data">Insufficient Data</SelectItem>
+                  <SelectItem value="Challenge">Challenge</SelectItem>
+                  <SelectItem value="Reassignment">Reassignment</SelectItem>
                 </SelectContent>
               </Select>
             </div>
