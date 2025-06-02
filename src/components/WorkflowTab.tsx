@@ -64,7 +64,7 @@ import {
   Plus,
 } from "lucide-react";
 import { Exception, L04Category, L06Category, ExceptionFilters } from "@/types/exception";
-import exceptionData from "@/data/exceptions.json";
+import { loadAndTransformData } from "@/utils/dataTransform";
 
 // Define role-based access permissions
 const ROLE_PERMISSIONS = {
@@ -149,9 +149,9 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   const [newQuery, setNewQuery] = useState({ title: "", description: "", assignedTo: "" });
   const [showNewQueryForm, setShowNewQueryForm] = useState(false);
 
-  // Initialize with data from JSON file
+  // Initialize with data from core data transformation
   useEffect(() => {
-    const data = exceptionData as { exceptions: Exception[], l04_categories: L04Category[] };
+    const data = loadAndTransformData();
     setL04Categories(data.l04_categories);
     setExceptions(data.exceptions);
     

@@ -1,3 +1,31 @@
+// Core data interface - matches the raw data structure
+export interface CoreException {
+  "IO4 _BUSINESS AREA NAME": string;
+  "L06 NAME": string;
+  "NAMEDNL NAME": string;
+  "SDS Book Code": string;
+  "SDS Book Path": string;
+  "System": string;
+  "Legal Entity": string;
+  "Regulator": string;
+  "Instrument Id": string;
+  "Equity Class Type": string;
+  "Instrument Type": string;
+  "Instrument Name": string;
+  "Position TBBB Classification": string;
+  "As of time": string;
+  "BB Underlyings": string;
+  "Reason": string;
+  "Look through": string;
+  "SOD Delta on BB Underlying": string;
+  "Position AV": string;
+  "TETB AV": string;
+  "Position Qty": string;
+  "TETB ety": string;
+  "TETB Match": string;
+}
+
+// Functional data interface - includes calculated fields
 export interface Exception {
   id: string;
   l04_business_area_name: string;
@@ -23,6 +51,7 @@ export interface Exception {
   position_qty: number;
   tetb_qty: number;
   tetb_match: boolean;
+  // Calculated functional fields
   status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   sla_status: 'Within SLA' | 'SLA Breach' | 'SLA Warning';

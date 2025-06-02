@@ -46,7 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Exception, ExceptionFilters } from "@/types/exception";
-import exceptionData from "@/data/exceptions.json";
+import { loadAndTransformData } from "@/utils/dataTransform";
 
 interface ExceptionListProps {
   exceptions?: Exception[];
@@ -87,8 +87,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     if (propExceptions) {
       setExceptions(propExceptions);
     } else {
-      // Load data from JSON file
-      setExceptions(exceptionData.exceptions as Exception[]);
+      // Load and transform data from core data
+      const data = loadAndTransformData();
+      setExceptions(data.exceptions);
     }
   }, [propExceptions]);
 

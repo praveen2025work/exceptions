@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import { Progress } from "@/components/ui/progress";
 import { AlertCircle, Filter, RefreshCw, Download } from "lucide-react";
 import ExceptionList from "./ExceptionList";
 import ExceptionDetails from "./ExceptionDetails";
+import { loadAndTransformData } from "@/utils/dataTransform";
+import { Exception } from "@/types/exception";
 
 interface ExceptionMetric {
   label: string;
@@ -35,25 +37,17 @@ interface ExceptionDashboardProps {
 }
 
 const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
-  metrics = [
-    { label: "Total Exceptions", value: 247, change: 12, status: "negative" },
-    { label: "Resolved Today", value: 32, change: 8, status: "positive" },
-    { label: "SLA Breaches", value: 18, change: -5, status: "positive" },
-    { label: "Pending Review", value: 54, change: 3, status: "negative" },
-  ],
-  agingMetrics = [
-    { label: "0-7 days", count: 124, percentage: 50 },
-    { label: "8-14 days", count: 68, percentage: 28 },
-    { label: "15-30 days", count: 42, percentage: 17 },
-    { label: "30+ days", count: 13, percentage: 5 },
-  ],
+  metrics: propMetrics,
+  agingMetrics: propAgingMetrics,
 }) => {
   const [selectedTab, setSelectedTab] = useState("all");
   const [selectedException, setSelectedException] = useState<string | null>(
     null,
   );
   const [showDetails, setShowDetails] = useState(false);
-  const [exceptions, setExceptions] = useState<any[]>([]);
+  const [exceptions, setExceptions] = useState<Exception[]>([]);
+  const [metrics, setMetrics] = useState<ExceptionMetric[]>([]);
+  const [agingMetrics, setAgingMetrics] = useState<AgingMetric[]>([]);
   const [filters, setFilters] = useState({
     ads_book_code: "",
     system: "",
@@ -66,6 +60,56 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   const [workflowStatus, setWorkflowStatus] = useState<Record<string, string>>(
     {},
   );
+
+  // Load and transform data on component mount
+  useEffect(() => {
+    const data = loadAndTransformData();
+    setExceptions(data.exceptions);
+    
+    // Calculate real metrics from the data
+    const calculatedMetrics = calculateMetrics(data.exceptions);
+    const calculatedAgingMetrics = calculateAgingMetrics(data.exceptions);
+    
+    setMetrics(propMetrics || calculatedMetrics);
+    setAgingMetrics(propAgingMetrics || calculatedAgingMetrics);
+  }, [propMetrics, propAgingMetrics]);
+
+  // Function to calculate metrics from exception data
+  const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
+    const totalExceptions = exceptions.length;
+    const resolvedToday = exceptions.filter(exc => 
+      exc.status === 'Resolved' && 
+      new Date(exc.created_date).toDateString() === new Date().toDateString()
+    ).length;
+    const slaBreaches = exceptions.filter(exc => exc.sla_status === 'SLA Breach').length;
+    const pendingReview = exceptions.filter(exc => exc.status === 'Open').length;
+
+    return [
+      { label: "Total Exceptions", value: totalExceptions, change: 12, status: "negative" },
+      { label: "Resolved Today", value: resolvedToday, change: 8, status: "positive" },
+      { label: "SLA Breaches", value: slaBreaches, change: -5, status: "positive" },
+      { label: "Pending Review", value: pendingReview, change: 3, status: "negative" },
+    ];
+  };
+
+  // Function to calculate aging metrics from exception data
+  const calculateAgingMetrics = (exceptions: Exception[]): AgingMetric[] => {
+    const totalExceptions = exceptions.length;
+    if (totalExceptions === 0) return [];
+
+    const agingBuckets = {
+      '0-7 days': exceptions.filter(exc => exc.aging_days <= 7).length,
+      '8-14 days': exceptions.filter(exc => exc.aging_days > 7 && exc.aging_days <= 14).length,
+      '15-30 days': exceptions.filter(exc => exc.aging_days > 14 && exc.aging_days <= 30).length,
+      '30+ days': exceptions.filter(exc => exc.aging_days > 30).length,
+    };
+
+    return Object.entries(agingBuckets).map(([label, count]) => ({
+      label,
+      count,
+      percentage: Math.round((count / totalExceptions) * 100),
+    }));
+  };
 
   const handleExceptionSelect = (exception: any) => {
     setSelectedException(exception.id);

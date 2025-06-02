@@ -46,7 +46,7 @@ import {
   X,
 } from "lucide-react";
 import { Exception } from "@/types/exception";
-import exceptionData from "@/data/exceptions.json";
+import { loadAndTransformData } from "@/utils/dataTransform";
 
 // Define the workflow steps
 const WORKFLOW_STEPS = [
@@ -103,7 +103,7 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
 
   // Initialize with sample data and workflow information
   useEffect(() => {
-    const data = exceptionData as { exceptions: Exception[] };
+    const data = loadAndTransformData();
     const workflowExceptions: WorkflowException[] = data.exceptions.map((exc, index) => {
       const currentStep = Math.floor(Math.random() * 7); // 0 = not started, 1-6 = steps
       const overallStatus = currentStep === 0 ? "Not Started" : 
