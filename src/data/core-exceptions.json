@@ -1,8 +1,8 @@
 [
   {
-    "IO4 _BUSINESS AREA NAME": "Equity Derivatives",
-    "L06 NAME": "Flow Derivatives Americas",
-    "NAMEDNL NAME": "Flow Derivatives Americas",
+    "L04_business_area_name": "Equity Derivatives",
+    "L06_name": "Flow Derivatives Americas",
+    "namedpnl_name": "Flow Derivatives Americas",
     "SDS Book Code": "954807",
     "SDS Book Path": "Barclays Group:Markets: Equities:Equity De",
     "System": "AMM",
@@ -25,9 +25,9 @@
     "TETB Match": "Match"
   },
   {
-    "IO4 _BUSINESS AREA NAME": "Equity Derivatives",
-    "L06 NAME": "Flow Derivatives EMEA",
-    "NAMEDNL NAME": "Flow Derivatives EMEA",
+    "L04_business_area_name": "Equity Derivatives",
+    "L06_name": "Flow Derivatives EMEA",
+    "namedpnl_name": "Flow Derivatives EMEA",
     "SDS Book Code": "954808",
     "SDS Book Path": "Barclays Group:Markets: Equities:Equity EU",
     "System": "AMM",
@@ -50,9 +50,9 @@
     "TETB Match": "Mismatch"
   },
   {
-    "IO4 _BUSINESS AREA NAME": "Fixed Income Trading",
-    "L06 NAME": "Government Bonds",
-    "NAMEDNL NAME": "US Treasury 10Y",
+    "L04_business_area_name": "Fixed Income Trading",
+    "L06_name": "Government Bonds",
+    "namedpnl_name": "US Treasury 10Y",
     "SDS Book Code": "FI-GOV-001",
     "SDS Book Path": "Barclays Group:Markets: Fixed Income:Government",
     "System": "Murex",
@@ -75,9 +75,9 @@
     "TETB Match": "Mismatch"
   },
   {
-    "IO4 _BUSINESS AREA NAME": "Credit Trading",
-    "L06 NAME": "Corporate Bonds",
-    "NAMEDNL NAME": "Microsoft Corp Bond",
+    "L04_business_area_name": "Credit Trading",
+    "L06_name": "Corporate Bonds",
+    "namedpnl_name": "Microsoft Corp Bond",
     "SDS Book Code": "CR-CB-004",
     "SDS Book Path": "Barclays Group:Markets: Credit:Corporate",
     "System": "Kondor+",
@@ -100,9 +100,9 @@
     "TETB Match": "Mismatch"
   },
   {
-    "IO4 _BUSINESS AREA NAME": "FX Trading",
-    "L06 NAME": "Major Currency Pairs",
-    "NAMEDNL NAME": "EUR/USD Spot",
+    "L04_business_area_name": "FX Trading",
+    "L06_name": "Major Currency Pairs",
+    "namedpnl_name": "EUR/USD Spot",
     "SDS Book Code": "FX-MAJ-005",
     "SDS Book Path": "Barclays Group:Markets: FX:Major",
     "System": "360T",
@@ -125,9 +125,9 @@
     "TETB Match": "Match"
   },
   {
-    "IO4 _BUSINESS AREA NAME": "Commodities Trading",
-    "L06 NAME": "Precious Metals",
-    "NAMEDNL NAME": "Gold Futures",
+    "L04_business_area_name": "Commodities Trading",
+    "L06_name": "Precious Metals",
+    "namedpnl_name": "Gold Futures",
     "SDS Book Code": "COM-PM-006",
     "SDS Book Path": "Barclays Group:Markets: Commodities:Precious Metals",
     "System": "Endur",

@@ -1,8 +1,8 @@
 // Core data interface - matches the raw data structure
 export interface CoreException {
-  "IO4 _BUSINESS AREA NAME": string;
-  "L06 NAME": string;
-  "NAMEDNL NAME": string;
+  "L04_business_area_name": string;
+  "L06_name": string;
+  "namedpnl_name": string;
   "SDS Book Code": string;
   "SDS Book Path": string;
   "System": string;
