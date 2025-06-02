@@ -52,7 +52,7 @@ export interface Exception {
   tetb_qty: number;
   tetb_match: boolean;
   // Calculated functional fields
-  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
+  status: 'Unwind' | 'Centralise' | 'Writedown' | 'Insufficient Data' | 'Challenge' | 'Reassignment';
   priority: 'Low' | 'Medium' | 'High' | 'Critical';
   sla_status: 'Within SLA' | 'SLA Breach' | 'SLA Warning';
   assigned_to: string;
