@@ -63,17 +63,8 @@ import {
   Send,
   Plus,
 } from "lucide-react";
-import {
-  Exception,
-  Level6Group,
-  Workflow,
-  WorkflowStep,
-  User,
-  generateSampleExceptions,
-  groupExceptionsByLevel6,
-  createWorkflow,
-  USERS,
-} from "@/types/exception";
+import { Exception, L04Category, L06Category, ExceptionFilters } from "@/types/exception";
+import exceptionData from "@/data/exceptions.json";
 
 // Define role-based access permissions
 const ROLE_PERMISSIONS = {
@@ -108,6 +99,21 @@ interface Query {
   responses: Comment[];
 }
 
+interface User {
+  id: string;
+  name: string;
+  role: string;
+  email: string;
+}
+
+const USERS: User[] = [
+  { id: "1", name: "Praveen Kumar", role: "Admin", email: "praveen.kumar@company.com" },
+  { id: "2", name: "Sarah Johnson", role: "Manager", email: "sarah.johnson@company.com" },
+  { id: "3", name: "Michael Chen", role: "Analyst", email: "michael.chen@company.com" },
+  { id: "4", name: "Emily Davis", role: "RIS", email: "emily.davis@company.com" },
+  { id: "5", name: "David Wilson", role: "FO", email: "david.wilson@company.com" },
+];
+
 interface WorkflowTabProps {
   currentUser?: User;
 }
@@ -115,10 +121,12 @@ interface WorkflowTabProps {
 const WorkflowTab: React.FC<WorkflowTabProps> = ({
   currentUser = USERS[0], // Default to first user
 }) => {
-  const [level6Groups, setLevel6Groups] = useState<Level6Group[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<Level6Group | null>(null);
+  const [l04Categories, setL04Categories] = useState<L04Category[]>([]);
+  const [exceptions, setExceptions] = useState<Exception[]>([]);
+  const [selectedL04, setSelectedL04] = useState<L04Category | null>(null);
+  const [selectedL06, setSelectedL06] = useState<L06Category | null>(null);
   const [selectedExceptions, setSelectedExceptions] = useState<string[]>([]);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [expandedL04, setExpandedL04] = useState<Set<string>>(new Set());
   const [filterRole, setFilterRole] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -141,22 +149,14 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   const [newQuery, setNewQuery] = useState({ title: "", description: "", assignedTo: "" });
   const [showNewQueryForm, setShowNewQueryForm] = useState(false);
 
-  // Initialize with sample data
+  // Initialize with data from JSON file
   useEffect(() => {
-    const sampleExceptions = generateSampleExceptions(1000); // Generate 1000 for demo
-    const groups = groupExceptionsByLevel6(sampleExceptions);
-    
-    // Add some workflows to groups
-    groups.forEach(group => {
-      group.workflows = group.exceptions
-        .filter(exc => exc.workflowId)
-        .map(exc => createWorkflow(exc.id));
-    });
-    
-    setLevel6Groups(groups);
+    const data = exceptionData as { exceptions: Exception[], l04_categories: L04Category[] };
+    setL04Categories(data.l04_categories);
+    setExceptions(data.exceptions);
     
     // Initialize sample comments and queries
-    generateSampleCommentsAndQueries(sampleExceptions);
+    generateSampleCommentsAndQueries(data.exceptions);
   }, []);
 
   // Generate sample comments and queries for demo
@@ -164,9 +164,9 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
     const sampleComments: Comment[] = [];
     const sampleQueries: Query[] = [];
     
-    exceptions.slice(0, 50).forEach(exc => {
+    exceptions.slice(0, 5).forEach(exc => {
       // Add some comments
-      if (Math.random() > 0.7) {
+      if (Math.random() > 0.5) {
         sampleComments.push({
           id: `comment-${exc.id}-1`,
           exceptionId: exc.id,
@@ -178,7 +178,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
       }
       
       // Add some queries
-      if (Math.random() > 0.8) {
+      if (Math.random() > 0.7) {
         const query: Query = {
           id: `query-${exc.id}-1`,
           exceptionId: exc.id,
@@ -257,18 +257,24 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
     return queries.filter(q => q.exceptionId === exceptionId);
   };
 
-  const toggleGroupExpansion = (level6: string) => {
-    const newExpanded = new Set(expandedGroups);
-    if (newExpanded.has(level6)) {
-      newExpanded.delete(level6);
+  const toggleL04Expansion = (l04Name: string) => {
+    const newExpanded = new Set(expandedL04);
+    if (newExpanded.has(l04Name)) {
+      newExpanded.delete(l04Name);
     } else {
-      newExpanded.add(level6);
+      newExpanded.add(l04Name);
     }
-    setExpandedGroups(newExpanded);
+    setExpandedL04(newExpanded);
   };
 
-  const handleGroupSelect = (group: Level6Group) => {
-    setSelectedGroup(group);
+  const handleL04Select = (l04: L04Category) => {
+    setSelectedL04(l04);
+    setSelectedL06(null);
+    setSelectedExceptions([]);
+  };
+
+  const handleL06Select = (l06: L06Category) => {
+    setSelectedL06(l06);
     setSelectedExceptions([]);
   };
 
@@ -281,28 +287,23 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   };
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked && selectedGroup) {
-      setSelectedExceptions(selectedGroup.exceptions.map(exc => exc.id));
+    if (checked && filteredExceptions.length > 0) {
+      setSelectedExceptions(filteredExceptions.map(exc => exc.id));
     } else {
       setSelectedExceptions([]);
     }
   };
 
-  const getWorkflowProgress = (workflow: Workflow): number => {
-    const completedSteps = workflow.steps.filter(step => step.status === "COMPLETED").length;
-    return (completedSteps / workflow.steps.length) * 100;
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Open":
-        return "bg-red-100 text-red-800";
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
       case "In Progress":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
       case "Resolved":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
       case "Closed":
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -325,40 +326,40 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
 
   const getAgingColor = (daysOpen: number, slaStatus: string) => {
     // Color based on SLA status and days open
-    if (slaStatus === "Breached" || daysOpen > 14) {
+    if (slaStatus === "SLA Breach" || daysOpen > 14) {
       return {
-        bg: "bg-red-50 border-red-200",
-        text: "text-red-900",
-        badge: "bg-red-100 text-red-800 border-red-300",
+        bg: "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800",
+        text: "text-red-900 dark:text-red-300",
+        badge: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-300",
         indicator: "bg-red-500"
       };
-    } else if (slaStatus === "At Risk" || daysOpen > 7) {
+    } else if (slaStatus === "SLA Warning" || daysOpen > 7) {
       return {
-        bg: "bg-orange-50 border-orange-200",
-        text: "text-orange-900",
-        badge: "bg-orange-100 text-orange-800 border-orange-300",
+        bg: "bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800",
+        text: "text-orange-900 dark:text-orange-300",
+        badge: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-300",
         indicator: "bg-orange-500"
       };
     } else if (daysOpen > 3) {
       return {
-        bg: "bg-yellow-50 border-yellow-200",
-        text: "text-yellow-900",
-        badge: "bg-yellow-100 text-yellow-800 border-yellow-300",
+        bg: "bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800",
+        text: "text-yellow-900 dark:text-yellow-300",
+        badge: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300",
         indicator: "bg-yellow-500"
       };
     } else {
       return {
-        bg: "bg-green-50 border-green-200",
-        text: "text-green-900",
-        badge: "bg-green-100 text-green-800 border-green-300",
+        bg: "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800",
+        text: "text-green-900 dark:text-green-300",
+        badge: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300",
         indicator: "bg-green-500"
       };
     }
   };
 
   const getAgingLabel = (daysOpen: number, slaStatus: string) => {
-    if (slaStatus === "Breached") return "SLA Breached";
-    if (slaStatus === "At Risk") return "At Risk";
+    if (slaStatus === "SLA Breach") return "SLA Breached";
+    if (slaStatus === "SLA Warning") return "At Risk";
     if (daysOpen === 0) return "New";
     if (daysOpen === 1) return "1 day";
     return `${daysOpen} days`;
@@ -375,47 +376,25 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
       data: bulkActionData,
     });
 
-    // Update local state for demo
-    if (selectedGroup) {
-      const updatedExceptions = selectedGroup.exceptions.map(exc => {
-        if (selectedExceptions.includes(exc.id)) {
-          const updates: Partial<Exception> = {};
-          
-          if (bulkActionData.status) {
-            updates.status = bulkActionData.status as any;
-          }
-          if (bulkActionData.assignee) {
-            updates.assignedTo = bulkActionData.assignee;
-          }
-          
-          return { ...exc, ...updates };
-        }
-        return exc;
-      });
-
-      const updatedGroup = { ...selectedGroup, exceptions: updatedExceptions };
-      setSelectedGroup(updatedGroup);
-      
-      // Update the main groups array
-      setLevel6Groups(groups => 
-        groups.map(group => 
-          group.level6 === selectedGroup.level6 ? updatedGroup : group
-        )
-      );
-    }
-
     setBulkActionDialog({ open: false, action: "" });
     setBulkActionData({ status: "", assignee: "", comments: "" });
     setSelectedExceptions([]);
   };
 
-  const filteredGroups = level6Groups.filter(group =>
-    group.level6.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredExceptions = selectedGroup?.exceptions.filter(exc => {
+  // Filter exceptions based on selected L04/L06 and other filters
+  const filteredExceptions = exceptions.filter(exc => {
+    // Filter by L04 selection
+    if (selectedL04 && exc.l04_business_area_name !== selectedL04.name) {
+      return false;
+    }
+    
+    // Filter by L06 selection
+    if (selectedL06 && exc.l06_name !== selectedL06.name) {
+      return false;
+    }
+    
     // Role-based filtering
-    if (filterRole !== "all" && exc.assignedTo !== currentUser.name) {
+    if (filterRole !== "all" && exc.assigned_to !== currentUser.name) {
       return false;
     }
     
@@ -431,32 +410,51 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
     }
     
     return true;
-  }) || [];
+  });
+
+  const filteredL04Categories = l04Categories.filter(l04 =>
+    l04.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-US').format(value);
+  };
 
   return (
     <div className="flex h-[calc(100vh-200px)] gap-6">
-      {/* Left Panel - Level 6 Groups */}
-      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-1/4' : 'w-full'}`}>
+      {/* Left Panel - L04/L06 Categories */}
+      <div className={`space-y-4 transition-all duration-300 ${selectedL04 ? 'w-1/4' : 'w-full'}`}>
         <Card>
           <CardHeader className="pb-3">
             <div className="space-y-3">
-              <CardTitle className="text-lg">Level 6 Categories</CardTitle>
+              <CardTitle className="text-lg">L04 Business Areas</CardTitle>
               <div className="flex flex-col gap-2">
                 <Input
-                  placeholder="Search categories..."
+                  placeholder="Search business areas..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full"
                 />
-                {selectedGroup && (
+                {selectedL04 && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground truncate">
-                      Selected: {selectedGroup.level6}
+                      Selected: {selectedL04.name}
                     </span>
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => setSelectedGroup(null)}
+                      onClick={() => {
+                        setSelectedL04(null);
+                        setSelectedL06(null);
+                      }}
                       className="h-6 px-2 text-xs"
                     >
                       Clear
@@ -467,22 +465,22 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
             </div>
           </CardHeader>
           <CardContent className="space-y-2 max-h-[600px] overflow-y-auto">
-            {filteredGroups.map((group) => (
+            {filteredL04Categories.map((l04) => (
               <Collapsible
-                key={group.level6}
-                open={expandedGroups.has(group.level6)}
-                onOpenChange={() => toggleGroupExpansion(group.level6)}
+                key={l04.name}
+                open={expandedL04.has(l04.name)}
+                onOpenChange={() => toggleL04Expansion(l04.name)}
               >
                 <CollapsibleTrigger asChild>
                   <div
                     className={`p-3 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors ${
-                      selectedGroup?.level6 === group.level6 ? "bg-muted border-primary" : ""
+                      selectedL04?.name === l04.name ? "bg-muted border-primary" : ""
                     }`}
-                    onClick={() => handleGroupSelect(group)}
+                    onClick={() => handleL04Select(l04)}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-0.5">
-                        {expandedGroups.has(group.level6) ? (
+                        {expandedL04.has(l04.name) ? (
                           <ChevronDown className="h-4 w-4" />
                         ) : (
                           <ChevronRight className="h-4 w-4" />
@@ -491,23 +489,20 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm leading-tight truncate" title={group.level6}>
-                              {group.level6}
+                            <h3 className="font-medium text-sm leading-tight truncate" title={l04.name}>
+                              {l04.name}
                             </h3>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {group.count} total
+                              {l04.count} exceptions
                             </p>
                           </div>
                           <div className="flex flex-col items-end gap-1 flex-shrink-0">
                             <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                              {group.count}
+                              {l04.count}
                             </Badge>
-                            {group.workflows.length > 0 && (
-                              <Badge variant="outline" className="text-xs px-2 py-0.5 flex items-center gap-1">
-                                <Play className="h-2.5 w-2.5" />
-                                {group.workflows.length}
-                              </Badge>
-                            )}
+                            <Badge variant="outline" className="text-xs px-2 py-0.5">
+                              {l04.l06_categories.length} L06
+                            </Badge>
                           </div>
                         </div>
                       </div>
@@ -516,25 +511,23 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pl-7 pt-2">
                   <div className="space-y-1">
-                    {group.exceptions.slice(0, 5).map((exception) => (
+                    {l04.l06_categories.map((l06) => (
                       <div
-                        key={exception.id}
-                        className="flex items-center justify-between p-2 text-sm bg-muted/30 rounded"
+                        key={l06.name}
+                        className={`flex items-center justify-between p-2 text-sm rounded cursor-pointer hover:bg-muted/30 transition-colors ${
+                          selectedL06?.name === l06.name ? "bg-muted/50 border border-primary/50" : "bg-muted/20"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleL06Select(l06);
+                        }}
                       >
-                        <span>{exception.instrumentName}</span>
-                        <Badge
-                          variant="outline"
-                          className={getStatusColor(exception.status)}
-                        >
-                          {exception.status}
+                        <span className="truncate" title={l06.name}>{l06.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {l06.count}
                         </Badge>
                       </div>
                     ))}
-                    {group.exceptions.length > 5 && (
-                      <p className="text-xs text-muted-foreground pl-2">
-                        +{group.exceptions.length - 5} more exceptions
-                      </p>
-                    )}
                   </div>
                 </CollapsibleContent>
               </Collapsible>
@@ -544,14 +537,14 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
       </div>
 
       {/* Right Panel - Exception Details */}
-      <div className={`space-y-4 transition-all duration-300 ${selectedGroup ? 'w-3/4' : 'hidden'}`}>
-        {selectedGroup ? (
+      <div className={`space-y-4 transition-all duration-300 ${selectedL04 ? 'w-3/4' : 'hidden'}`}>
+        {selectedL04 ? (
           <>
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-lg">
-                    {selectedGroup.level6} Exceptions
+                    {selectedL06 ? `${selectedL06.name} Exceptions` : `${selectedL04.name} Exceptions`}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Select value={filterRole} onValueChange={setFilterRole}>
@@ -651,20 +644,18 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                       <TableRow>
                         <TableHead className="w-12"></TableHead>
                         <TableHead>Exception</TableHead>
+                        <TableHead>Instrument</TableHead>
+                        <TableHead>System</TableHead>
+                        <TableHead>TETB Match</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Priority</TableHead>
                         <TableHead>Aging</TableHead>
-                        <TableHead>Workflow</TableHead>
                         <TableHead className="w-20">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredExceptions.map((exception) => {
-                        const workflow = selectedGroup.workflows.find(
-                          w => w.exceptionId === exception.id
-                        );
-                        
-                        const agingColors = getAgingColor(exception.daysOpen, exception.slaStatus);
+                        const agingColors = getAgingColor(exception.aging_days, exception.sla_status);
                         
                         return (
                           <TableRow 
@@ -681,11 +672,29 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                             </TableCell>
                             <TableCell>
                               <div>
-                                <p className="font-medium text-sm">{exception.instrumentName}</p>
+                                <p className="font-medium text-sm font-mono">{exception.id}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {exception.id}
+                                  {exception.l06_name}
                                 </p>
                               </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium text-sm">{exception.named_no_name}</p>
+                                <p className="text-xs text-muted-foreground truncate max-w-[150px]" title={exception.instrument_name}>
+                                  {exception.instrument_name}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="text-xs">
+                                {exception.system}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={exception.tetb_match ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}>
+                                {exception.tetb_match ? "Match" : "Mismatch"}
+                              </Badge>
                             </TableCell>
                             <TableCell>
                               <Badge
@@ -706,42 +715,20 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <div
-                                  className={`w-3 h-3 rounded-full ${getAgingColor(exception.daysOpen, exception.slaStatus).indicator}`}
+                                  className={`w-3 h-3 rounded-full ${getAgingColor(exception.aging_days, exception.sla_status).indicator}`}
                                 />
                                 <div className="flex flex-col">
                                   <Badge
                                     variant="outline"
-                                    className={`text-xs ${getAgingColor(exception.daysOpen, exception.slaStatus).badge}`}
+                                    className={`text-xs ${getAgingColor(exception.aging_days, exception.sla_status).badge}`}
                                   >
-                                    {getAgingLabel(exception.daysOpen, exception.slaStatus)}
+                                    {getAgingLabel(exception.aging_days, exception.sla_status)}
                                   </Badge>
                                   <span className="text-xs text-muted-foreground mt-1">
-                                    SLA: {exception.slaStatus}
+                                    SLA: {exception.sla_status}
                                   </span>
                                 </div>
                               </div>
-                            </TableCell>
-                            <TableCell>
-                              {workflow ? (
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <Progress
-                                      value={getWorkflowProgress(workflow)}
-                                      className="w-16 h-2"
-                                    />
-                                    <span className="text-xs">
-                                      {Math.round(getWorkflowProgress(workflow))}%
-                                    </span>
-                                  </div>
-                                  <p className="text-xs text-muted-foreground">
-                                    {workflow.steps.find(s => s.status === "IN_PROGRESS")?.name ||
-                                     workflow.steps.find(s => s.status === "PENDING")?.name ||
-                                     "Completed"}
-                                  </p>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">No workflow</span>
-                              )}
                             </TableCell>
                             <TableCell>
                               <Button
@@ -755,6 +742,13 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                           </TableRow>
                         );
                       })}
+                      {filteredExceptions.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={9} className="text-center py-8">
+                            No exceptions found for the selected criteria
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -766,9 +760,9 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
             <CardContent className="flex items-center justify-center h-64">
               <div className="text-center">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Select a Level 6 Category</h3>
+                <h3 className="text-lg font-medium mb-2">Select a Business Area</h3>
                 <p className="text-muted-foreground">
-                  Choose a category from the left panel to view exceptions and workflows
+                  Choose an L04 business area from the left panel to view exceptions
                 </p>
               </div>
             </CardContent>
@@ -894,8 +888,16 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
+                        <Label className="text-sm font-medium">L04 Business Area</Label>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.l04_business_area_name}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">L06 Category</Label>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.l06_name}</p>
+                      </div>
+                      <div>
                         <Label className="text-sm font-medium">Instrument Name</Label>
-                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.instrumentName}</p>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.instrument_name}</p>
                       </div>
                       <div>
                         <Label className="text-sm font-medium">Status</Label>
@@ -912,31 +914,29 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                       </div>
                       <div>
                         <Label className="text-sm font-medium">Assigned To</Label>
-                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.assignedTo}</p>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.assigned_to}</p>
                       </div>
                       <div>
                         <Label className="text-sm font-medium">Created Date</Label>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(selectedExceptionDetail.createdDate).toLocaleDateString()}
+                          {new Date(selectedExceptionDetail.created_date).toLocaleDateString()}
                         </p>
                       </div>
                       <div>
                         <Label className="text-sm font-medium">Days Open</Label>
-                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.daysOpen} days</p>
+                        <p className="text-sm text-muted-foreground">{selectedExceptionDetail.aging_days} days</p>
                       </div>
                     </div>
                     
                     <Separator />
                     
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Level Hierarchy</Label>
+                      <Label className="text-sm font-medium">Business Information</Label>
                       <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>Level 1: {selectedExceptionDetail.level1}</div>
-                        <div>Level 2: {selectedExceptionDetail.level2}</div>
-                        <div>Level 3: {selectedExceptionDetail.level3}</div>
-                        <div>Level 4: {selectedExceptionDetail.level4}</div>
-                        <div>Level 5: {selectedExceptionDetail.level5}</div>
-                        <div>Level 6: {selectedExceptionDetail.level6}</div>
+                        <div>ADS Book Code: {selectedExceptionDetail.ads_book_code}</div>
+                        <div>System: {selectedExceptionDetail.system}</div>
+                        <div>Legal Entity: {selectedExceptionDetail.legal_entity}</div>
+                        <div>Regulator: {selectedExceptionDetail.regulator}</div>
                       </div>
                     </div>
                     
@@ -945,12 +945,12 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Position Details</Label>
                       <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>System: {selectedExceptionDetail.system}</div>
-                        <div>Legal Entity: {selectedExceptionDetail.legalEntity}</div>
-                        <div>Regulator: {selectedExceptionDetail.regulator}</div>
-                        <div>Position AV: {selectedExceptionDetail.positionAV}</div>
-                        <div>Position Qty: {selectedExceptionDetail.positionQty}</div>
-                        <div>SOD Delta: {selectedExceptionDetail.sodDelta}</div>
+                        <div>Position AV: {formatCurrency(selectedExceptionDetail.position_av)}</div>
+                        <div>TETB AV: {formatCurrency(selectedExceptionDetail.tetb_av)}</div>
+                        <div>Position Qty: {formatNumber(selectedExceptionDetail.position_qty)}</div>
+                        <div>TETB Qty: {formatNumber(selectedExceptionDetail.tetb_qty)}</div>
+                        <div>TETB Match: {selectedExceptionDetail.tetb_match ? "Yes" : "No"}</div>
+                        <div>Reason: {selectedExceptionDetail.reason}</div>
                       </div>
                     </div>
                   </div>

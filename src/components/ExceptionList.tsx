@@ -45,35 +45,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Exception,
-  PositionException,
-  mapPositionToException,
-  generateSampleExceptions,
-  USERS,
-} from "@/types/exception";
+import { Exception, ExceptionFilters } from "@/types/exception";
+import exceptionData from "@/data/exceptions.json";
 
 interface ExceptionListProps {
   exceptions?: Exception[];
   onExceptionSelect?: (exception: Exception) => void;
   onBulkAction?: (action: string, exceptionIds: string[]) => void;
-  filters?: {
-    bookCode: string;
-    system: string;
-    legalEntity: string;
-    regulator: string;
-    status: string;
-  };
+  filters?: ExceptionFilters;
   workflowStatus?: Record<string, string>;
 }
 
@@ -82,32 +61,24 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   onExceptionSelect = () => {},
   onBulkAction = () => {},
   filters: propFilters = {
-    bookCode: "",
+    ads_book_code: "",
     system: "",
-    legalEntity: "",
+    legal_entity: "",
     regulator: "",
     status: "",
+    l04_business_area_name: "",
+    l06_name: "",
   },
   workflowStatus = {},
 }) => {
   const [exceptions, setExceptions] = useState<Exception[]>([]);
   const [selectedExceptions, setSelectedExceptions] = useState<string[]>([]);
-  const [sortField, setSortField] = useState<keyof Exception>("createdDate");
+  const [sortField, setSortField] = useState<keyof Exception>("created_date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState(propFilters);
-  const [isLoading, setIsLoading] = useState(false);
-  const [bulkActionDialog, setBulkActionDialog] = useState<{
-    open: boolean;
-    action: string;
-  }>({ open: false, action: "" });
-  const [bulkActionData, setBulkActionData] = useState({
-    status: "",
-    assignee: "",
-    comments: "",
-  });
 
   const itemsPerPage = 15;
 
@@ -116,9 +87,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     if (propExceptions) {
       setExceptions(propExceptions);
     } else {
-      // Generate sample data if none provided
-      const sampleData = generateSampleExceptions(200);
-      setExceptions(sampleData);
+      // Load data from JSON file
+      setExceptions(exceptionData.exceptions as Exception[]);
     }
   }, [propExceptions]);
 
@@ -165,17 +135,19 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       const searchableFields = [
-        exception.instrumentId,
-        exception.bookCode,
-        exception.instrumentName,
-        exception.classification,
+        exception.id,
+        exception.instrument_id,
+        exception.ads_book_code,
+        exception.instrument_name,
+        exception.l04_business_area_name,
+        exception.l06_name,
+        exception.named_no_name,
+        exception.system,
+        exception.legal_entity,
+        exception.regulator,
         exception.status,
         exception.priority,
-        exception.system,
-        exception.legalEntity,
-        exception.regulator,
-        exception.level6,
-        exception.assignedTo,
+        exception.assigned_to,
         exception.reason
       ].filter(Boolean);
       
@@ -188,8 +160,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
     // Apply filters
     if (
-      filters.bookCode &&
-      !exception.bookCode?.toLowerCase().includes(filters.bookCode.toLowerCase())
+      filters.ads_book_code &&
+      !exception.ads_book_code?.toLowerCase().includes(filters.ads_book_code.toLowerCase())
     ) {
       return false;
     }
@@ -201,9 +173,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       return false;
     }
     if (
-      filters.legalEntity &&
-      filters.legalEntity !== "all" &&
-      exception.legalEntity !== filters.legalEntity
+      filters.legal_entity &&
+      filters.legal_entity !== "all" &&
+      exception.legal_entity !== filters.legal_entity
     ) {
       return false;
     }
@@ -218,6 +190,20 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       filters.status &&
       filters.status !== "all" &&
       exception.status !== filters.status
+    ) {
+      return false;
+    }
+    if (
+      filters.l04_business_area_name &&
+      filters.l04_business_area_name !== "all" &&
+      exception.l04_business_area_name !== filters.l04_business_area_name
+    ) {
+      return false;
+    }
+    if (
+      filters.l06_name &&
+      filters.l06_name !== "all" &&
+      exception.l06_name !== filters.l06_name
     ) {
       return false;
     }
@@ -249,9 +235,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     switch (status) {
       case "Within SLA":
         return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
-      case "At Risk":
+      case "SLA Warning":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
-      case "Breached":
+      case "SLA Breach":
         return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
       default:
         return "";
@@ -288,6 +274,25 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-US').format(value);
+  };
+
+  // Get unique values for filter dropdowns
+  const uniqueSystems = [...new Set(exceptions.map(e => e.system))];
+  const uniqueLegalEntities = [...new Set(exceptions.map(e => e.legal_entity))];
+  const uniqueRegulators = [...new Set(exceptions.map(e => e.regulator))];
+  const uniqueL04Areas = [...new Set(exceptions.map(e => e.l04_business_area_name))];
+  const uniqueL06Categories = [...new Set(exceptions.map(e => e.l06_name))];
+
   return (
     <div className="bg-card rounded-lg border w-full">
       {/* Filters Section */}
@@ -301,11 +306,13 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               onClick={() => {
                 setSearchTerm("");
                 setFilters({
-                  bookCode: "",
+                  ads_book_code: "",
                   system: "",
-                  legalEntity: "",
+                  legal_entity: "",
                   regulator: "",
                   status: "",
+                  l04_business_area_name: "",
+                  l06_name: "",
                 });
               }}
             >
@@ -315,13 +322,13 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           </div>
         </CardHeader>
         <CardContent className="p-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
             <div>
               <p className="text-xs mb-1 text-muted-foreground">Book Code</p>
               <Input
                 placeholder="Search book codes..."
-                value={filters.bookCode}
-                onChange={(e) => setFilters({...filters, bookCode: e.target.value})}
+                value={filters.ads_book_code}
+                onChange={(e) => setFilters({...filters, ads_book_code: e.target.value})}
                 className="h-8"
               />
             </div>
@@ -336,25 +343,26 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Systems</SelectItem>
-                  <SelectItem value="COMPASS">COMPASS</SelectItem>
-                  <SelectItem value="AMM">AMM</SelectItem>
-                  <SelectItem value="Atlas">Atlas</SelectItem>
+                  {uniqueSystems.map(system => (
+                    <SelectItem key={system} value={system}>{system}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <p className="text-xs mb-1 text-muted-foreground">Legal Entity</p>
               <Select
-                value={filters.legalEntity || "all"}
-                onValueChange={(value) => setFilters({...filters, legalEntity: value === "all" ? "" : value})}
+                value={filters.legal_entity || "all"}
+                onValueChange={(value) => setFilters({...filters, legal_entity: value === "all" ? "" : value})}
               >
                 <SelectTrigger className="h-8">
                   <SelectValue placeholder="Select entity" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Entities</SelectItem>
-                  <SelectItem value="BCINC">BCINC</SelectItem>
-                  <SelectItem value="BBPLC">BBPLC</SelectItem>
+                  {uniqueLegalEntities.map(entity => (
+                    <SelectItem key={entity} value={entity}>{entity}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -369,8 +377,43 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Regulators</SelectItem>
-                  <SelectItem value="FRB">FRB</SelectItem>
-                  <SelectItem value="PRA">PRA</SelectItem>
+                  {uniqueRegulators.map(regulator => (
+                    <SelectItem key={regulator} value={regulator}>{regulator}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground">L04 Business Area</p>
+              <Select
+                value={filters.l04_business_area_name || "all"}
+                onValueChange={(value) => setFilters({...filters, l04_business_area_name: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Select L04" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All L04 Areas</SelectItem>
+                  {uniqueL04Areas.map(area => (
+                    <SelectItem key={area} value={area}>{area}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground">L06 Category</p>
+              <Select
+                value={filters.l06_name || "all"}
+                onValueChange={(value) => setFilters({...filters, l06_name: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Select L06" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All L06 Categories</SelectItem>
+                  {uniqueL06Categories.map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -468,11 +511,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("instrumentId")}
+                onClick={() => handleSort("id")}
               >
                 <div className="flex items-center">
-                  Instrument ID
-                  {sortField === "instrumentId" &&
+                  Exception ID
+                  {sortField === "id" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -482,11 +525,39 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("bookCode")}
+                onClick={() => handleSort("l04_business_area_name")}
               >
                 <div className="flex items-center">
-                  Book Code
-                  {sortField === "bookCode" &&
+                  L04 Business Area
+                  {sortField === "l04_business_area_name" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => handleSort("l06_name")}
+              >
+                <div className="flex items-center">
+                  L06 Category
+                  {sortField === "l06_name" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => handleSort("instrument_name")}
+              >
+                <div className="flex items-center">
+                  Instrument
+                  {sortField === "instrument_name" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -510,11 +581,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("classification")}
+                onClick={() => handleSort("tetb_match")}
               >
                 <div className="flex items-center">
-                  Classification
-                  {sortField === "classification" &&
+                  TETB Match
+                  {sortField === "tetb_match" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -552,11 +623,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("daysOpen")}
+                onClick={() => handleSort("aging_days")}
               >
                 <div className="flex items-center">
-                  Days Open
-                  {sortField === "daysOpen" &&
+                  Aging (Days)
+                  {sortField === "aging_days" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -566,25 +637,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("level6")}
-              >
-                <div className="flex items-center">
-                  Level 6
-                  {sortField === "level6" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("slaStatus")}
+                onClick={() => handleSort("sla_status")}
               >
                 <div className="flex items-center">
                   SLA Status
-                  {sortField === "slaStatus" &&
+                  {sortField === "sla_status" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -614,15 +671,25 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       }
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-sm">{exception.instrumentId}</TableCell>
-                  <TableCell className="font-mono text-sm">{exception.bookCode}</TableCell>
+                  <TableCell className="font-mono text-sm">{exception.id}</TableCell>
+                  <TableCell className="max-w-[150px] truncate" title={exception.l04_business_area_name}>
+                    {exception.l04_business_area_name}
+                  </TableCell>
+                  <TableCell className="max-w-[120px] truncate" title={exception.l06_name}>
+                    {exception.l06_name}
+                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate" title={exception.instrument_name}>
+                    {exception.named_no_name}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
                       {exception.system}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={exception.classification}>
-                    {exception.classification}
+                  <TableCell>
+                    <Badge className={exception.tetb_match ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}>
+                      {exception.tetb_match ? "Match" : "Mismatch"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(exception.status)}>
@@ -634,15 +701,10 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       {exception.priority}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-center">{exception.daysOpen}</TableCell>
+                  <TableCell className="text-center">{exception.aging_days}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="text-xs">
-                      {exception.level6}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getSLAStatusColor(exception.slaStatus)}>
-                      {exception.slaStatus}
+                    <Badge className={getSLAStatusColor(exception.sla_status)}>
+                      {exception.sla_status}
                     </Badge>
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
@@ -731,47 +793,50 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </TableRow>
                 {expandedRows.includes(exception.id) && (
                   <TableRow>
-                    <TableCell colSpan={12} className="bg-muted/30 p-4">
+                    <TableCell colSpan={13} className="bg-muted/30 p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                          <h4 className="font-medium mb-2 text-sm">Level Hierarchy</h4>
+                          <h4 className="font-medium mb-2 text-sm">Business Information</h4>
                           <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Level 1:</span> {exception.level1}</p>
-                            <p><span className="font-medium">Level 2:</span> {exception.level2}</p>
-                            <p><span className="font-medium">Level 3:</span> {exception.level3}</p>
-                            <p><span className="font-medium">Level 4:</span> {exception.level4}</p>
-                            <p><span className="font-medium">Level 5:</span> {exception.level5}</p>
-                            <p><span className="font-medium">Level 6:</span> {exception.level6}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2 text-sm">Position Details</h4>
-                          <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Instrument Name:</span> {exception.instrumentName}</p>
-                            <p><span className="font-medium">Equity Class:</span> {exception.equityClassType}</p>
-                            <p><span className="font-medium">Instrument Type:</span> {exception.instrumentType}</p>
-                            <p><span className="font-medium">Position Qty:</span> {exception.positionQty}</p>
-                            <p><span className="font-medium">Position AV:</span> {exception.positionAV}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2 text-sm">System Information</h4>
-                          <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Legal Entity:</span> {exception.legalEntity}</p>
+                            <p><span className="font-medium">ADS Book Code:</span> {exception.ads_book_code}</p>
+                            <p><span className="font-medium">ADS Book Path:</span> {exception.ads_book_path}</p>
+                            <p><span className="font-medium">Legal Entity:</span> {exception.legal_entity}</p>
                             <p><span className="font-medium">Regulator:</span> {exception.regulator}</p>
-                            <p><span className="font-medium">BB Underlying:</span> {exception.bbUnderlying}</p>
-                            <p><span className="font-medium">SOD Delta:</span> {exception.sodDelta}</p>
-                            <p><span className="font-medium">Look Through:</span> {exception.lookThrough}</p>
+                            <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2 text-sm">Instrument Details</h4>
+                          <div className="space-y-1 text-xs">
+                            <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
+                            <p><span className="font-medium">Instrument Name:</span> {exception.instrument_name}</p>
+                            <p><span className="font-medium">Instrument Type:</span> {exception.instrument_type}</p>
+                            <p><span className="font-medium">Equity Class Path:</span> {exception.equity_class_path}</p>
+                            <p><span className="font-medium">Classification:</span> {exception.position_tbbb_classification}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2 text-sm">Position & Valuation</h4>
+                          <div className="space-y-1 text-xs">
+                            <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
+                            <p><span className="font-medium">TETB AV:</span> {formatCurrency(exception.tetb_av)}</p>
+                            <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
+                            <p><span className="font-medium">TETB Qty:</span> {formatNumber(exception.tetb_qty)}</p>
+                            <p><span className="font-medium">TETB Match:</span> 
+                              <Badge className={`ml-2 ${exception.tetb_match ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                {exception.tetb_match ? "Yes" : "No"}
+                              </Badge>
+                            </p>
                           </div>
                         </div>
                         <div>
                           <h4 className="font-medium mb-2 text-sm">Exception Details</h4>
                           <div className="space-y-1 text-xs">
                             <p><span className="font-medium">Reason:</span> {exception.reason}</p>
-                            <p><span className="font-medium">SDS Book Path:</span> {exception.sdsBookPath}</p>
-                            <p><span className="font-medium">As of Time:</span> {exception.asOfTime ? new Date(exception.asOfTime).toLocaleString() : 'N/A'}</p>
-                            <p><span className="font-medium">Last Modified:</span> {new Date(exception.lastModified).toLocaleString()}</p>
-                            <p><span className="font-medium">Assigned To:</span> {exception.assignedTo || 'Unassigned'}</p>
+                            <p><span className="font-medium">BB Underlying:</span> {exception.bb_underlying}</p>
+                            <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
+                            <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
+                            <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
                           </div>
                           <div className="flex gap-2 mt-3">
                             <Button
@@ -805,7 +870,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             ))}
             {paginatedExceptions.length === 0 && (
               <TableRow>
-                <TableCell colSpan={12} className="text-center py-8">
+                <TableCell colSpan={13} className="text-center py-8">
                   No exceptions found
                 </TableCell>
               </TableRow>
@@ -872,142 +937,5 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     </div>
   );
 };
-
-// Your actual position data
-const positionData: PositionException[] = [
-  {
-    "SDS Book Code": "1014444",
-    System: "COMPASS",
-    "Legal Entity": "BCINC",
-    Regulator: "FRB",
-    "Instrument Id": "78838105",
-    "Equity Class Type": "Ordinary Share (Ex)",
-    "Instrument Type": "ESM",
-    "Instrument Name": "OLD BRPR3.SA-78838105-01",
-    "Position TBBB Classification": "CentraliseAndWritedown",
-    "As of time": "2025-02-27T23:43:01.788Z",
-    "BB Underlying": "Sophis/770988/BRPR3.SA-78838105-01",
-    "SOD Delta on BB Underlying": "0",
-    "Position AV": "0",
-    "Position Qty": "589674",
-    "Look through": "N/A",
-    "SDS Book Path": "Group:Markets:Equities:Cash:Equities:EQ",
-    Reason: "RuleEvaluation:001_uleIdentifier:001",
-  },
-  {
-    "SDS Book Code": "1014469",
-    System: "COMPASS",
-    "Legal Entity": "BCINC",
-    Regulator: "FRB",
-    "Instrument Id": "78838106",
-    "Equity Class Type": "Ordinary Share (Ex)",
-    "Instrument Type": "ESM",
-    "Instrument Name": "OLD BRPR3.SA-78838105-01",
-    "Position TBBB Classification": "CentraliseAndWritedown",
-    "As of time": "2025-02-27T23:43:01.788Z",
-    "BB Underlying": "BRPR3.SA-78838106-01",
-    "SOD Delta on BB Underlying": "0",
-    "Position AV": "0",
-    "Position Qty": "8700",
-    "Look through": "N/A",
-    "SDS Book Path": "Group:Markets:Equities:Cash:Equities:EQ",
-    Reason: "TradingBook:002",
-  },
-  {
-    "SDS Book Code": "955036",
-    System: "AMM",
-    "Legal Entity": "BCINC",
-    Regulator: "FRB",
-    "Instrument Id": "1238414859",
-    "Equity Class Type": "Fund (Ex)",
-    "Instrument Type": "ESM",
-    "Instrument Name": "NVBU.Z",
-    "Position TBBB Classification": "Uncertain",
-    "As of time": "2025-02-27T23:43:00.692Z",
-    "BB Underlying": "Sophis/2548786/NVBU.",
-    "SOD Delta on BB Underlying": "1793",
-    "Position AV": "0",
-    "Position Qty": "1793",
-    "Look through": "N",
-    "SDS Book Path": "Group:Markets:Equities",
-    Reason: "NotApplicable:001",
-  },
-  {
-    "SDS Book Code": "625139",
-    System: "Atlas",
-    "Legal Entity": "BBPLC",
-    Regulator: "PRA",
-    "Instrument Id": "254232744",
-    "Equity Class Type": "Autocallable Linked Note",
-    "Instrument Type": "Sophis",
-    "Instrument Name": "UOBPF5 06G26 TN AELNE",
-    "Position TBBB Classification": "Uncertain",
-    "As of time": "2025-02-27T23:45:55.071Z",
-    "BB Underlying": "Sophis/69371580/GLD.P;",
-    "SOD Delta on BB Underlying": "-400000",
-    "Position AV": "0",
-    "Position Qty": "-400000",
-    "Look through": "Y",
-    "SDS Book Path": "Group:Markets:Equities",
-    Reason: "NotApplicable:002",
-  },
-];
-
-// Convert position data to exceptions
-const defaultExceptions: Exception[] = positionData.map(mapPositionToException);
-
-// Add some additional mock data to supplement
-defaultExceptions.push(
-  {
-    id: "10",
-    instrumentId: "INST010",
-    bookCode: "BC432",
-    classification: "Compliance Review",
-    status: "Open",
-    createdDate: "2025-05-20T08:45:00",
-    lastModified: "2025-05-20T08:45:00",
-    daysOpen: 8,
-    slaStatus: "At Risk",
-    priority: "High",
-    system: "COMPASS",
-    legalEntity: "BCINC",
-    regulator: "FRB",
-    level6: "Technology",
-  },
-  {
-    id: "11",
-    instrumentId: "INST011",
-    bookCode: "BC765",
-    classification: "Regulatory Exception",
-    status: "In Progress",
-    createdDate: "2025-05-18T13:30:00",
-    lastModified: "2025-05-25T09:20:00",
-    daysOpen: 10,
-    slaStatus: "At Risk",
-    assignedTo: "Olivia Martin",
-    priority: "High",
-    system: "AMM",
-    legalEntity: "BBPLC",
-    regulator: "PRA",
-    level6: "Healthcare",
-  },
-  {
-    id: "12",
-    instrumentId: "INST012",
-    bookCode: "BC098",
-    classification: "Position Reconciliation",
-    status: "Resolved",
-    createdDate: "2025-05-15T15:45:00",
-    lastModified: "2025-05-22T10:30:00",
-    daysOpen: 7,
-    slaStatus: "Within SLA",
-    assignedTo: "James Taylor",
-    priority: "Medium",
-    system: "Atlas",
-    legalEntity: "BCINC",
-    regulator: "FRB",
-    level6: "Financial Services",
-  },
-);
 
 export default ExceptionList;
