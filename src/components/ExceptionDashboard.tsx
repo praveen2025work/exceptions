@@ -77,16 +77,16 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   // Function to calculate metrics from exception data
   const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
     const totalExceptions = exceptions.length;
-    const resolvedToday = exceptions.filter(exc => 
-      exc.status === 'Resolved' && 
+    const completedToday = exceptions.filter(exc => 
+      (exc.status === 'Unwind' || exc.status === 'Centralise') && 
       new Date(exc.created_date).toDateString() === new Date().toDateString()
     ).length;
     const slaBreaches = exceptions.filter(exc => exc.sla_status === 'SLA Breach').length;
-    const pendingReview = exceptions.filter(exc => exc.status === 'Open').length;
+    const pendingReview = exceptions.filter(exc => exc.status === 'Challenge' || exc.status === 'Insufficient Data').length;
 
     return [
       { label: "Total Exceptions", value: totalExceptions, change: 12, status: "negative" },
-      { label: "Resolved Today", value: resolvedToday, change: 8, status: "positive" },
+      { label: "Completed Today", value: completedToday, change: 8, status: "positive" },
       { label: "SLA Breaches", value: slaBreaches, change: -5, status: "positive" },
       { label: "Pending Review", value: pendingReview, change: 3, status: "negative" },
     ];
@@ -151,7 +151,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
       // For demo purposes, we'll update the workflow status
       const newWorkflowStatus = { ...workflowStatus };
       exceptionIds.forEach((id) => {
-        newWorkflowStatus[id] = "In Progress";
+        newWorkflowStatus[id] = "Challenge";
 
         // In a real app, this would call an API to create a workflow
         // For example: createExceptionWorkflow(id);
@@ -160,7 +160,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
         setExceptions((prev) =>
           prev.map((exception) =>
             exception.id === id
-              ? { ...exception, status: "In Progress" }
+              ? { ...exception, status: "Challenge" }
               : exception,
           ),
         );
@@ -299,9 +299,9 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
             >
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="open">Open</TabsTrigger>
-                <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-                <TabsTrigger value="resolved">Resolved</TabsTrigger>
+                <TabsTrigger value="challenge">Challenge</TabsTrigger>
+                <TabsTrigger value="unwind">Unwind</TabsTrigger>
+                <TabsTrigger value="centralise">Centralise</TabsTrigger>
                 <TabsTrigger value="sla-breach" className="flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1 text-destructive" />
                   SLA Breach
