@@ -287,11 +287,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   };
 
   // Get unique values for filter dropdowns
-  const uniqueSystems = [...new Set(exceptions.map(e => e.system))];
-  const uniqueLegalEntities = [...new Set(exceptions.map(e => e.legal_entity))];
-  const uniqueRegulators = [...new Set(exceptions.map(e => e.regulator))];
-  const uniqueL04Areas = [...new Set(exceptions.map(e => e.l04_business_area_name))];
-  const uniqueL06Categories = [...new Set(exceptions.map(e => e.l06_name))];
+  const uniqueSystems = Array.from(new Set(exceptions.map(e => e.system)));
+  const uniqueLegalEntities = Array.from(new Set(exceptions.map(e => e.legal_entity)));
+  const uniqueRegulators = Array.from(new Set(exceptions.map(e => e.regulator)));
+  const uniqueL04Areas = Array.from(new Set(exceptions.map(e => e.l04_business_area_name)));
+  const uniqueL06Categories = Array.from(new Set(exceptions.map(e => e.l06_name)));
 
   return (
     <div className="bg-card rounded-lg border w-full">
