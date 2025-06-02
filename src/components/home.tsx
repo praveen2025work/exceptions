@@ -56,13 +56,13 @@ const Home = () => {
             <div className="flex items-center gap-2">
               <Avatar>
                 <AvatarImage
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=user123"
+                  src={process.env.NEXT_PUBLIC_AVATAR_URL || "https://api.dicebear.com/7.x/avataaars/svg?seed=praveen"}
                   alt="User"
                 />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarFallback>PK</AvatarFallback>
               </Avatar>
               <div className="hidden md:block">
-                <p className="text-sm font-medium">John Doe</p>
+                <p className="text-sm font-medium">Praveen Kumar</p>
                 <p className="text-xs text-muted-foreground">
                   Compliance Officer
                 </p>
