@@ -413,6 +413,7 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
   });
 
   const filteredL04Categories = l04Categories.filter(l04 =>
+    l04.name && typeof l04.name === 'string' && 
     l04.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

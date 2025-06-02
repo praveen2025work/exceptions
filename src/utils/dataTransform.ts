@@ -85,62 +85,119 @@ function calculateDueDate(createdDate: string, priority: string): string {
   return dueDate.toISOString();
 }
 
+// Helper function to safely get string value
+function safeString(value: any, defaultValue: string = ''): string {
+  if (value === null || value === undefined) return defaultValue;
+  return String(value);
+}
+
+// Helper function to safely parse number
+function safeNumber(value: any, defaultValue: number = 0): number {
+  if (value === null || value === undefined || value === '') return defaultValue;
+  const parsed = parseFloat(String(value));
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+// Helper function to safely parse boolean from string
+function safeBoolean(value: any, matchValue: string = 'match'): boolean {
+  if (value === null || value === undefined) return false;
+  return String(value).toLowerCase() === matchValue.toLowerCase();
+}
+
 // Main transformation function
 export function transformCoreToFunctional(coreData: CoreException[]): Exception[] {
   return coreData.map((core, index) => {
-    // Parse numeric values
-    const positionAV = parseFloat(core["Position AV"]);
-    const tetbAV = parseFloat(core["TETB AV"]);
-    const positionQty = parseFloat(core["Position Qty"]);
-    const tetbQty = parseFloat(core["TETB ety"]);
-    const tetbMatch = core["TETB Match"].toLowerCase() === 'match';
-    
-    // Calculate functional fields
-    const priority = calculatePriority(positionAV, tetbMatch);
-    const status = calculateStatus(tetbMatch, core["Reason"]);
-    const agingDays = calculateAgingDays(core["As of time"]);
-    const slaStatus = calculateSLAStatus(agingDays, priority);
-    const assignedTo = assignRandomUser();
-    const createdDate = core["As of time"];
-    const dueDate = calculateDueDate(createdDate, priority);
-    
-    // Transform to functional exception
-    const exception: Exception = {
-      id: generateExceptionId(index),
-      l04_business_area_name: core["IO4 _BUSINESS AREA NAME"],
-      l06_name: core["L06 NAME"],
-      named_no_name: core["NAMEDNL NAME"],
-      ads_book_code: core["SDS Book Code"],
-      ads_book_path: core["SDS Book Path"],
-      system: core["System"],
-      legal_entity: core["Legal Entity"],
-      regulator: core["Regulator"],
-      instrument_id: core["Instrument Id"],
-      equity_class_path: core["Equity Class Type"],
-      instrument_type: core["Instrument Type"],
-      instrument_name: core["Instrument Name"],
-      position_tbbb_classification: core["Position TBBB Classification"],
-      as_of_time: core["As of time"],
-      bb_underlying: core["BB Underlyings"],
-      reason: core["Reason"],
-      look_through: core["Look through"],
-      sod_dealt_bb_underlying: core["SOD Delta on BB Underlying"],
-      position_av: positionAV,
-      tetb_av: tetbAV,
-      position_qty: positionQty,
-      tetb_qty: tetbQty,
-      tetb_match: tetbMatch,
-      // Calculated functional fields
-      status,
-      priority,
-      sla_status: slaStatus,
-      assigned_to: assignedTo,
-      created_date: createdDate,
-      due_date: dueDate,
-      aging_days: agingDays
-    };
-    
-    return exception;
+    try {
+      // Parse numeric values safely
+      const positionAV = safeNumber(core["Position AV"]);
+      const tetbAV = safeNumber(core["TETB AV"]);
+      const positionQty = safeNumber(core["Position Qty"]);
+      const tetbQty = safeNumber(core["TETB Qty"]); // Fixed typo
+      const tetbMatch = safeBoolean(core["TETB Match"], 'match');
+      
+      // Calculate functional fields
+      const priority = calculatePriority(positionAV, tetbMatch);
+      const status = calculateStatus(tetbMatch, safeString(core["Reason"]));
+      const agingDays = calculateAgingDays(safeString(core["As of time"], new Date().toISOString()));
+      const slaStatus = calculateSLAStatus(agingDays, priority);
+      const assignedTo = assignRandomUser();
+      const createdDate = safeString(core["As of time"], new Date().toISOString());
+      const dueDate = calculateDueDate(createdDate, priority);
+      
+      // Transform to functional exception
+      const exception: Exception = {
+        id: generateExceptionId(index),
+        l04_business_area_name: safeString(core["L04_business_area_name"] || core["IO4 _BUSINESS AREA NAME"] || core["L04 Business Area Name"]),
+        l06_name: safeString(core["L06_name"] || core["L06 NAME"] || core["L06 Name"]),
+        named_no_name: safeString(core["named-no_name"] || core["NAMEDNL NAME"] || core["Named No Name"]),
+        ads_book_code: safeString(core["ads book code"] || core["SDS Book Code"] || core["ADS Book Code"]),
+        ads_book_path: safeString(core["ads book path"] || core["SDS Book Path"] || core["ADS Book Path"]),
+        system: safeString(core["system"] || core["System"]),
+        legal_entity: safeString(core["legal entity"] || core["Legal Entity"]),
+        regulator: safeString(core["regulator"] || core["Regulator"]),
+        instrument_id: safeString(core["instrument id"] || core["Instrument Id"]),
+        equity_class_path: safeString(core["equity class path"] || core["Equity Class Type"] || core["Equity Class Path"]),
+        instrument_type: safeString(core["instrument type"] || core["Instrument Type"]),
+        instrument_name: safeString(core["instrument name"] || core["Instrument Name"]),
+        position_tbbb_classification: safeString(core["position tbbb classification"] || core["Position TBBB Classification"]),
+        as_of_time: safeString(core["as of time"] || core["As of time"], new Date().toISOString()),
+        bb_underlying: safeString(core["bb underlying"] || core["BB Underlyings"]),
+        reason: safeString(core["reason"] || core["Reason"]),
+        look_through: safeString(core["look through"] || core["Look through"]),
+        sod_dealt_bb_underlying: safeString(core["sod dealt bb underlying"] || core["SOD Delta on BB Underlying"]),
+        position_av: positionAV,
+        tetb_av: tetbAV,
+        position_qty: positionQty,
+        tetb_qty: tetbQty,
+        tetb_match: tetbMatch,
+        // Calculated functional fields
+        status,
+        priority,
+        sla_status: slaStatus,
+        assigned_to: assignedTo,
+        created_date: createdDate,
+        due_date: dueDate,
+        aging_days: agingDays
+      };
+      
+      return exception;
+    } catch (error) {
+      console.error(`Error transforming exception at index ${index}:`, error, core);
+      // Return a default exception in case of error
+      return {
+        id: generateExceptionId(index),
+        l04_business_area_name: 'Unknown',
+        l06_name: 'Unknown',
+        named_no_name: 'Unknown',
+        ads_book_code: 'Unknown',
+        ads_book_path: 'Unknown',
+        system: 'Unknown',
+        legal_entity: 'Unknown',
+        regulator: 'Unknown',
+        instrument_id: 'Unknown',
+        equity_class_path: 'Unknown',
+        instrument_type: 'Unknown',
+        instrument_name: 'Unknown',
+        position_tbbb_classification: 'Unknown',
+        as_of_time: new Date().toISOString(),
+        bb_underlying: 'Unknown',
+        reason: 'Data transformation error',
+        look_through: 'Unknown',
+        sod_dealt_bb_underlying: 'Unknown',
+        position_av: 0,
+        tetb_av: 0,
+        position_qty: 0,
+        tetb_qty: 0,
+        tetb_match: false,
+        status: 'Open',
+        priority: 'Low',
+        sla_status: 'Within SLA',
+        assigned_to: 'Unassigned',
+        created_date: new Date().toISOString(),
+        due_date: new Date().toISOString(),
+        aging_days: 0
+      };
+    }
   });
 }
 
@@ -149,8 +206,14 @@ export function generateCategoriesFromExceptions(exceptions: Exception[]): L04Ca
   const l04Map = new Map<string, Map<string, number>>();
   
   exceptions.forEach(exception => {
-    const l04Name = exception.l04_business_area_name;
-    const l06Name = exception.l06_name;
+    // Safely get names with fallbacks
+    const l04Name = safeString(exception.l04_business_area_name, 'Unknown L04');
+    const l06Name = safeString(exception.l06_name, 'Unknown L06');
+    
+    // Skip if both are unknown/empty
+    if (l04Name === 'Unknown L04' && l06Name === 'Unknown L06') {
+      return;
+    }
     
     if (!l04Map.has(l04Name)) {
       l04Map.set(l04Name, new Map());
@@ -172,15 +235,37 @@ export function generateCategoriesFromExceptions(exceptions: Exception[]): L04Ca
 
 // Main function to load and transform data
 export function loadAndTransformData(): ExceptionData {
-  // In a real application, this would load from an API or file
-  // For now, we'll import the core data directly
-  const coreData: CoreException[] = require('@/data/core-exceptions.json');
-  
-  const exceptions = transformCoreToFunctional(coreData);
-  const l04_categories = generateCategoriesFromExceptions(exceptions);
-  
-  return {
-    exceptions,
-    l04_categories
-  };
+  try {
+    // In a real application, this would load from an API or file
+    // For now, we'll import the core data directly
+    const coreData: CoreException[] = require('@/data/core-exceptions.json');
+    
+    // Validate that we have data
+    if (!Array.isArray(coreData) || coreData.length === 0) {
+      console.warn('No core data found, returning empty data structure');
+      return {
+        exceptions: [],
+        l04_categories: []
+      };
+    }
+    
+    console.log(`Loading ${coreData.length} core exceptions for transformation`);
+    
+    const exceptions = transformCoreToFunctional(coreData);
+    const l04_categories = generateCategoriesFromExceptions(exceptions);
+    
+    console.log(`Transformed to ${exceptions.length} exceptions with ${l04_categories.length} L04 categories`);
+    
+    return {
+      exceptions,
+      l04_categories
+    };
+  } catch (error) {
+    console.error('Error loading and transforming data:', error);
+    // Return empty data structure on error
+    return {
+      exceptions: [],
+      l04_categories: []
+    };
+  }
 }
