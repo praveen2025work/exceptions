@@ -45,11 +45,8 @@ import {
   MoreHorizontal,
   X,
 } from "lucide-react";
-import {
-  Exception,
-  generateSampleExceptions,
-  USERS,
-} from "@/types/exception";
+import { Exception } from "@/types/exception";
+import exceptionData from "@/data/exceptions.json";
 
 // Define the workflow steps
 const WORKFLOW_STEPS = [
@@ -59,6 +56,15 @@ const WORKFLOW_STEPS = [
   { id: 4, name: "RES Approval", role: "RES", description: "Resolution team provides final approval" },
   { id: 5, name: "RI Mar Approval", role: "RI", description: "Risk Management approval for market risk" },
   { id: 6, name: "REG Report", role: "REG", description: "Regulatory reporting and final documentation" },
+];
+
+// Define users
+const USERS = [
+  { id: "1", name: "Praveen Kumar", role: "Admin", email: "praveen.kumar@company.com" },
+  { id: "2", name: "Sarah Johnson", role: "Manager", email: "sarah.johnson@company.com" },
+  { id: "3", name: "Michael Chen", role: "Analyst", email: "michael.chen@company.com" },
+  { id: "4", name: "Emily Davis", role: "RIS", email: "emily.davis@company.com" },
+  { id: "5", name: "David Wilson", role: "FO", email: "david.wilson@company.com" },
 ];
 
 interface WorkflowException extends Exception {
@@ -97,8 +103,8 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
 
   // Initialize with sample data and workflow information
   useEffect(() => {
-    const sampleExceptions = generateSampleExceptions(50);
-    const workflowExceptions: WorkflowException[] = sampleExceptions.map((exc, index) => {
+    const data = exceptionData as { exceptions: Exception[] };
+    const workflowExceptions: WorkflowException[] = data.exceptions.map((exc, index) => {
       const currentStep = Math.floor(Math.random() * 7); // 0 = not started, 1-6 = steps
       const overallStatus = currentStep === 0 ? "Not Started" : 
                            currentStep === 6 ? "Completed" : 
@@ -153,9 +159,9 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(exc =>
         exc.id.toLowerCase().includes(searchLower) ||
-        exc.instrumentName?.toLowerCase().includes(searchLower) ||
-        exc.instrumentId.toLowerCase().includes(searchLower) ||
-        exc.level6?.toLowerCase().includes(searchLower)
+        exc.instrument_name?.toLowerCase().includes(searchLower) ||
+        exc.instrument_id.toLowerCase().includes(searchLower) ||
+        exc.l06_name?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -372,8 +378,8 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-sm">{exception.instrumentName}</p>
-                            <p className="text-xs text-muted-foreground">{exception.level6}</p>
+                            <p className="font-medium text-sm">{exception.instrument_name}</p>
+                            <p className="text-xs text-muted-foreground">{exception.l06_name}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -406,7 +412,7 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{exception.daysOpen}</span>
+                            <span className="text-sm">{exception.aging_days}</span>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -486,11 +492,11 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
                         <div className="grid grid-cols-1 gap-3 text-sm">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Instrument:</span>
-                            <span className="font-medium">{exception.instrumentName}</span>
+                            <span className="font-medium">{exception.instrument_name}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Level 6:</span>
-                            <span>{exception.level6}</span>
+                            <span>{exception.l06_name}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Overall Status:</span>
@@ -500,7 +506,7 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Days Open:</span>
-                            <span>{exception.daysOpen} days</span>
+                            <span>{exception.aging_days} days</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Overall Progress:</span>
