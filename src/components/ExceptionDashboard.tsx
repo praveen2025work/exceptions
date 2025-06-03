@@ -177,8 +177,8 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   };
 
   return (
-    <div className="bg-background p-3 h-full w-full">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-background p-2 h-full w-full">
+      <div className="flex justify-between items-center mb-2">
         <h1 className="text-2xl font-bold">Exception Dashboard</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
@@ -193,20 +193,20 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
       </div>
 
       {/* Combined Metrics and Aging in Single Row */}
-      <Card className="mb-4">
-        <CardContent className="p-3">
-          <div className="flex gap-4">
+      <Card className="mb-2">
+        <CardContent className="p-2">
+          <div className="flex gap-2 h-full">
             {/* Left Section: Metrics in Vertical Layout */}
-            <div className="flex-1">
-              <h3 className="text-md font-semibold mb-3">Key Metrics</h3>
-              <div className="grid grid-cols-1 gap-3">
+            <div className="flex-1 flex flex-col">
+              <h3 className="text-sm font-semibold mb-2">Key Metrics</h3>
+              <div className="grid grid-cols-1 gap-2 flex-1">
                 {metrics.map((metric, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 rounded-lg border bg-card">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
+                  <div key={index} className="flex justify-between items-center p-2 rounded-lg border bg-card min-h-[60px]">
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground">
                         {metric.label}
                       </p>
-                      <h4 className="text-xl font-bold mt-1">{metric.value}</h4>
+                      <h4 className="text-lg font-bold">{metric.value}</h4>
                     </div>
                     <Badge
                       variant={
@@ -216,7 +216,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
                             ? "destructive"
                             : "outline"
                       }
-                      className="flex items-center"
+                      className="flex items-center text-xs"
                     >
                       {metric.change > 0 ? "+" : ""}
                       {metric.change}%
@@ -227,12 +227,12 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
             </div>
 
             {/* Vertical Divider */}
-            <div className="w-px bg-border"></div>
+            <div className="w-px bg-border mx-1"></div>
 
             {/* Right Section: Exception Aging */}
-            <div className="flex-1">
-              <h3 className="text-md font-semibold mb-3">Exception Aging</h3>
-              <div className="space-y-3">
+            <div className="flex-1 flex flex-col">
+              <h3 className="text-sm font-semibold mb-2">Exception Aging</h3>
+              <div className="space-y-2 flex-1">
                 {agingMetrics.map((metric, index) => {
                   // Define aging colors based on the metric label
                   const getAgingColor = (label: string) => {
@@ -266,19 +266,19 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
                   const colors = getAgingColor(metric.label);
 
                   return (
-                    <div key={index} className={`space-y-2 p-3 rounded-lg border ${colors.bg}`}>
-                      <div className="flex justify-between items-center text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-3 h-3 rounded-full ${colors.indicator}`}></div>
+                    <div key={index} className={`space-y-1 p-2 rounded-lg border ${colors.bg} min-h-[60px] flex flex-col justify-center`}>
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1">
+                          <div className={`w-2 h-2 rounded-full ${colors.indicator}`}></div>
                           <span className={`font-medium ${colors.text}`}>{metric.label}</span>
                         </div>
                         <span className={colors.text}>
-                          {metric.count} exceptions ({metric.percentage}%)
+                          {metric.count} ({metric.percentage}%)
                         </span>
                       </div>
                       <Progress 
                         value={metric.percentage} 
-                        className="h-2"
+                        className="h-1"
                         style={{
                           '--progress-background': colors.indicator.replace('bg-', ''),
                         } as React.CSSProperties}
@@ -294,31 +294,31 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
 
       {/* Exception List */}
       <Card>
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-1 pt-2 px-2">
           <div className="flex justify-between items-center">
-            <CardTitle className="text-md">Exception List</CardTitle>
+            <CardTitle className="text-sm">Exception List</CardTitle>
             <Tabs
               value={selectedTab}
               onValueChange={setSelectedTab}
               className="w-auto"
             >
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="challenge">Challenge</TabsTrigger>
-                <TabsTrigger value="unwind">Unwind</TabsTrigger>
-                <TabsTrigger value="centralise">Centralise</TabsTrigger>
-                <TabsTrigger value="writedown">Writedown</TabsTrigger>
-                <TabsTrigger value="insufficient-data">Insufficient Data</TabsTrigger>
-                <TabsTrigger value="reassignment">Reassignment</TabsTrigger>
-                <TabsTrigger value="sla-breach" className="flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1 text-destructive" />
+              <TabsList className="h-8">
+                <TabsTrigger value="all" className="text-xs px-2">All</TabsTrigger>
+                <TabsTrigger value="challenge" className="text-xs px-2">Challenge</TabsTrigger>
+                <TabsTrigger value="unwind" className="text-xs px-2">Unwind</TabsTrigger>
+                <TabsTrigger value="centralise" className="text-xs px-2">Centralise</TabsTrigger>
+                <TabsTrigger value="writedown" className="text-xs px-2">Writedown</TabsTrigger>
+                <TabsTrigger value="insufficient-data" className="text-xs px-2">Insufficient Data</TabsTrigger>
+                <TabsTrigger value="reassignment" className="text-xs px-2">Reassignment</TabsTrigger>
+                <TabsTrigger value="sla-breach" className="flex items-center text-xs px-2">
+                  <AlertCircle className="h-3 w-3 mr-1 text-destructive" />
                   SLA Breach
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
         </CardHeader>
-        <CardContent className="p-3">
+        <CardContent className="p-2">
           <ExceptionList
             onExceptionSelect={handleExceptionSelect}
             onBulkAction={handleBulkAction}
