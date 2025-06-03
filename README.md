@@ -184,11 +184,305 @@ To add new themes, modify:
 
 ## Production Deployment Options
 
-For firm-wide deployment, consider:
-- Internal company servers
-- Cloud platforms (AWS, Azure, Google Cloud)
-- Container platforms (Docker + Kubernetes)
-- Company's internal hosting infrastructure
+### Windows Server IIS Deployment (Recommended for Enterprise)
+
+#### Prerequisites
+
+1. **Windows Server** with IIS installed
+2. **Node.js** (version 18 or higher) installed on the server
+3. **IIS URL Rewrite Module** installed
+4. **IIS Application Request Routing (ARR)** installed (optional, for load balancing)
+
+#### Step-by-Step IIS Deployment
+
+##### 1. Prepare the Application
+
+```bash
+# Clone the repository on your development machine
+git clone [repository-url]
+cd exception-management-system
+
+# Install dependencies
+npm install
+
+# Create production build
+npm run build
+
+# The build output will be in the .next folder
+```
+
+##### 2. Server Setup
+
+**Install Required IIS Features:**
+```powershell
+# Run as Administrator
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServer
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-CommonHttpFeatures
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpErrors
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-HttpLogging
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-RequestFiltering
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-StaticContent
+```
+
+**Install Node.js on Windows Server:**
+1. Download Node.js LTS from https://nodejs.org/
+2. Install with default settings
+3. Verify installation: `node --version` and `npm --version`
+
+**Install IIS URL Rewrite Module:**
+1. Download from: https://www.iis.net/downloads/microsoft/url-rewrite
+2. Install the module
+3. Restart IIS
+
+##### 3. Deploy to IIS
+
+**Option A: Static Export (Recommended for IIS)**
+
+1. **Modify next.config.mjs for static export:**
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true,
+    domains: ['assets.co.dev'],
+  },
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/exception-management' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/exception-management' : '',
+};
+
+export default nextConfig;
+```
+
+2. **Build for static export:**
+```bash
+npm run build
+```
+
+3. **Copy files to IIS:**
+   - Copy the entire `out` folder contents to `C:\inetpub\wwwroot\exception-management\`
+   - Or your preferred IIS site directory
+
+4. **Configure IIS Site:**
+   - Open IIS Manager
+   - Create new site or application
+   - Set physical path to your deployment folder
+   - Set binding (port 80/443)
+
+**Option B: Node.js with IIS (For Server-Side Rendering)**
+
+1. **Install iisnode:**
+   - Download from: https://github.com/Azure/iisnode
+   - Install the appropriate version (x64/x86)
+
+2. **Create web.config in your deployment folder:**
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <system.webServer>
+    <handlers>
+      <add name="iisnode" path="server.js" verb="*" modules="iisnode"/>
+    </handlers>
+    <rewrite>
+      <rules>
+        <rule name="NodeInspector" patternSyntax="ECMAScript" stopProcessing="true">
+          <match url="^server.js\/debug[\/]?" />
+        </rule>
+        <rule name="StaticContent">
+          <action type="Rewrite" url="public{REQUEST_URI}"/>
+        </rule>
+        <rule name="DynamicContent">
+          <conditions>
+            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
+          </conditions>
+          <action type="Rewrite" url="server.js"/>
+        </rule>
+      </rules>
+    </rewrite>
+    <security>
+      <requestFiltering>
+        <hiddenSegments>
+          <remove segment="bin"/>
+        </hiddenSegments>
+      </requestFiltering>
+    </security>
+    <httpErrors existingResponse="PassThrough" />
+    <iisnode watchedFiles="web.config;*.js"/>
+  </system.webServer>
+</configuration>
+```
+
+3. **Create server.js:**
+```javascript
+const { createServer } = require('http')
+const { parse } = require('url')
+const next = require('next')
+
+const dev = process.env.NODE_ENV !== 'production'
+const hostname = 'localhost'
+const port = process.env.PORT || 3000
+
+const app = next({ dev, hostname, port })
+const handle = app.getRequestHandler()
+
+app.prepare().then(() => {
+  createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true)
+      await handle(req, res, parsedUrl)
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err)
+      res.statusCode = 500
+      res.end('internal server error')
+    }
+  }).listen(port, (err) => {
+    if (err) throw err
+    console.log(`> Ready on http://${hostname}:${port}`)
+  })
+})
+```
+
+4. **Deploy files:**
+   - Copy entire project to `C:\inetpub\wwwroot\exception-management\`
+   - Run `npm install --production` on the server
+   - Configure IIS site to point to this directory
+
+##### 4. Environment Variables Setup
+
+**Set environment variables in IIS:**
+
+1. **Open IIS Manager**
+2. **Select your application**
+3. **Double-click "Configuration Editor"**
+4. **Navigate to:** `system.webServer/iisnode`
+5. **Add environment variables:**
+   ```
+   NEXT_PUBLIC_AVATAR_URL=https://your-api-endpoint.com/avatar
+   NODE_ENV=production
+   ```
+
+**Alternative - Use web.config:**
+```xml
+<configuration>
+  <system.webServer>
+    <iisnode>
+      <environmentVariables>
+        <add name="NEXT_PUBLIC_AVATAR_URL" value="https://your-api-endpoint.com/avatar" />
+        <add name="NODE_ENV" value="production" />
+      </environmentVariables>
+    </iisnode>
+  </system.webServer>
+</configuration>
+```
+
+##### 5. SSL/HTTPS Configuration
+
+1. **Obtain SSL Certificate**
+2. **Bind certificate in IIS:**
+   - Right-click site → Edit Bindings
+   - Add HTTPS binding (port 443)
+   - Select your SSL certificate
+
+3. **Force HTTPS redirect (web.config):**
+```xml
+<rule name="Redirect to HTTPS" stopProcessing="true">
+  <match url=".*" />
+  <conditions>
+    <add input="{HTTPS}" pattern="off" ignoreCase="true" />
+  </conditions>
+  <action type="Redirect" url="https://{HTTP_HOST}/{R:0}" redirectType="Permanent" />
+</rule>
+```
+
+##### 6. Performance Optimization
+
+**Enable compression in web.config:**
+```xml
+<system.webServer>
+  <httpCompression>
+    <dynamicTypes>
+      <add mimeType="application/json" enabled="true" />
+      <add mimeType="application/javascript" enabled="true" />
+    </dynamicTypes>
+    <staticTypes>
+      <add mimeType="text/css" enabled="true" />
+      <add mimeType="application/javascript" enabled="true" />
+    </staticTypes>
+  </httpCompression>
+</system.webServer>
+```
+
+**Set caching headers:**
+```xml
+<location path="static">
+  <system.webServer>
+    <staticContent>
+      <clientCache cacheControlMode="UseMaxAge" cacheControlMaxAge="31536000" />
+    </staticContent>
+  </system.webServer>
+</location>
+```
+
+##### 7. Monitoring and Logging
+
+**Enable detailed logging:**
+```xml
+<system.webServer>
+  <iisnode loggingEnabled="true" logDirectory="logs" />
+</system.webServer>
+```
+
+**Monitor application:**
+- Check IIS logs in `C:\inetpub\logs\LogFiles\`
+- Monitor Node.js logs in your application's `logs` folder
+- Use Windows Event Viewer for system-level issues
+
+##### 8. Troubleshooting Common Issues
+
+**Issue: 500 Internal Server Error**
+- Check iisnode logs
+- Verify Node.js is installed correctly
+- Ensure all dependencies are installed
+
+**Issue: Static files not loading**
+- Verify URL Rewrite rules
+- Check file permissions
+- Ensure static content handler is enabled
+
+**Issue: Environment variables not working**
+- Verify web.config syntax
+- Restart IIS application pool
+- Check iisnode configuration
+
+##### 9. Security Considerations
+
+1. **Firewall Configuration:**
+   - Open only necessary ports (80, 443)
+   - Restrict access to management ports
+
+2. **Application Pool Identity:**
+   - Use least privilege principle
+   - Create dedicated service account
+
+3. **File Permissions:**
+   - Grant read access to IIS_IUSRS
+   - Restrict write access to logs folder only
+
+4. **Regular Updates:**
+   - Keep Node.js updated
+   - Update application dependencies
+   - Apply Windows security patches
+
+### Alternative Deployment Options
+
+For firm-wide deployment, also consider:
+- **Azure App Service** (Microsoft's cloud platform)
+- **AWS EC2** with Windows Server
+- **Docker containers** on Windows Server
+- **Internal company cloud infrastructure**
+- **Hybrid cloud solutions**
 
 ## Contributing
 
