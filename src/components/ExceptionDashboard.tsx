@@ -192,97 +192,102 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
         </div>
       </div>
 
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        {metrics.map((metric, index) => (
-          <Card key={index}>
-            <CardContent className="p-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {metric.label}
-                  </p>
-                  <h3 className="text-2xl font-bold mt-1">{metric.value}</h3>
-                </div>
-                <Badge
-                  variant={
-                    metric.status === "positive"
-                      ? "secondary"
-                      : metric.status === "negative"
-                        ? "destructive"
-                        : "outline"
-                  }
-                  className="flex items-center"
-                >
-                  {metric.change > 0 ? "+" : ""}
-                  {metric.change}%
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Aging Metrics */}
+      {/* Combined Metrics and Aging in Single Row */}
       <Card className="mb-4">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-md">Exception Aging</CardTitle>
-        </CardHeader>
         <CardContent className="p-3">
-          <div className="space-y-3">
-            {agingMetrics.map((metric, index) => {
-              // Define aging colors based on the metric label
-              const getAgingColor = (label: string) => {
-                if (label.includes("0-7")) {
-                  return {
-                    bg: "bg-green-50 dark:bg-green-900/20 ocean:bg-green-100/50 modern:bg-green-900/30",
-                    indicator: "bg-green-500",
-                    text: "text-green-700 dark:text-green-300 ocean:text-green-800 modern:text-green-400"
-                  };
-                } else if (label.includes("8-14")) {
-                  return {
-                    bg: "bg-yellow-50 dark:bg-yellow-900/20 ocean:bg-yellow-100/50 modern:bg-yellow-900/30",
-                    indicator: "bg-yellow-500",
-                    text: "text-yellow-700 dark:text-yellow-300 ocean:text-yellow-800 modern:text-yellow-400"
-                  };
-                } else if (label.includes("15-30")) {
-                  return {
-                    bg: "bg-orange-50 dark:bg-orange-900/20 ocean:bg-orange-100/50 modern:bg-orange-900/30",
-                    indicator: "bg-orange-500",
-                    text: "text-orange-700 dark:text-orange-300 ocean:text-orange-800 modern:text-orange-400"
-                  };
-                } else {
-                  return {
-                    bg: "bg-red-50 dark:bg-red-900/20 ocean:bg-red-100/50 modern:bg-red-900/30",
-                    indicator: "bg-red-500",
-                    text: "text-red-700 dark:text-red-300 ocean:text-red-800 modern:text-red-400"
-                  };
-                }
-              };
-
-              const colors = getAgingColor(metric.label);
-
-              return (
-                <div key={index} className={`space-y-2 p-3 rounded-lg border ${colors.bg}`}>
-                  <div className="flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${colors.indicator}`}></div>
-                      <span className={`font-medium ${colors.text}`}>{metric.label}</span>
+          <div className="flex gap-4">
+            {/* Left Section: Metrics in Vertical Layout */}
+            <div className="flex-1">
+              <h3 className="text-md font-semibold mb-3">Key Metrics</h3>
+              <div className="grid grid-cols-1 gap-3">
+                {metrics.map((metric, index) => (
+                  <div key={index} className="flex justify-between items-center p-3 rounded-lg border bg-card">
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        {metric.label}
+                      </p>
+                      <h4 className="text-xl font-bold mt-1">{metric.value}</h4>
                     </div>
-                    <span className={colors.text}>
-                      {metric.count} exceptions ({metric.percentage}%)
-                    </span>
+                    <Badge
+                      variant={
+                        metric.status === "positive"
+                          ? "secondary"
+                          : metric.status === "negative"
+                            ? "destructive"
+                            : "outline"
+                      }
+                      className="flex items-center"
+                    >
+                      {metric.change > 0 ? "+" : ""}
+                      {metric.change}%
+                    </Badge>
                   </div>
-                  <Progress 
-                    value={metric.percentage} 
-                    className="h-2"
-                    style={{
-                      '--progress-background': colors.indicator.replace('bg-', ''),
-                    } as React.CSSProperties}
-                  />
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            </div>
+
+            {/* Vertical Divider */}
+            <div className="w-px bg-border"></div>
+
+            {/* Right Section: Exception Aging */}
+            <div className="flex-1">
+              <h3 className="text-md font-semibold mb-3">Exception Aging</h3>
+              <div className="space-y-3">
+                {agingMetrics.map((metric, index) => {
+                  // Define aging colors based on the metric label
+                  const getAgingColor = (label: string) => {
+                    if (label.includes("0-7")) {
+                      return {
+                        bg: "bg-green-50 dark:bg-green-900/20 ocean:bg-green-100/50 modern:bg-green-900/30",
+                        indicator: "bg-green-500",
+                        text: "text-green-700 dark:text-green-300 ocean:text-green-800 modern:text-green-400"
+                      };
+                    } else if (label.includes("8-14")) {
+                      return {
+                        bg: "bg-yellow-50 dark:bg-yellow-900/20 ocean:bg-yellow-100/50 modern:bg-yellow-900/30",
+                        indicator: "bg-yellow-500",
+                        text: "text-yellow-700 dark:text-yellow-300 ocean:text-yellow-800 modern:text-yellow-400"
+                      };
+                    } else if (label.includes("15-30")) {
+                      return {
+                        bg: "bg-orange-50 dark:bg-orange-900/20 ocean:bg-orange-100/50 modern:bg-orange-900/30",
+                        indicator: "bg-orange-500",
+                        text: "text-orange-700 dark:text-orange-300 ocean:text-orange-800 modern:text-orange-400"
+                      };
+                    } else {
+                      return {
+                        bg: "bg-red-50 dark:bg-red-900/20 ocean:bg-red-100/50 modern:bg-red-900/30",
+                        indicator: "bg-red-500",
+                        text: "text-red-700 dark:text-red-300 ocean:text-red-800 modern:text-red-400"
+                      };
+                    }
+                  };
+
+                  const colors = getAgingColor(metric.label);
+
+                  return (
+                    <div key={index} className={`space-y-2 p-3 rounded-lg border ${colors.bg}`}>
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${colors.indicator}`}></div>
+                          <span className={`font-medium ${colors.text}`}>{metric.label}</span>
+                        </div>
+                        <span className={colors.text}>
+                          {metric.count} exceptions ({metric.percentage}%)
+                        </span>
+                      </div>
+                      <Progress 
+                        value={metric.percentage} 
+                        className="h-2"
+                        style={{
+                          '--progress-background': colors.indicator.replace('bg-', ''),
+                        } as React.CSSProperties}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
