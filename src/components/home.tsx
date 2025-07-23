@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import {
   Card,
   CardContent,
@@ -15,9 +15,10 @@ import { Bell, Filter, Search, Settings } from "lucide-react";
 import ExceptionDashboard from "./ExceptionDashboard";
 import WorkflowTab from "./WorkflowTab";
 import WorkflowStepTab from "./WorkflowStepTab";
-import AdhocReports from "./AdhocReports";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "./ThemeToggle";
+
+const AdhocReports = lazy(() => import("./AdhocReports"));
 
 const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -133,7 +134,9 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="adhoc-reports">
-              <AdhocReports />
+              <Suspense fallback={<Card><CardContent>Loading report...</CardContent></Card>}>
+                <AdhocReports />
+              </Suspense>
             </TabsContent>
 
             <TabsContent value="admin">
