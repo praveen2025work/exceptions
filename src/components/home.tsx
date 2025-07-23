@@ -87,6 +87,7 @@ const Home = () => {
                 <TabsTrigger value="exceptions">Workflow</TabsTrigger>
                 <TabsTrigger value="workflow">Exceptions</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
+                <TabsTrigger value="adhoc-reports">Adhoc Reports</TabsTrigger>
                 <TabsTrigger value="admin">Admin</TabsTrigger>
               </TabsList>
 
@@ -126,6 +127,22 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reports</CardTitle>
+                  <CardDescription>
+                    Standard reports and analytics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Standard reports will be displayed here.
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="adhoc-reports" className="mt-6">
               <AdhocReports />
             </TabsContent>
 
