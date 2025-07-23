@@ -1,6 +1,6 @@
-# IIS Deployment Guide for Exception Management System
+# IIS Deployment Guide for Exception Hub
 
-This guide provides step-by-step instructions for deploying the Exception Management System on Windows Server IIS.
+This guide provides step-by-step instructions for deploying the Exception Hub on Windows Server IIS.
 
 ## Quick Start
 
@@ -123,7 +123,7 @@ Enable-WindowsOptionalFeature -Online -FeatureName IIS-ISAPIFilter
 ```bash
 # Clone the repository
 git clone [your-repository-url]
-cd exception-management-system
+cd exception-hub
 
 # Install dependencies
 npm install
@@ -142,8 +142,8 @@ const nextConfig = {
     unoptimized: true,
     domains: ['assets.co.dev'],
   },
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/exception-management' : '',
-  basePath: process.env.NODE_ENV === 'production' ? '/exception-management' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/exception-hub' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/exception-hub' : '',
 };
 
 export default nextConfig;
@@ -170,8 +170,8 @@ npm run build
 1. **Open IIS Manager**
 2. **Right-click "Sites"** → **"Add Website"**
 3. **Configure:**
-   - Site name: `ExceptionManagement`
-   - Physical path: `C:\inetpub\wwwroot\exception-management`
+   - Site name: `ExceptionHub`
+   - Physical path: `C:\inetpub\wwwroot\exception-hub`
    - Port: `80` (or your preferred port)
 4. **Click OK**
 
@@ -179,7 +179,7 @@ npm run build
 
 1. **Right-click "Application Pools"** → **"Add Application Pool"**
 2. **Configure:**
-   - Name: `ExceptionManagement`
+   - Name: `ExceptionHub`
    - .NET CLR version: `No Managed Code`
    - Managed pipeline mode: `Integrated`
 3. **Advanced Settings:**
@@ -190,12 +190,12 @@ npm run build
 
 **For Static Export:**
 
-1. Copy contents of `out` folder to `C:\inetpub\wwwroot\exception-management\`
+1. Copy contents of `out` folder to `C:\inetpub\wwwroot\exception-hub\`
 2. Copy `web.config` to the same directory
 
 **For Node.js:**
 
-1. Copy entire project (excluding `node_modules`, `.git`) to `C:\inetpub\wwwroot\exception-management\`
+1. Copy entire project (excluding `node_modules`, `.git`) to `C:\inetpub\wwwroot\exception-hub\`
 2. Copy `web-iisnode.config` as `web.config` to the deployment directory
 3. Copy `server.js` to the deployment directory
 4. Run `npm install --production` in the deployment directory
@@ -204,10 +204,10 @@ npm run build
 
 ```cmd
 # Grant IIS_IUSRS read access
-icacls "C:\inetpub\wwwroot\exception-management" /grant "IIS_IUSRS:(OI)(CI)RX" /T
+icacls "C:\inetpub\wwwroot\exception-hub" /grant "IIS_IUSRS:(OI)(CI)RX" /T
 
 # Grant application pool full control
-icacls "C:\inetpub\wwwroot\exception-management" /grant "IIS AppPool\ExceptionManagement:(OI)(CI)F" /T
+icacls "C:\inetpub\wwwroot\exception-hub" /grant "IIS AppPool\ExceptionHub:(OI)(CI)F" /T
 ```
 
 ### Step 5: Configure Environment Variables
@@ -389,7 +389,7 @@ appcmd list config "Default Web Site" -section:system.webServer/rewrite/rules
 appcmd list apppool
 
 # View site configuration
-appcmd list site "ExceptionManagement" /config
+appcmd list site "ExceptionHub" /config
 ```
 
 ---
@@ -475,7 +475,7 @@ appcmd list site "ExceptionManagement" /config
 
 ## Conclusion
 
-This guide provides comprehensive instructions for deploying the Exception Management System on Windows Server IIS. Choose the deployment method that best fits your requirements:
+This guide provides comprehensive instructions for deploying the Exception Hub on Windows Server IIS. Choose the deployment method that best fits your requirements:
 
 - **Static Export** for simplicity and performance
 - **Node.js with IIS** for full functionality

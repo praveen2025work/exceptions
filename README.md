@@ -1,6 +1,6 @@
-# Exception Management System
+# Exception Hub
 
-A comprehensive exception management system for regulatory compliance, processing financial instrument position data with automated exception detection, aging management, workflow integration, and real-time monitoring. Built with Next.js, React, TypeScript, and Tailwind CSS.
+A comprehensive exception management hub for regulatory compliance, processing financial instrument position data with automated exception detection, aging management, workflow integration, and real-time monitoring. Built with Next.js, React, TypeScript, and Tailwind CSS.
 
 ## Features
 
@@ -30,7 +30,7 @@ Make sure you have Node.js installed (version 14 or higher).
 1. **Clone the repository**
    ```bash
    git clone [repository-url]
-   cd exception-management-system
+   cd exception-hub
    ```
 
 2. **Install dependencies**
@@ -200,7 +200,7 @@ To add new themes, modify:
 ```bash
 # Clone the repository on your development machine
 git clone [repository-url]
-cd exception-management-system
+cd exception-hub
 
 # Install dependencies
 npm install
