@@ -29,6 +29,10 @@ import {
   TableRow 
 } from "@/components/ui/table";
 
+// Import JSON data
+import exceptionsData from '../data/exceptions.json';
+import coreExceptionsData from '../data/core-exceptions.json';
+
 // Import types
 interface Exception {
   id: string;
@@ -123,21 +127,14 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Load actual exception data from JSON files
-const loadExceptionData = async (): Promise<Exception[]> => {
+// Load actual exception data from imported JSON files
+const loadExceptionData = (): Exception[] => {
   try {
-    // Load data from both JSON files
-    const [exceptionsResponse, coreExceptionsResponse] = await Promise.all([
-      fetch('/src/data/exceptions.json'),
-      fetch('/src/data/core-exceptions.json')
-    ]);
-
     let allExceptions: Exception[] = [];
 
     // Process exceptions.json data
-    if (exceptionsResponse.ok) {
-      const exceptionsData = await exceptionsResponse.json();
-      const processedExceptions = exceptionsData.exceptions?.map((exc: any, index: number) => ({
+    if (exceptionsData && exceptionsData.exceptions) {
+      const processedExceptions = exceptionsData.exceptions.map((exc: any, index: number) => ({
         id: exc.id || `EXC-${new Date().getFullYear()}-${String(index + 1).padStart(3, '0')}`,
         l04_business_area_name: exc.l04_business_area_name || 'Unknown',
         l06_name: exc.l06_name || 'Unknown',
@@ -170,15 +167,14 @@ const loadExceptionData = async (): Promise<Exception[]> => {
         created_date: exc.created_date || new Date().toISOString(),
         due_date: exc.due_date || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         aging_days: exc.aging_days || calculateAgingDays(exc.created_date)
-      })) || [];
+      }));
 
       allExceptions = [...allExceptions, ...processedExceptions];
     }
 
     // Process core-exceptions.json data
-    if (coreExceptionsResponse.ok) {
-      const coreExceptionsData = await coreExceptionsResponse.json();
-      const processedCoreExceptions = coreExceptionsData?.map((exc: any, index: number) => ({
+    if (coreExceptionsData && Array.isArray(coreExceptionsData)) {
+      const processedCoreExceptions = coreExceptionsData.map((exc: any, index: number) => ({
         id: `CORE-${new Date().getFullYear()}-${String(index + 1).padStart(3, '0')}`,
         l04_business_area_name: exc.L04_BUSINESS_AREA_NAME || 'Unknown',
         l06_name: exc.L06_NAME || 'Unknown',
@@ -211,12 +207,12 @@ const loadExceptionData = async (): Promise<Exception[]> => {
         created_date: exc['As of time'] || new Date().toISOString(),
         due_date: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
         aging_days: Math.floor(Math.random() * 30)
-      })) || [];
+      }));
 
       allExceptions = [...allExceptions, ...processedCoreExceptions];
     }
 
-    return allExceptions;
+    return allExceptions.length > 0 ? allExceptions : getFallbackData();
   } catch (error) {
     console.error('Error loading exception data:', error);
     // Return fallback sample data if loading fails
@@ -323,25 +319,21 @@ const AdhocReports: React.FC = () => {
 
   // Load data on component mount
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        const data = await loadExceptionData();
-        setExceptions(data);
-        setFilteredData(data);
-      } catch (error) {
-        console.error('Error loading data in AdhocReports:', error);
-        setError('Failed to load exception data');
-        setExceptions([]);
-        setFilteredData([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const data = loadExceptionData();
+      setExceptions(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error('Error loading data in AdhocReports:', error);
+      setError('Failed to load exception data');
+      setExceptions([]);
+      setFilteredData([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   // Apply filters when filters change
