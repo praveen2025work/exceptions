@@ -1,5 +1,9 @@
 import React from "react";
-import Home from "../src/components/home";
+import dynamic from "next/dynamic";
+
+const Home = dynamic(() => import("../src/components/home"), {
+  ssr: false,
+});
 
 export default function IndexPage() {
   return <Home />;
