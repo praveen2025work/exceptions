@@ -40,42 +40,42 @@ const notifications = [
 
 export function Notifications() {
   return (
-    &lt;Sheet&gt;
-      &lt;SheetTrigger asChild&gt;
-        &lt;Button variant="ghost" size="icon"&gt;
-          &lt;Bell className="h-5 w-5" /&gt;
-          &lt;span className="sr-only"&gt;Notifications&lt;/span&gt;
-        &lt;/Button&gt;
-      &lt;/SheetTrigger&gt;
-      &lt;SheetContent&gt;
-        &lt;SheetHeader&gt;
-          &lt;SheetTitle&gt;Notifications&lt;/SheetTitle&gt;
-          &lt;SheetDescription&gt;
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Bell className="h-5 w-5" />
+          <span className="sr-only">Notifications</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Notifications</SheetTitle>
+          <SheetDescription>
             You have {notifications.length} unread messages.
-          &lt;/SheetDescription&gt;
-        &lt;/SheetHeader&gt;
-        &lt;div className="mt-4"&gt;
-          &lt;div className="space-y-4"&gt;
-            {notifications.map((notification) =&gt; (
-              &lt;div key={notification.id}&gt;
-                &lt;div className="mb-2"&gt;
-                  &lt;h4 className="font-semibold"&gt;{notification.title}&lt;/h4&gt;
-                  &lt;p className="text-sm text-muted-foreground"&gt;
+          </SheetDescription>
+        </SheetHeader>
+        <div className="mt-4">
+          <div className="space-y-4">
+            {notifications.map((notification) => (
+              <div key={notification.id}>
+                <div className="mb-2">
+                  <h4 className="font-semibold">{notification.title}</h4>
+                  <p className="text-sm text-muted-foreground">
                     {notification.description}
-                  &lt;/p&gt;
-                  &lt;p className="text-xs text-muted-foreground mt-1"&gt;
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {notification.timestamp}
-                  &lt;/p&gt;
-                &lt;/div&gt;
-                &lt;Separator /&gt;
-              &lt;/div&gt;
+                  </p>
+                </div>
+                <Separator />
+              </div>
             ))}
-          &lt;/div&gt;
-        &lt;/div&gt;
-        &lt;SheetFooter className="mt-4"&gt;
-          &lt;Button className="w-full"&gt;Mark all as read&lt;/Button&gt;
-        &lt;/SheetFooter&gt;
-      &lt;/SheetContent&gt;
-    &lt;/Sheet&gt;
+          </div>
+        </div>
+        <SheetFooter className="mt-4">
+          <Button className="w-full">Mark all as read</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
