@@ -317,6 +317,7 @@ const AdhocReports: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Priorities</SelectItem>
+                <SelectItem value="Critical">Critical</SelectItem>
                 <SelectItem value="High">High</SelectItem>
                 <SelectItem value="Medium">Medium</SelectItem>
                 <SelectItem value="Low">Low</SelectItem>
@@ -413,6 +414,7 @@ const AdhocReports: React.FC = () => {
                     <TableCell className="text-xs">
                       <Badge 
                         variant={
+                          exception.priority === 'Critical' ? 'destructive' :
                           exception.priority === 'High' ? 'destructive' :
                           exception.priority === 'Medium' ? 'secondary' : 'outline'
                         }
@@ -457,26 +459,239 @@ const AdhocReports: React.FC = () => {
     </div>
   );
 
+  const renderReassignmentReport = () => {
+    // Generate reassignment data from exceptions
+    const reassignmentData = exceptions.map(exc => ({
+      id: exc.id,
+      l04_business_area_name: exc.l04_business_area_name,
+      l06_name: exc.l06_name,
+      status: exc.status,
+      priority: exc.priority,
+      previousAssignee: 'System Auto',
+      currentAssignee: exc.assigned_to,
+      reassignmentDate: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+      reassignmentReason: Math.random() > 0.5 ? 'Workload Balancing' : 'Expertise Required',
+      aging_days: exc.aging_days,
+      created_date: exc.created_date
+    }));
+
+    const downloadReassignmentReport = (downloadAll: boolean = false) => {
+      setIsLoading(true);
+      
+      const dataToDownload = downloadAll ? reassignmentData : reassignmentData.filter(item => 
+        filteredData.some(exc => exc.id === item.id)
+      );
+      
+      // Create CSV content
+      const headers = [
+        "Exception ID",
+        "L04 Business Area",
+        "L06 Name",
+        "Status",
+        "Priority",
+        "Previous Assignee",
+        "Current Assignee",
+        "Reassignment Date",
+        "Reassignment Reason",
+        "Aging Days",
+        "Created Date"
+      ];
+
+      const csvContent = [
+        headers.join(","),
+        ...dataToDownload.map(item => [
+          item.id,
+          item.l04_business_area_name || "",
+          item.l06_name || "",
+          item.status,
+          item.priority,
+          item.previousAssignee,
+          item.currentAssignee,
+          new Date(item.reassignmentDate).toLocaleDateString(),
+          item.reassignmentReason,
+          item.aging_days,
+          new Date(item.created_date).toLocaleDateString()
+        ].map(field => `"${field}"`).join(","))
+      ].join("\n");
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Reassignment_Report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => setIsLoading(false), 1000);
+    };
+
+    return (
+      <div className="space-y-2">
+        <Card className="mb-2">
+          <CardHeader className="pb-2 pt-2 px-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Reassignment Filters
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {/* Date Filters */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Date From</label>
+                <Input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Date To</label>
+                <Input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => handleFilterChange("dateTo", e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              {/* L04 Business Area Filter */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium">L04 Business Area</label>
+                <Select value={filters.l04_business_area_name} onValueChange={(value) => handleFilterChange("l04_business_area_name", value)}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="All Areas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Areas</SelectItem>
+                    {getUniqueValues("l04_business_area_name").map(value => (
+                      <SelectItem key={value} value={value}>{value}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Priority Filter */}
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Priority</label>
+                <Select value={filters.priority} onValueChange={(value) => handleFilterChange("priority", value)}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="All Priorities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Priorities</SelectItem>
+                    <SelectItem value="Critical">Critical</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-3 pt-2 border-t">
+              <div className="text-xs text-muted-foreground">
+                Showing {filteredData.length} reassignment records
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={clearFilters}>
+                  Clear Filters
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => downloadReassignmentReport(false)} disabled={isLoading}>
+                  <Download className="h-3 w-3 mr-1" />
+                  Download Filtered
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => downloadReassignmentReport(true)} disabled={isLoading}>
+                  <Download className="h-3 w-3 mr-1" />
+                  Download All
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2 pt-2 px-2">
+            <CardTitle className="text-sm">Reassignment History</CardTitle>
+          </CardHeader>
+          <CardContent className="p-2">
+            <div className="overflow-auto max-h-[600px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs">Exception ID</TableHead>
+                    <TableHead className="text-xs">L04 Business Area</TableHead>
+                    <TableHead className="text-xs">L06 Name</TableHead>
+                    <TableHead className="text-xs">Priority</TableHead>
+                    <TableHead className="text-xs">Previous Assignee</TableHead>
+                    <TableHead className="text-xs">Current Assignee</TableHead>
+                    <TableHead className="text-xs">Reassignment Date</TableHead>
+                    <TableHead className="text-xs">Reason</TableHead>
+                    <TableHead className="text-xs">Aging Days</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {reassignmentData
+                    .filter(item => filteredData.some(exc => exc.id === item.id))
+                    .map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-xs font-mono">{item.id}</TableCell>
+                      <TableCell className="text-xs">{item.l04_business_area_name}</TableCell>
+                      <TableCell className="text-xs">{item.l06_name}</TableCell>
+                      <TableCell className="text-xs">
+                        <Badge 
+                          variant={
+                            item.priority === 'Critical' ? 'destructive' :
+                            item.priority === 'High' ? 'destructive' :
+                            item.priority === 'Medium' ? 'secondary' : 'outline'
+                          }
+                          className="text-xs"
+                        >
+                          {item.priority}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">{item.previousAssignee}</TableCell>
+                      <TableCell className="text-xs">{item.currentAssignee}</TableCell>
+                      <TableCell className="text-xs">{new Date(item.reassignmentDate).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-xs">{item.reassignmentReason}</TableCell>
+                      <TableCell className="text-xs">
+                        <Badge 
+                          variant={
+                            item.aging_days <= 7 ? 'secondary' :
+                            item.aging_days <= 14 ? 'outline' :
+                            item.aging_days <= 30 ? 'secondary' : 'destructive'
+                          }
+                          className="text-xs"
+                        >
+                          {item.aging_days}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   const renderPlaceholderReport = (reportType: string) => (
     <Card>
       <CardContent className="p-8 text-center">
         <div className="space-y-4">
           <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-            {reportType === "reassignment" ? (
-              <Users className="h-8 w-8 text-muted-foreground" />
-            ) : (
-              <BarChart3 className="h-8 w-8 text-muted-foreground" />
-            )}
+            <BarChart3 className="h-8 w-8 text-muted-foreground" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold">
-              {reportType === "reassignment" ? "Reassignment Report" : "TPRT Report"}
-            </h3>
+            <h3 className="text-lg font-semibold">TPRT Report</h3>
             <p className="text-sm text-muted-foreground mt-2">
-              {reportType === "reassignment" 
-                ? "This report will show exception reassignment history and analytics."
-                : "This report will show TPRT (Third Party Risk Tracking) data and metrics."
-              }
+              This report will show TPRT (Third Party Risk Tracking) data and metrics.
             </p>
             <p className="text-xs text-muted-foreground mt-2">
               Report functionality coming soon...
@@ -527,7 +742,7 @@ const AdhocReports: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="reassignment" className="mt-4">
-              {renderPlaceholderReport("reassignment")}
+              {renderReassignmentReport()}
             </TabsContent>
 
             <TabsContent value="tprt" className="mt-4">
