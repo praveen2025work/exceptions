@@ -81,17 +81,19 @@ const Home = () => {
             value={activeTab}
             onValueChange={setActiveTab}
           >
-            <div className="flex items-center justify-between">
-              <TabsList className="grid w-auto grid-cols-6 gap-1">
-                <TabsTrigger value="dashboard" className="text-xs px-2">Dashboard</TabsTrigger>
-                <TabsTrigger value="exceptions" className="text-xs px-2">Workflow</TabsTrigger>
-                <TabsTrigger value="workflow" className="text-xs px-2">Exceptions</TabsTrigger>
-                <TabsTrigger value="reports" className="text-xs px-2">Reports</TabsTrigger>
-                <TabsTrigger value="adhoc-reports" className="text-xs px-2">Adhoc Reports</TabsTrigger>
-                <TabsTrigger value="admin" className="text-xs px-2">Admin</TabsTrigger>
-              </TabsList>
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-center">
+                <TabsList className="flex flex-wrap w-full justify-center">
+                  <TabsTrigger value="dashboard" className="text-sm px-3 py-2">Dashboard</TabsTrigger>
+                  <TabsTrigger value="exceptions" className="text-sm px-3 py-2">Workflow</TabsTrigger>
+                  <TabsTrigger value="workflow" className="text-sm px-3 py-2">Exceptions</TabsTrigger>
+                  <TabsTrigger value="reports" className="text-sm px-3 py-2">Reports</TabsTrigger>
+                  <TabsTrigger value="adhoc-reports" className="text-sm px-3 py-2">Adhoc Reports</TabsTrigger>
+                  <TabsTrigger value="admin" className="text-sm px-3 py-2">Admin</TabsTrigger>
+                </TabsList>
+              </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
