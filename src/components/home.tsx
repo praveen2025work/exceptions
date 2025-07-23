@@ -23,6 +23,7 @@ import ExceptionDashboard from "./ExceptionDashboard";
 import ExceptionList from "./ExceptionList";
 import WorkflowTab from "./WorkflowTab";
 import WorkflowStepTab from "./WorkflowStepTab";
+import AdhocReports from "./AdhocReports";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -125,19 +126,7 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Reports</CardTitle>
-                  <CardDescription>
-                    Generate and view compliance reports
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Reporting functionality will be displayed here.
-                  </p>
-                </CardContent>
-              </Card>
+              <AdhocReports />
             </TabsContent>
 
             <TabsContent value="admin" className="mt-6">
