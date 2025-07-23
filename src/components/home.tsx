@@ -129,19 +129,7 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Reports</CardTitle>
-                  <CardDescription>
-                    Standard reports and analytics
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Standard reports will be displayed here.
-                  </p>
-                </CardContent>
-              </Card>
+              <AdhocReports />
             </TabsContent>
 
             <TabsContent value="adhoc-reports" className="mt-6">
