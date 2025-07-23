@@ -12,7 +12,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, Filter, RefreshCw, Download } from "lucide-react";
+import { AlertCircle, Filter, RefreshCw, Download, TrendingUp, Clock, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import ExceptionList from "./ExceptionList";
 import ExceptionDetails from "./ExceptionDetails";
 import { loadAndTransformData } from "@/utils/dataTransform";
@@ -177,158 +182,106 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   };
 
   return (
-    <div className="bg-background p-2 h-full w-full">
-      <div className="flex justify-between items-center mb-2">
-        <h1 className="text-2xl font-bold">Exception Dashboard</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+    <div className="bg-background p-2 h-full w-full flex flex-col">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-8">
+            <RefreshCw className="h-3.5 w-3.5" />
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
+          <Button variant="outline" size="sm" className="h-8">
+            <Download className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
 
-      {/* Combined Metrics and Aging in Single Row */}
-      <Card className="mb-2">
-        <CardContent className="p-2">
-          <div className="flex gap-2 h-full">
-            {/* Left Section: Metrics in Vertical Layout */}
-            <div className="flex-1 flex flex-col">
-              <h3 className="text-sm font-semibold mb-2">Key Metrics</h3>
-              <div className="grid grid-cols-1 gap-2 flex-1">
-                {metrics.map((metric, index) => (
-                  <div key={index} className="flex justify-between items-center p-2 rounded-lg border bg-card min-h-[60px]">
-                    <div className="flex-1">
-                      <p className="text-xs text-muted-foreground">
-                        {metric.label}
-                      </p>
-                      <h4 className="text-lg font-bold">{metric.value}</h4>
-                    </div>
-                    <Badge
-                      variant={
-                        metric.status === "positive"
-                          ? "secondary"
-                          : metric.status === "negative"
-                            ? "destructive"
-                            : "outline"
-                      }
-                      className="flex items-center text-xs"
-                    >
-                      {metric.change > 0 ? "+" : ""}
-                      {metric.change}%
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Vertical Divider */}
-            <div className="w-px bg-border mx-1"></div>
-
-            {/* Right Section: Exception Aging */}
-            <div className="flex-1 flex flex-col">
-              <h3 className="text-sm font-semibold mb-2">Exception Aging</h3>
-              <div className="space-y-2 flex-1">
-                {agingMetrics.map((metric, index) => {
-                  // Define aging colors based on the metric label
-                  const getAgingColor = (label: string) => {
-                    if (label.includes("0-7")) {
-                      return {
-                        bg: "bg-green-50 dark:bg-green-900/20 ocean:bg-green-100/50 modern:bg-green-900/30",
-                        indicator: "bg-green-500",
-                        text: "text-green-700 dark:text-green-300 ocean:text-green-800 modern:text-green-400"
-                      };
-                    } else if (label.includes("8-14")) {
-                      return {
-                        bg: "bg-yellow-50 dark:bg-yellow-900/20 ocean:bg-yellow-100/50 modern:bg-yellow-900/30",
-                        indicator: "bg-yellow-500",
-                        text: "text-yellow-700 dark:text-yellow-300 ocean:text-yellow-800 modern:text-yellow-400"
-                      };
-                    } else if (label.includes("15-30")) {
-                      return {
-                        bg: "bg-orange-50 dark:bg-orange-900/20 ocean:bg-orange-100/50 modern:bg-orange-900/30",
-                        indicator: "bg-orange-500",
-                        text: "text-orange-700 dark:text-orange-300 ocean:text-orange-800 modern:text-orange-400"
-                      };
-                    } else {
-                      return {
-                        bg: "bg-red-50 dark:bg-red-900/20 ocean:bg-red-100/50 modern:bg-red-900/30",
-                        indicator: "bg-red-500",
-                        text: "text-red-700 dark:text-red-300 ocean:text-red-800 modern:text-red-400"
-                      };
-                    }
-                  };
-
-                  const colors = getAgingColor(metric.label);
-
-                  return (
-                    <div key={index} className={`space-y-1 p-2 rounded-lg border ${colors.bg} min-h-[60px] flex flex-col justify-center`}>
-                      <div className="flex justify-between items-center text-xs">
-                        <div className="flex items-center gap-1">
-                          <div className={`w-2 h-2 rounded-full ${colors.indicator}`}></div>
-                          <span className={`font-medium ${colors.text}`}>{metric.label}</span>
-                        </div>
-                        <span className={colors.text}>
-                          {metric.count} ({metric.percentage}%)
-                        </span>
+      <ResizablePanelGroup direction="vertical" className="flex-grow">
+        <ResizablePanel defaultSize={35}>
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel defaultSize={50}>
+              <Card className="h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-medium flex items-center">
+                    <TrendingUp className="mr-2 h-5 w-5 text-primary" />
+                    Key Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    {metrics.map((metric, index) => (
+                      <div key={index}>
+                        <p className="text-sm text-muted-foreground">{metric.label}</p>
+                        <p className="text-2xl font-bold">{metric.value}</p>
+                        <p className={`text-xs ${metric.status === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
+                          {metric.change > 0 ? '+' : ''}{metric.change}% vs last week
+                        </p>
                       </div>
-                      <Progress 
-                        value={metric.percentage} 
-                        className="h-1"
-                        style={{
-                          '--progress-background': colors.indicator.replace('bg-', ''),
-                        } as React.CSSProperties}
-                      />
-                    </div>
-                  );
-                })}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={50}>
+              <Card className="h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-medium flex items-center">
+                    <Clock className="mr-2 h-5 w-5 text-primary" />
+                    Exception Aging
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {agingMetrics.map((metric, index) => (
+                      <div key={index}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>{metric.label}</span>
+                          <span>{metric.count} ({metric.percentage}%)</span>
+                        </div>
+                        <Progress value={metric.percentage} className="h-2" />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={65}>
+          <Card className="h-full flex flex-col">
+            <CardHeader className="pb-2 pt-4 px-4">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-base font-medium">Exception List</CardTitle>
+                <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">
+                  <TabsList className="h-8">
+                    <TabsTrigger value="all" className="text-xs px-2">All</TabsTrigger>
+                    <TabsTrigger value="challenge" className="text-xs px-2">Challenge</TabsTrigger>
+                    <TabsTrigger value="unwind" className="text-xs px-2">Unwind</TabsTrigger>
+                    <TabsTrigger value="centralise" className="text-xs px-2">Centralise</TabsTrigger>
+                    <TabsTrigger value="writedown" className="text-xs px-2">Writedown</TabsTrigger>
+                    <TabsTrigger value="insufficient-data" className="text-xs px-2">Insufficient Data</TabsTrigger>
+                    <TabsTrigger value="reassignment" className="text-xs px-2">Reassignment</TabsTrigger>
+                    <TabsTrigger value="sla-breach" className="flex items-center text-xs px-2">
+                      <AlertCircle className="h-3 w-3 mr-1 text-destructive" />
+                      SLA Breach
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            </CardHeader>
+            <CardContent className="p-2 flex-grow">
+              <ExceptionList
+                onExceptionSelect={handleExceptionSelect}
+                onBulkAction={handleBulkAction}
+                filters={filters}
+                workflowStatus={workflowStatus}
+              />
+            </CardContent>
+          </Card>
+        </ResizablePanel>
+      </ResizablePanelGroup>
 
-      {/* Exception List */}
-      <Card>
-        <CardHeader className="pb-1 pt-2 px-2">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-sm">Exception List</CardTitle>
-            <Tabs
-              value={selectedTab}
-              onValueChange={setSelectedTab}
-              className="w-auto"
-            >
-              <TabsList className="h-8">
-                <TabsTrigger value="all" className="text-xs px-2">All</TabsTrigger>
-                <TabsTrigger value="challenge" className="text-xs px-2">Challenge</TabsTrigger>
-                <TabsTrigger value="unwind" className="text-xs px-2">Unwind</TabsTrigger>
-                <TabsTrigger value="centralise" className="text-xs px-2">Centralise</TabsTrigger>
-                <TabsTrigger value="writedown" className="text-xs px-2">Writedown</TabsTrigger>
-                <TabsTrigger value="insufficient-data" className="text-xs px-2">Insufficient Data</TabsTrigger>
-                <TabsTrigger value="reassignment" className="text-xs px-2">Reassignment</TabsTrigger>
-                <TabsTrigger value="sla-breach" className="flex items-center text-xs px-2">
-                  <AlertCircle className="h-3 w-3 mr-1 text-destructive" />
-                  SLA Breach
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardHeader>
-        <CardContent className="p-2">
-          <ExceptionList
-            onExceptionSelect={handleExceptionSelect}
-            onBulkAction={handleBulkAction}
-            filters={filters}
-            workflowStatus={workflowStatus}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Exception Details Side Panel */}
       {showDetails && (
         <div className="fixed inset-y-0 right-0 w-[30%] bg-background border-l shadow-lg overflow-y-auto z-50">
           <ExceptionDetails
