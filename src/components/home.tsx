@@ -23,8 +23,6 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
 
-  console.log("Home component rendering, activeTab:", activeTab);
-
   return (
     <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
       <div className="min-h-screen bg-background">
@@ -66,11 +64,6 @@ const Home = () => {
             </div>
           </div>
         </header>
-
-        {/* Debug Info - Always Visible */}
-        <div className="bg-yellow-200 border-2 border-yellow-600 p-4 m-4 text-center text-lg font-bold">
-          🟡 DEBUG: Current Active Tab = "{activeTab}" 🟡
-        </div>
 
         {/* Main Content */}
         <main className="container px-4 py-6">
@@ -124,39 +117,23 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="reports">
-              <div className="w-full min-h-[400px] bg-red-100 border-4 border-red-500 p-8 rounded-lg">
-                <h1 className="text-4xl font-bold text-red-800 mb-6 text-center">
-                  🔴 REPORTS TAB CONTENT 🔴
-                </h1>
-                <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-                  <h2 className="text-2xl font-semibold mb-4">Debug Information:</h2>
-                  <p className="text-lg mb-2">✅ Reports tab is active</p>
-                  <p className="text-lg mb-2">✅ Content is rendering</p>
-                  <p className="text-lg mb-4">✅ Active Tab State: {activeTab}</p>
-                  <Button 
-                    onClick={() => {
-                      alert("Reports tab button clicked!");
-                      console.log("Reports tab button clicked");
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    Test Button - Click Me!
-                  </Button>
-                </div>
-                <div className="bg-blue-50 p-6 rounded-lg">
-                  <h3 className="text-xl font-semibold mb-4">AdhocReports Component:</h3>
-                  <AdhocReports />
-                </div>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reports</CardTitle>
+                  <CardDescription>
+                    Standard reports and analytics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Standard reporting functionality will be displayed here.
+                  </p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="adhoc-reports">
-              <div className="w-full min-h-[400px] bg-green-100 border-4 border-green-500 p-8 rounded-lg">
-                <h1 className="text-4xl font-bold text-green-800 mb-6 text-center">
-                  🟢 ADHOC REPORTS TAB CONTENT 🟢
-                </h1>
-                <AdhocReports />
-              </div>
+              <AdhocReports />
             </TabsContent>
 
             <TabsContent value="admin">

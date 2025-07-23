@@ -248,12 +248,13 @@ export function generateCategoriesFromExceptions(exceptions: Exception[]): L04Ca
   }));
 }
 
+// Import the core data at the top level
+import coreExceptionsData from '@/data/core-exceptions.json';
+
 // Main function to load and transform data
 export function loadAndTransformData(): ExceptionData {
   try {
-    // In a real application, this would load from an API or file
-    // For now, we'll import the core data directly
-    const coreData: CoreException[] = require('@/data/core-exceptions.json');
+    const coreData: CoreException[] = coreExceptionsData as CoreException[];
     
     // Validate that we have data
     if (!Array.isArray(coreData) || coreData.length === 0) {
