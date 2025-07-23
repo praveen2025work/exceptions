@@ -82,13 +82,13 @@ const Home = () => {
             onValueChange={setActiveTab}
           >
             <div className="flex items-center justify-between">
-              <TabsList>
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="exceptions">Workflow</TabsTrigger>
-                <TabsTrigger value="workflow">Exceptions</TabsTrigger>
-                <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="adhoc-reports">Adhoc Reports</TabsTrigger>
-                <TabsTrigger value="admin">Admin</TabsTrigger>
+              <TabsList className="grid w-auto grid-cols-6 gap-1">
+                <TabsTrigger value="dashboard" className="text-xs px-2">Dashboard</TabsTrigger>
+                <TabsTrigger value="exceptions" className="text-xs px-2">Workflow</TabsTrigger>
+                <TabsTrigger value="workflow" className="text-xs px-2">Exceptions</TabsTrigger>
+                <TabsTrigger value="reports" className="text-xs px-2">Reports</TabsTrigger>
+                <TabsTrigger value="adhoc-reports" className="text-xs px-2">Adhoc Reports</TabsTrigger>
+                <TabsTrigger value="admin" className="text-xs px-2">Admin</TabsTrigger>
               </TabsList>
 
               <div className="flex items-center gap-2">
