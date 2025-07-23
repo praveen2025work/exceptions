@@ -67,9 +67,15 @@ const AdhocReports: React.FC = () => {
 
   // Load data on component mount
   useEffect(() => {
-    const data = loadAndTransformData();
-    setExceptions(data.exceptions);
-    setFilteredData(data.exceptions);
+    try {
+      const data = loadAndTransformData();
+      setExceptions(data.exceptions);
+      setFilteredData(data.exceptions);
+    } catch (error) {
+      console.error('Error loading data in AdhocReports:', error);
+      setExceptions([]);
+      setFilteredData([]);
+    }
   }, []);
 
   // Apply filters when filters change
