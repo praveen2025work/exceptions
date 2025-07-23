@@ -78,511 +78,275 @@ interface FilterState {
   sla_status: string;
 }
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback?: React.ReactNode },
-  { hasError: boolean; error?: Error }
-> {
-  constructor(props: { children: React.ReactNode; fallback?: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('AdhocReports Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback || (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <div className="space-y-4">
-              <AlertTriangle className="h-8 w-8 mx-auto text-destructive" />
-              <div>
-                <h3 className="text-lg font-semibold">Something went wrong</h3>
-                <p className="text-sm text-muted-foreground mt-2">
-                  There was an error loading the reports. Please try refreshing the page.
-                </p>
-              </div>
-              <Button onClick={() => window.location.reload()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Page
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-// Load actual exception data from static data
-const loadExceptionData = (): Exception[] => {
-  try {
-    let allExceptions: Exception[] = [];
-
-    // Static exceptions data
-    const exceptionsData = {
-      "exceptions": [
-        {
-          "id": "EXC-2024-001",
-          "l04_business_area_name": "Fixed Income Trading",
-          "l06_name": "Government Bonds",
-          "named_no_name": "US Treasury 10Y",
-          "ads_book_code": "FI-GOV-001",
-          "ads_book_path": "/Trading/FixedIncome/Government/US",
-          "system": "Murex",
-          "legal_entity": "Goldman Sachs International",
-          "regulator": "FCA",
-          "instrument_id": "US912828XG55",
-          "equity_class_path": "/Bonds/Government/US/10Y",
-          "instrument_type": "Government Bond",
-          "instrument_name": "US Treasury Note 2.875% 15-May-2032",
-          "position_tbbb_classification": "Level 1",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "US10Y",
-          "reason": "Position mismatch between systems",
-          "look_through": "Direct",
-          "sod_dealt_bb_underlying": "US10Y",
-          "position_av": 15750000.50,
-          "tetb_av": 15850000.75,
-          "position_qty": 15000000,
-          "tetb_qty": 15100000,
-          "tetb_match": false,
-          "status": "Open",
-          "priority": "High",
-          "sla_status": "Within SLA",
-          "assigned_to": "John Smith",
-          "created_date": "2024-06-01T14:30:00Z",
-          "due_date": "2024-06-03T17:00:00Z",
-          "aging_days": 1
-        },
-        {
-          "id": "EXC-2024-002",
-          "l04_business_area_name": "Equity Trading",
-          "l06_name": "Large Cap Stocks",
-          "named_no_name": "Apple Inc",
-          "ads_book_code": "EQ-LC-002",
-          "ads_book_path": "/Trading/Equity/LargeCap/US",
-          "system": "Bloomberg AIM",
-          "legal_entity": "Goldman Sachs & Co LLC",
-          "regulator": "SEC",
-          "instrument_id": "AAPL",
-          "equity_class_path": "/Equity/US/Technology/AAPL",
-          "instrument_type": "Common Stock",
-          "instrument_name": "Apple Inc Common Stock",
-          "position_tbbb_classification": "Level 1",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "AAPL US",
-          "reason": "Quantity discrepancy in overnight processing",
-          "look_through": "Direct",
-          "sod_dealt_bb_underlying": "AAPL US",
-          "position_av": 18500000.00,
-          "tetb_av": 18500000.00,
-          "position_qty": 100000,
-          "tetb_qty": 98500,
-          "tetb_match": false,
-          "status": "In Progress",
-          "priority": "Medium",
-          "sla_status": "Within SLA",
-          "assigned_to": "Sarah Johnson",
-          "created_date": "2024-06-01T16:45:00Z",
-          "due_date": "2024-06-04T17:00:00Z",
-          "aging_days": 1
-        },
-        {
-          "id": "EXC-2024-003",
-          "l04_business_area_name": "Derivatives Trading",
-          "l06_name": "Interest Rate Swaps",
-          "named_no_name": "USD 5Y IRS",
-          "ads_book_code": "DER-IRS-003",
-          "ads_book_path": "/Trading/Derivatives/IRS/USD",
-          "system": "Calypso",
-          "legal_entity": "Goldman Sachs International",
-          "regulator": "CFTC",
-          "instrument_id": "USD5Y_IRS_001",
-          "equity_class_path": "/Derivatives/IRS/USD/5Y",
-          "instrument_type": "Interest Rate Swap",
-          "instrument_name": "USD 5Y Interest Rate Swap",
-          "position_tbbb_classification": "Level 2",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "USSW5 Curncy",
-          "reason": "Mark-to-market valuation difference",
-          "look_through": "Underlying",
-          "sod_dealt_bb_underlying": "USSW5 Curncy",
-          "position_av": 2500000.25,
-          "tetb_av": 2485000.50,
-          "position_qty": 50000000,
-          "tetb_qty": 50000000,
-          "tetb_match": true,
-          "status": "Resolved",
-          "priority": "Low",
-          "sla_status": "Within SLA",
-          "assigned_to": "Michael Chen",
-          "created_date": "2024-05-30T11:20:00Z",
-          "due_date": "2024-06-02T17:00:00Z",
-          "aging_days": 3
-        },
-        {
-          "id": "EXC-2024-004",
-          "l04_business_area_name": "Credit Trading",
-          "l06_name": "Corporate Bonds",
-          "named_no_name": "Microsoft Corp Bond",
-          "ads_book_code": "CR-CB-004",
-          "ads_book_path": "/Trading/Credit/Corporate/US",
-          "system": "Kondor+",
-          "legal_entity": "Goldman Sachs & Co LLC",
-          "regulator": "FINRA",
-          "instrument_id": "MSFT_2.4_2050",
-          "equity_class_path": "/Bonds/Corporate/US/Technology",
-          "instrument_type": "Corporate Bond",
-          "instrument_name": "Microsoft Corp 2.4% 08-Aug-2050",
-          "position_tbbb_classification": "Level 2",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "MSFT 2.4 08/08/50",
-          "reason": "Settlement date mismatch",
-          "look_through": "Direct",
-          "sod_dealt_bb_underlying": "MSFT 2.4 08/08/50",
-          "position_av": 5250000.00,
-          "tetb_av": 5275000.00,
-          "position_qty": 5000000,
-          "tetb_qty": 5025000,
-          "tetb_match": false,
-          "status": "Open",
-          "priority": "High",
-          "sla_status": "SLA Breach",
-          "assigned_to": "Emily Davis",
-          "created_date": "2024-05-28T13:15:00Z",
-          "due_date": "2024-05-31T17:00:00Z",
-          "aging_days": 5
-        },
-        {
-          "id": "EXC-2024-005",
-          "l04_business_area_name": "FX Trading",
-          "l06_name": "Major Currency Pairs",
-          "named_no_name": "EUR/USD Spot",
-          "ads_book_code": "FX-MAJ-005",
-          "ads_book_path": "/Trading/FX/Major/EURUSD",
-          "system": "360T",
-          "legal_entity": "Goldman Sachs International",
-          "regulator": "FCA",
-          "instrument_id": "EURUSD_SPOT",
-          "equity_class_path": "/FX/Major/EURUSD",
-          "instrument_type": "FX Spot",
-          "instrument_name": "EUR/USD Spot Rate",
-          "position_tbbb_classification": "Level 1",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "EURUSD Curncy",
-          "reason": "Trade booking error",
-          "look_through": "Direct",
-          "sod_dealt_bb_underlying": "EURUSD Curncy",
-          "position_av": 1085000.00,
-          "tetb_av": 1085000.00,
-          "position_qty": 1000000,
-          "tetb_qty": 1000000,
-          "tetb_match": true,
-          "status": "In Progress",
-          "priority": "Medium",
-          "sla_status": "Within SLA",
-          "assigned_to": "David Wilson",
-          "created_date": "2024-06-02T08:30:00Z",
-          "due_date": "2024-06-05T17:00:00Z",
-          "aging_days": 0
-        },
-        {
-          "id": "EXC-2024-006",
-          "l04_business_area_name": "Commodities Trading",
-          "l06_name": "Precious Metals",
-          "named_no_name": "Gold Futures",
-          "ads_book_code": "COM-PM-006",
-          "ads_book_path": "/Trading/Commodities/PreciousMetals/Gold",
-          "system": "Endur",
-          "legal_entity": "Goldman Sachs Commodities",
-          "regulator": "CFTC",
-          "instrument_id": "GC_DEC24",
-          "equity_class_path": "/Commodities/PreciousMetals/Gold/Futures",
-          "instrument_type": "Commodity Future",
-          "instrument_name": "Gold Future Dec 2024",
-          "position_tbbb_classification": "Level 1",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "GCZ4 Comdty",
-          "reason": "Price validation failure",
-          "look_through": "Direct",
-          "sod_dealt_bb_underlying": "GCZ4 Comdty",
-          "position_av": 2400000.00,
-          "tetb_av": 2395000.00,
-          "position_qty": 100,
-          "tetb_qty": 100,
-          "tetb_match": true,
-          "status": "Open",
-          "priority": "Medium",
-          "sla_status": "Within SLA",
-          "assigned_to": "Lisa Anderson",
-          "created_date": "2024-06-01T10:00:00Z",
-          "due_date": "2024-06-04T17:00:00Z",
-          "aging_days": 1
-        },
-        {
-          "id": "EXC-2024-007",
-          "l04_business_area_name": "Prime Brokerage",
-          "l06_name": "Hedge Fund Services",
-          "named_no_name": "Client Portfolio A",
-          "ads_book_code": "PB-HF-007",
-          "ads_book_path": "/PrimeBrokerage/HedgeFunds/ClientA",
-          "system": "SecDB",
-          "legal_entity": "Goldman Sachs Prime Brokerage",
-          "regulator": "SEC",
-          "instrument_id": "CLIENT_A_PORT",
-          "equity_class_path": "/PrimeBrokerage/HedgeFunds/Portfolio",
-          "instrument_type": "Portfolio",
-          "instrument_name": "Client A Hedge Fund Portfolio",
-          "position_tbbb_classification": "Level 3",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "PORTFOLIO_A",
-          "reason": "Reconciliation break with client",
-          "look_through": "Portfolio",
-          "sod_dealt_bb_underlying": "PORTFOLIO_A",
-          "position_av": 125000000.00,
-          "tetb_av": 124750000.00,
-          "position_qty": 1,
-          "tetb_qty": 1,
-          "tetb_match": true,
-          "status": "Open",
-          "priority": "High",
-          "sla_status": "SLA Breach",
-          "assigned_to": "Robert Taylor",
-          "created_date": "2024-05-29T15:45:00Z",
-          "due_date": "2024-06-01T17:00:00Z",
-          "aging_days": 4
-        },
-        {
-          "id": "EXC-2024-008",
-          "l04_business_area_name": "Fixed Income Trading",
-          "l06_name": "Municipal Bonds",
-          "named_no_name": "NYC General Obligation",
-          "ads_book_code": "FI-MUN-008",
-          "ads_book_path": "/Trading/FixedIncome/Municipal/NYC",
-          "system": "BondEdge",
-          "legal_entity": "Goldman Sachs & Co LLC",
-          "regulator": "MSRB",
-          "instrument_id": "NYC_GO_2045",
-          "equity_class_path": "/Bonds/Municipal/NYC/GO",
-          "instrument_type": "Municipal Bond",
-          "instrument_name": "NYC General Obligation Bond 2045",
-          "position_tbbb_classification": "Level 2",
-          "as_of_time": "2024-06-02T09:00:00Z",
-          "bb_underlying": "NYC GO 2045",
-          "reason": "Accrued interest calculation error",
-          "look_through": "Direct",
-          "sod_dealt_bb_underlying": "NYC GO 2045",
-          "position_av": 3750000.00,
-          "tetb_av": 3755000.00,
-          "position_qty": 3500000,
-          "tetb_qty": 3500000,
-          "tetb_match": true,
-          "status": "In Progress",
-          "priority": "Low",
-          "sla_status": "Within SLA",
-          "assigned_to": "Jennifer Martinez",
-          "created_date": "2024-06-01T12:30:00Z",
-          "due_date": "2024-06-06T17:00:00Z",
-          "aging_days": 1
-        }
-      ]
-    };
-
-    // Static core exceptions data
-    const coreExceptionsData = [
-      {
-        "L04_BUSINESS_AREA_NAME": "Equity Derivatives",
-        "L06_NAME": "Flow Derivatives Americas",
-        "NAMEDPNL_NAME": "Flow Derivatives Americas",
-        "SDS Book Code": "954807",
-        "SDS Book Path": "Barclays Group:Markets: Equities:Equity De",
-        "System": "AMM",
-        "Legal Entity": "BCINC",
-        "Regulator": "FRB",
-        "Instrument Id": "1004592601",
-        "Equity Class Type": "Equity Option (Ex)",
-        "Instrument Type": "ESM",
-        "Instrument Name": "IWM 20Jun25 CAC 240 QUSA",
-        "Position TBBB Classification": "Uncertain",
-        "As of time": "2025-04-01T22:22:50.3812",
-        "BB Underlyings": "Sophis/ 67552599/ IWM. P",
-        "Reason": "[RuleEvaluationResult (ruleIdentifier=001, result=No",
-        "Look through": "y",
-        "SOD Delta on BB Underlying": "-2571066.384",
-        "Position AV": "-101132.334",
-        "TETB AV": "-101132.33",
-        "Position Qty": "-3000",
-        "TETB Qty": "-3000",
-        "TETB Match": "Match"
-      },
-      {
-        "L04_BUSINESS_AREA_NAME": "Equity Derivatives",
-        "L06_NAME": "Flow Derivatives EMEA",
-        "NAMEDPNL_NAME": "Flow Derivatives EMEA",
-        "SDS Book Code": "954808",
-        "SDS Book Path": "Barclays Group:Markets: Equities:Equity EU",
-        "System": "AMM",
-        "Legal Entity": "BCPLC",
-        "Regulator": "PRA",
-        "Instrument Id": "1004592602",
-        "Equity Class Type": "Equity Swap",
-        "Instrument Type": "SWP",
-        "Instrument Name": "EZJ 15Dec25 SWP 100 LON",
-        "Position TBBB Classification": "Trading",
-        "As of time": "2025-04-01T22:25:10.3821",
-        "BB Underlyings": "Sophis/ 67552600/ EZJ. L",
-        "Reason": "[RuleEvaluationResult (ruleIdentifier=002, result=Yes",
-        "Look through": "n",
-        "SOD Delta on BB Underlying": "-1453200.000",
-        "Position AV": "-201200.000",
-        "TETB AV": "-201200.00",
-        "Position Qty": "-5000",
-        "TETB Qty": "-5000",
-        "TETB Match": "Mismatch"
-      }
-    ];
-
-    // Process exceptions.json data
-    if (exceptionsData && exceptionsData.exceptions) {
-      const processedExceptions = exceptionsData.exceptions.map((exc: any, index: number) => ({
-        id: exc.id || `EXC-${new Date().getFullYear()}-${String(index + 1).padStart(3, '0')}`,
-        l04_business_area_name: exc.l04_business_area_name || 'Unknown',
-        l06_name: exc.l06_name || 'Unknown',
-        named_no_name: exc.named_no_name || exc.l06_name || 'Unknown',
-        ads_book_code: exc.ads_book_code || 'N/A',
-        ads_book_path: exc.ads_book_path || 'N/A',
-        system: exc.system || 'Unknown',
-        legal_entity: exc.legal_entity || 'Unknown',
-        regulator: exc.regulator || 'Unknown',
-        instrument_id: exc.instrument_id || 'N/A',
-        equity_class_path: exc.equity_class_path || 'N/A',
-        instrument_type: exc.instrument_type || 'Unknown',
-        instrument_name: exc.instrument_name || 'Unknown',
-        position_tbbb_classification: exc.position_tbbb_classification || 'Unknown',
-        as_of_time: exc.as_of_time || new Date().toISOString(),
-        bb_underlying: exc.bb_underlying || 'N/A',
-        reason: exc.reason || 'No reason provided',
-        look_through: exc.look_through || 'N/A',
-        sod_dealt_bb_underlying: exc.sod_dealt_bb_underlying || 'N/A',
-        position_av: parseFloat(exc.position_av) || 0,
-        tetb_av: parseFloat(exc.tetb_av) || 0,
-        position_qty: parseFloat(exc.position_qty) || 0,
-        tetb_qty: parseFloat(exc.tetb_qty) || 0,
-        tetb_match: exc.tetb_match === true || exc.tetb_match === 'true',
-        // Map old status values to new ones
-        status: mapStatus(exc.status) as Exception['status'],
-        priority: exc.priority || 'Medium',
-        sla_status: exc.sla_status || 'Within SLA',
-        assigned_to: exc.assigned_to || 'Unassigned',
-        created_date: exc.created_date || new Date().toISOString(),
-        due_date: exc.due_date || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        aging_days: exc.aging_days || calculateAgingDays(exc.created_date)
-      }));
-
-      allExceptions = [...allExceptions, ...processedExceptions];
-    }
-
-    // Process core-exceptions.json data
-    if (coreExceptionsData && Array.isArray(coreExceptionsData)) {
-      const processedCoreExceptions = coreExceptionsData.map((exc: any, index: number) => ({
-        id: `CORE-${new Date().getFullYear()}-${String(index + 1).padStart(3, '0')}`,
-        l04_business_area_name: exc.L04_BUSINESS_AREA_NAME || 'Unknown',
-        l06_name: exc.L06_NAME || 'Unknown',
-        named_no_name: exc.NAMEDPNL_NAME || exc.L06_NAME || 'Unknown',
-        ads_book_code: exc['SDS Book Code'] || 'N/A',
-        ads_book_path: exc['SDS Book Path'] || 'N/A',
-        system: exc.System || 'Unknown',
-        legal_entity: exc['Legal Entity'] || 'Unknown',
-        regulator: exc.Regulator || 'Unknown',
-        instrument_id: exc['Instrument Id'] || 'N/A',
-        equity_class_path: exc['Equity Class Type'] || 'N/A',
-        instrument_type: exc['Instrument Type'] || 'Unknown',
-        instrument_name: exc['Instrument Name'] || 'Unknown',
-        position_tbbb_classification: exc['Position TBBB Classification'] || 'Unknown',
-        as_of_time: exc['As of time'] || new Date().toISOString(),
-        bb_underlying: exc['BB Underlyings'] || 'N/A',
-        reason: exc.Reason || 'No reason provided',
-        look_through: exc['Look through'] || 'N/A',
-        sod_dealt_bb_underlying: exc['SOD Delta on BB Underlying'] || 'N/A',
-        position_av: parseFloat(exc['Position AV']) || 0,
-        tetb_av: parseFloat(exc['TETB AV']) || 0,
-        position_qty: parseFloat(exc['Position Qty']) || 0,
-        tetb_qty: parseFloat(exc['TETB Qty']) || 0,
-        tetb_match: exc['TETB Match'] === 'Match',
-        // Assign random status for core data
-        status: getRandomStatus() as Exception['status'],
-        priority: getRandomPriority() as Exception['priority'],
-        sla_status: getRandomSLAStatus() as Exception['sla_status'],
-        assigned_to: getRandomAssignee(),
-        created_date: exc['As of time'] || new Date().toISOString(),
-        due_date: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-        aging_days: Math.floor(Math.random() * 30)
-      }));
-
-      allExceptions = [...allExceptions, ...processedCoreExceptions];
-    }
-
-    return allExceptions.length > 0 ? allExceptions : getFallbackData();
-  } catch (error) {
-    console.error('Error loading exception data:', error);
-    // Return fallback sample data if loading fails
-    return getFallbackData();
-  }
-};
-
-// Helper functions
-const mapStatus = (oldStatus: string): string => {
-  const statusMap: { [key: string]: string } = {
-    'Open': 'Challenge',
-    'In Progress': 'Reassignment',
-    'Resolved': 'Centralise',
-    'Closed': 'Writedown'
-  };
-  return statusMap[oldStatus] || oldStatus || 'Challenge';
-};
-
-const calculateAgingDays = (createdDate: string): number => {
-  if (!createdDate) return 0;
-  const created = new Date(createdDate);
-  const now = new Date();
-  const diffTime = Math.abs(now.getTime() - created.getTime());
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-};
-
-const getRandomStatus = (): string => {
-  const statuses = ['Unwind', 'Centralise', 'Writedown', 'Insufficient Data', 'Challenge', 'Reassignment'];
-  return statuses[Math.floor(Math.random() * statuses.length)];
-};
-
-const getRandomPriority = (): string => {
-  const priorities = ['Low', 'Medium', 'High', 'Critical'];
-  return priorities[Math.floor(Math.random() * priorities.length)];
-};
-
-const getRandomSLAStatus = (): string => {
-  const slaStatuses = ['Within SLA', 'SLA Breach', 'SLA Warning'];
-  return slaStatuses[Math.floor(Math.random() * slaStatuses.length)];
-};
-
-const getRandomAssignee = (): string => {
-  const assignees = ['John Smith', 'Sarah Johnson', 'Michael Chen', 'Emily Davis', 'David Wilson', 'Lisa Anderson', 'Robert Taylor', 'Jennifer Martinez'];
-  return assignees[Math.floor(Math.random() * assignees.length)];
-};
-
-const getFallbackData = (): Exception[] => {
+// Static sample data - embedded directly to avoid import issues
+const getSampleExceptionData = (): Exception[] => {
   return [
     {
-      id: "EXC-2025-001",
+      id: "EXC-2024-001",
+      l04_business_area_name: "Fixed Income Trading",
+      l06_name: "Government Bonds",
+      named_no_name: "US Treasury 10Y",
+      ads_book_code: "FI-GOV-001",
+      ads_book_path: "/Trading/FixedIncome/Government/US",
+      system: "Murex",
+      legal_entity: "Goldman Sachs International",
+      regulator: "FCA",
+      instrument_id: "US912828XG55",
+      equity_class_path: "/Bonds/Government/US/10Y",
+      instrument_type: "Government Bond",
+      instrument_name: "US Treasury Note 2.875% 15-May-2032",
+      position_tbbb_classification: "Level 1",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "US10Y",
+      reason: "Position mismatch between systems",
+      look_through: "Direct",
+      sod_dealt_bb_underlying: "US10Y",
+      position_av: 15750000.50,
+      tetb_av: 15850000.75,
+      position_qty: 15000000,
+      tetb_qty: 15100000,
+      tetb_match: false,
+      status: "Challenge",
+      priority: "High",
+      sla_status: "Within SLA",
+      assigned_to: "John Smith",
+      created_date: "2024-06-01T14:30:00Z",
+      due_date: "2024-06-03T17:00:00Z",
+      aging_days: 1
+    },
+    {
+      id: "EXC-2024-002",
+      l04_business_area_name: "Equity Trading",
+      l06_name: "Large Cap Stocks",
+      named_no_name: "Apple Inc",
+      ads_book_code: "EQ-LC-002",
+      ads_book_path: "/Trading/Equity/LargeCap/US",
+      system: "Bloomberg AIM",
+      legal_entity: "Goldman Sachs & Co LLC",
+      regulator: "SEC",
+      instrument_id: "AAPL",
+      equity_class_path: "/Equity/US/Technology/AAPL",
+      instrument_type: "Common Stock",
+      instrument_name: "Apple Inc Common Stock",
+      position_tbbb_classification: "Level 1",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "AAPL US",
+      reason: "Quantity discrepancy in overnight processing",
+      look_through: "Direct",
+      sod_dealt_bb_underlying: "AAPL US",
+      position_av: 18500000.00,
+      tetb_av: 18500000.00,
+      position_qty: 100000,
+      tetb_qty: 98500,
+      tetb_match: false,
+      status: "Reassignment",
+      priority: "Medium",
+      sla_status: "Within SLA",
+      assigned_to: "Sarah Johnson",
+      created_date: "2024-06-01T16:45:00Z",
+      due_date: "2024-06-04T17:00:00Z",
+      aging_days: 1
+    },
+    {
+      id: "EXC-2024-003",
+      l04_business_area_name: "Derivatives Trading",
+      l06_name: "Interest Rate Swaps",
+      named_no_name: "USD 5Y IRS",
+      ads_book_code: "DER-IRS-003",
+      ads_book_path: "/Trading/Derivatives/IRS/USD",
+      system: "Calypso",
+      legal_entity: "Goldman Sachs International",
+      regulator: "CFTC",
+      instrument_id: "USD5Y_IRS_001",
+      equity_class_path: "/Derivatives/IRS/USD/5Y",
+      instrument_type: "Interest Rate Swap",
+      instrument_name: "USD 5Y Interest Rate Swap",
+      position_tbbb_classification: "Level 2",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "USSW5 Curncy",
+      reason: "Mark-to-market valuation difference",
+      look_through: "Underlying",
+      sod_dealt_bb_underlying: "USSW5 Curncy",
+      position_av: 2500000.25,
+      tetb_av: 2485000.50,
+      position_qty: 50000000,
+      tetb_qty: 50000000,
+      tetb_match: true,
+      status: "Centralise",
+      priority: "Low",
+      sla_status: "Within SLA",
+      assigned_to: "Michael Chen",
+      created_date: "2024-05-30T11:20:00Z",
+      due_date: "2024-06-02T17:00:00Z",
+      aging_days: 3
+    },
+    {
+      id: "EXC-2024-004",
+      l04_business_area_name: "Credit Trading",
+      l06_name: "Corporate Bonds",
+      named_no_name: "Microsoft Corp Bond",
+      ads_book_code: "CR-CB-004",
+      ads_book_path: "/Trading/Credit/Corporate/US",
+      system: "Kondor+",
+      legal_entity: "Goldman Sachs & Co LLC",
+      regulator: "FINRA",
+      instrument_id: "MSFT_2.4_2050",
+      equity_class_path: "/Bonds/Corporate/US/Technology",
+      instrument_type: "Corporate Bond",
+      instrument_name: "Microsoft Corp 2.4% 08-Aug-2050",
+      position_tbbb_classification: "Level 2",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "MSFT 2.4 08/08/50",
+      reason: "Settlement date mismatch",
+      look_through: "Direct",
+      sod_dealt_bb_underlying: "MSFT 2.4 08/08/50",
+      position_av: 5250000.00,
+      tetb_av: 5275000.00,
+      position_qty: 5000000,
+      tetb_qty: 5025000,
+      tetb_match: false,
+      status: "Challenge",
+      priority: "High",
+      sla_status: "SLA Breach",
+      assigned_to: "Emily Davis",
+      created_date: "2024-05-28T13:15:00Z",
+      due_date: "2024-05-31T17:00:00Z",
+      aging_days: 5
+    },
+    {
+      id: "EXC-2024-005",
+      l04_business_area_name: "FX Trading",
+      l06_name: "Major Currency Pairs",
+      named_no_name: "EUR/USD Spot",
+      ads_book_code: "FX-MAJ-005",
+      ads_book_path: "/Trading/FX/Major/EURUSD",
+      system: "360T",
+      legal_entity: "Goldman Sachs International",
+      regulator: "FCA",
+      instrument_id: "EURUSD_SPOT",
+      equity_class_path: "/FX/Major/EURUSD",
+      instrument_type: "FX Spot",
+      instrument_name: "EUR/USD Spot Rate",
+      position_tbbb_classification: "Level 1",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "EURUSD Curncy",
+      reason: "Trade booking error",
+      look_through: "Direct",
+      sod_dealt_bb_underlying: "EURUSD Curncy",
+      position_av: 1085000.00,
+      tetb_av: 1085000.00,
+      position_qty: 1000000,
+      tetb_qty: 1000000,
+      tetb_match: true,
+      status: "Reassignment",
+      priority: "Medium",
+      sla_status: "Within SLA",
+      assigned_to: "David Wilson",
+      created_date: "2024-06-02T08:30:00Z",
+      due_date: "2024-06-05T17:00:00Z",
+      aging_days: 0
+    },
+    {
+      id: "EXC-2024-006",
+      l04_business_area_name: "Commodities Trading",
+      l06_name: "Precious Metals",
+      named_no_name: "Gold Futures",
+      ads_book_code: "COM-PM-006",
+      ads_book_path: "/Trading/Commodities/PreciousMetals/Gold",
+      system: "Endur",
+      legal_entity: "Goldman Sachs Commodities",
+      regulator: "CFTC",
+      instrument_id: "GC_DEC24",
+      equity_class_path: "/Commodities/PreciousMetals/Gold/Futures",
+      instrument_type: "Commodity Future",
+      instrument_name: "Gold Future Dec 2024",
+      position_tbbb_classification: "Level 1",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "GCZ4 Comdty",
+      reason: "Price validation failure",
+      look_through: "Direct",
+      sod_dealt_bb_underlying: "GCZ4 Comdty",
+      position_av: 2400000.00,
+      tetb_av: 2395000.00,
+      position_qty: 100,
+      tetb_qty: 100,
+      tetb_match: true,
+      status: "Challenge",
+      priority: "Medium",
+      sla_status: "Within SLA",
+      assigned_to: "Lisa Anderson",
+      created_date: "2024-06-01T10:00:00Z",
+      due_date: "2024-06-04T17:00:00Z",
+      aging_days: 1
+    },
+    {
+      id: "EXC-2024-007",
+      l04_business_area_name: "Prime Brokerage",
+      l06_name: "Hedge Fund Services",
+      named_no_name: "Client Portfolio A",
+      ads_book_code: "PB-HF-007",
+      ads_book_path: "/PrimeBrokerage/HedgeFunds/ClientA",
+      system: "SecDB",
+      legal_entity: "Goldman Sachs Prime Brokerage",
+      regulator: "SEC",
+      instrument_id: "CLIENT_A_PORT",
+      equity_class_path: "/PrimeBrokerage/HedgeFunds/Portfolio",
+      instrument_type: "Portfolio",
+      instrument_name: "Client A Hedge Fund Portfolio",
+      position_tbbb_classification: "Level 3",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "PORTFOLIO_A",
+      reason: "Reconciliation break with client",
+      look_through: "Portfolio",
+      sod_dealt_bb_underlying: "PORTFOLIO_A",
+      position_av: 125000000.00,
+      tetb_av: 124750000.00,
+      position_qty: 1,
+      tetb_qty: 1,
+      tetb_match: true,
+      status: "Challenge",
+      priority: "High",
+      sla_status: "SLA Breach",
+      assigned_to: "Robert Taylor",
+      created_date: "2024-05-29T15:45:00Z",
+      due_date: "2024-06-01T17:00:00Z",
+      aging_days: 4
+    },
+    {
+      id: "EXC-2024-008",
+      l04_business_area_name: "Fixed Income Trading",
+      l06_name: "Municipal Bonds",
+      named_no_name: "NYC General Obligation",
+      ads_book_code: "FI-MUN-008",
+      ads_book_path: "/Trading/FixedIncome/Municipal/NYC",
+      system: "BondEdge",
+      legal_entity: "Goldman Sachs & Co LLC",
+      regulator: "MSRB",
+      instrument_id: "NYC_GO_2045",
+      equity_class_path: "/Bonds/Municipal/NYC/GO",
+      instrument_type: "Municipal Bond",
+      instrument_name: "NYC General Obligation Bond 2045",
+      position_tbbb_classification: "Level 2",
+      as_of_time: "2024-06-02T09:00:00Z",
+      bb_underlying: "NYC GO 2045",
+      reason: "Accrued interest calculation error",
+      look_through: "Direct",
+      sod_dealt_bb_underlying: "NYC GO 2045",
+      position_av: 3750000.00,
+      tetb_av: 3755000.00,
+      position_qty: 3500000,
+      tetb_qty: 3500000,
+      tetb_match: true,
+      status: "Reassignment",
+      priority: "Low",
+      sla_status: "Within SLA",
+      assigned_to: "Jennifer Martinez",
+      created_date: "2024-06-01T12:30:00Z",
+      due_date: "2024-06-06T17:00:00Z",
+      aging_days: 1
+    },
+    {
+      id: "CORE-2025-001",
       l04_business_area_name: "Equity Derivatives",
       l06_name: "Flow Derivatives Americas",
       named_no_name: "Flow Derivatives Americas",
@@ -606,13 +370,46 @@ const getFallbackData = (): Exception[] => {
       position_qty: -3000,
       tetb_qty: -3000,
       tetb_match: true,
-      status: "Challenge",
+      status: "Unwind",
       priority: "High",
       sla_status: "SLA Breach",
       assigned_to: "John Smith",
       created_date: "2025-04-01T22:22:50.3812",
       due_date: "2025-04-03T22:22:50.3812",
       aging_days: 5
+    },
+    {
+      id: "CORE-2025-002",
+      l04_business_area_name: "Equity Derivatives",
+      l06_name: "Flow Derivatives EMEA",
+      named_no_name: "Flow Derivatives EMEA",
+      ads_book_code: "954808",
+      ads_book_path: "Barclays Group:Markets: Equities:Equity EU",
+      system: "AMM",
+      legal_entity: "BCPLC",
+      regulator: "PRA",
+      instrument_id: "1004592602",
+      equity_class_path: "Equity Swap",
+      instrument_type: "SWP",
+      instrument_name: "EZJ 15Dec25 SWP 100 LON",
+      position_tbbb_classification: "Trading",
+      as_of_time: "2025-04-01T22:25:10.3821",
+      bb_underlying: "Sophis/ 67552600/ EZJ. L",
+      reason: "[RuleEvaluationResult (ruleIdentifier=002, result=Yes",
+      look_through: "n",
+      sod_dealt_bb_underlying: "-1453200.000",
+      position_av: -201200.000,
+      tetb_av: -201200.00,
+      position_qty: -5000,
+      tetb_qty: -5000,
+      tetb_match: false,
+      status: "Writedown",
+      priority: "Medium",
+      sla_status: "Within SLA",
+      assigned_to: "Sarah Johnson",
+      created_date: "2025-04-01T22:25:10.3821",
+      due_date: "2025-04-04T22:25:10.3821",
+      aging_days: 2
     }
   ];
 };
@@ -643,7 +440,7 @@ const AdhocReports: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
-      const data = loadExceptionData();
+      const data = getSampleExceptionData();
       setExceptions(data);
       setFilteredData(data);
     } catch (error) {
@@ -1273,59 +1070,51 @@ const AdhocReports: React.FC = () => {
   );
 
   return (
-    <ErrorBoundary>
-      <div className="bg-background p-2 h-full w-full">
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-2xl font-bold">Adhoc Reports</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </div>
+    <div className="bg-background p-2 h-full w-full">
+      <div className="flex justify-between items-center mb-2">
+        <h1 className="text-2xl font-bold">Adhoc Reports</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
-
-        {/* Report Type Selection */}
-        <Card className="mb-2">
-          <CardContent className="p-2">
-            <Tabs value={selectedReport} onValueChange={setSelectedReport}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="exceptions" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Exceptions Report
-                </TabsTrigger>
-                <TabsTrigger value="reassignment" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Reassignment Report
-                </TabsTrigger>
-                <TabsTrigger value="tprt" className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  TPRT Report
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="exceptions" className="mt-4">
-                <ErrorBoundary>
-                  {renderExceptionsReport()}
-                </ErrorBoundary>
-              </TabsContent>
-
-              <TabsContent value="reassignment" className="mt-4">
-                <ErrorBoundary>
-                  {renderReassignmentReport()}
-                </ErrorBoundary>
-              </TabsContent>
-
-              <TabsContent value="tprt" className="mt-4">
-                <ErrorBoundary>
-                  {renderPlaceholderReport()}
-                </ErrorBoundary>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
       </div>
-    </ErrorBoundary>
+
+      {/* Report Type Selection */}
+      <Card className="mb-2">
+        <CardContent className="p-2">
+          <Tabs value={selectedReport} onValueChange={setSelectedReport}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="exceptions" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Exceptions Report
+              </TabsTrigger>
+              <TabsTrigger value="reassignment" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Reassignment Report
+              </TabsTrigger>
+              <TabsTrigger value="tprt" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                TPRT Report
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="exceptions" className="mt-4">
+              {renderExceptionsReport()}
+            </TabsContent>
+
+            <TabsContent value="reassignment" className="mt-4">
+              {renderReassignmentReport()}
+            </TabsContent>
+
+            <TabsContent value="tprt" className="mt-4">
+              {renderPlaceholderReport()}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
