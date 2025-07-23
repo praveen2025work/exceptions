@@ -484,7 +484,7 @@ const AdhocReports: React.FC = () => {
 
             <TabsContent value="tprt" className="mt-6">
               {renderTPRTReport()}
-            </T>
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
