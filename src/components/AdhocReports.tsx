@@ -123,116 +123,182 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Safe data loading function
-const loadSampleData = (): Exception[] => {
+// Load actual exception data from JSON files
+const loadExceptionData = async (): Promise<Exception[]> => {
   try {
-    const sampleData: Exception[] = [
-      {
-        id: "EXC-2025-001",
-        l04_business_area_name: "Equity Derivatives",
-        l06_name: "Flow Derivatives Americas",
-        named_no_name: "Flow Derivatives Americas",
-        ads_book_code: "954807",
-        ads_book_path: "Barclays Group:Markets: Equities:Equity De",
-        system: "AMM",
-        legal_entity: "BCINC",
-        regulator: "FRB",
-        instrument_id: "1004592601",
-        equity_class_path: "Equity Option (Ex)",
-        instrument_type: "ESM",
-        instrument_name: "IWM 20Jun25 CAC 240 QUSA",
-        position_tbbb_classification: "Uncertain",
-        as_of_time: "2025-04-01T22:22:50.3812",
-        bb_underlying: "Sophis/ 67552599/ IWM. P",
-        reason: "[RuleEvaluationResult (ruleIdentifier=001, result=No",
-        look_through: "y",
-        sod_dealt_bb_underlying: "-2571066.384",
-        position_av: -101132.334,
-        tetb_av: -101132.33,
-        position_qty: -3000,
-        tetb_qty: -3000,
-        tetb_match: true,
-        status: "Challenge",
-        priority: "High",
-        sla_status: "SLA Breach",
-        assigned_to: "John Smith",
-        created_date: "2025-04-01T22:22:50.3812",
-        due_date: "2025-04-03T22:22:50.3812",
-        aging_days: 5
-      },
-      {
-        id: "EXC-2025-002",
-        l04_business_area_name: "Fixed Income",
-        l06_name: "Credit Trading Americas",
-        named_no_name: "Credit Trading Americas",
-        ads_book_code: "954809",
-        ads_book_path: "Barclays Group:Markets: Fixed Income:Credit",
-        system: "SUMMIT",
-        legal_entity: "BCINC",
-        regulator: "FRB",
-        instrument_id: "1004592603",
-        equity_class_path: "Corporate Bond",
-        instrument_type: "BND",
-        instrument_name: "AAPL 3.25% 15Feb26 USD",
-        position_tbbb_classification: "Trading",
-        as_of_time: "2025-04-02T09:15:30.1234",
-        bb_underlying: "Bloomberg/ AAPL 3.25 02/15/26",
-        reason: "[RuleEvaluationResult (ruleIdentifier=003, result=No",
-        look_through: "n",
-        sod_dealt_bb_underlying: "-850000.000",
-        position_av: 2500000.000,
-        tetb_av: 2500000.00,
-        position_qty: 2500,
-        tetb_qty: 2500,
-        tetb_match: true,
-        status: "Unwind",
-        priority: "Medium",
-        sla_status: "Within SLA",
-        assigned_to: "Sarah Johnson",
-        created_date: "2025-04-02T09:15:30.1234",
-        due_date: "2025-04-05T09:15:30.1234",
-        aging_days: 2
-      },
-      {
-        id: "EXC-2025-003",
-        l04_business_area_name: "Commodities",
-        l06_name: "Energy Trading",
-        named_no_name: "Energy Trading",
-        ads_book_code: "954811",
-        ads_book_path: "Barclays Group:Markets: Commodities:Energy",
-        system: "ENDUR",
-        legal_entity: "BCINC",
-        regulator: "CFTC",
-        instrument_id: "1004592605",
-        equity_class_path: "Commodity Future",
-        instrument_type: "FUT",
-        instrument_name: "WTI Crude Oil Jun25 Future",
-        position_tbbb_classification: "Trading",
-        as_of_time: "2025-04-03T11:45:20.9876",
-        bb_underlying: "NYMEX/ CLM5 Comdty",
-        reason: "[RuleEvaluationResult (ruleIdentifier=005, result=No",
-        look_through: "n",
-        sod_dealt_bb_underlying: "3200000.000",
-        position_av: 1800000.000,
-        tetb_av: 1800000.00,
-        position_qty: 500,
-        tetb_qty: 500,
-        tetb_match: true,
-        status: "Centralise",
-        priority: "Critical",
-        sla_status: "SLA Breach",
-        assigned_to: "Michael Chen",
-        created_date: "2025-04-03T11:45:20.9876",
-        due_date: "2025-04-04T11:45:20.9876",
-        aging_days: 8
-      }
-    ];
-    
-    return sampleData;
+    // Load data from both JSON files
+    const [exceptionsResponse, coreExceptionsResponse] = await Promise.all([
+      fetch('/src/data/exceptions.json'),
+      fetch('/src/data/core-exceptions.json')
+    ]);
+
+    let allExceptions: Exception[] = [];
+
+    // Process exceptions.json data
+    if (exceptionsResponse.ok) {
+      const exceptionsData = await exceptionsResponse.json();
+      const processedExceptions = exceptionsData.exceptions?.map((exc: any, index: number) => ({
+        id: exc.id || `EXC-${new Date().getFullYear()}-${String(index + 1).padStart(3, '0')}`,
+        l04_business_area_name: exc.l04_business_area_name || 'Unknown',
+        l06_name: exc.l06_name || 'Unknown',
+        named_no_name: exc.named_no_name || exc.l06_name || 'Unknown',
+        ads_book_code: exc.ads_book_code || 'N/A',
+        ads_book_path: exc.ads_book_path || 'N/A',
+        system: exc.system || 'Unknown',
+        legal_entity: exc.legal_entity || 'Unknown',
+        regulator: exc.regulator || 'Unknown',
+        instrument_id: exc.instrument_id || 'N/A',
+        equity_class_path: exc.equity_class_path || 'N/A',
+        instrument_type: exc.instrument_type || 'Unknown',
+        instrument_name: exc.instrument_name || 'Unknown',
+        position_tbbb_classification: exc.position_tbbb_classification || 'Unknown',
+        as_of_time: exc.as_of_time || new Date().toISOString(),
+        bb_underlying: exc.bb_underlying || 'N/A',
+        reason: exc.reason || 'No reason provided',
+        look_through: exc.look_through || 'N/A',
+        sod_dealt_bb_underlying: exc.sod_dealt_bb_underlying || 'N/A',
+        position_av: parseFloat(exc.position_av) || 0,
+        tetb_av: parseFloat(exc.tetb_av) || 0,
+        position_qty: parseFloat(exc.position_qty) || 0,
+        tetb_qty: parseFloat(exc.tetb_qty) || 0,
+        tetb_match: exc.tetb_match === true || exc.tetb_match === 'true',
+        // Map old status values to new ones
+        status: mapStatus(exc.status) as Exception['status'],
+        priority: exc.priority || 'Medium',
+        sla_status: exc.sla_status || 'Within SLA',
+        assigned_to: exc.assigned_to || 'Unassigned',
+        created_date: exc.created_date || new Date().toISOString(),
+        due_date: exc.due_date || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        aging_days: exc.aging_days || calculateAgingDays(exc.created_date)
+      })) || [];
+
+      allExceptions = [...allExceptions, ...processedExceptions];
+    }
+
+    // Process core-exceptions.json data
+    if (coreExceptionsResponse.ok) {
+      const coreExceptionsData = await coreExceptionsResponse.json();
+      const processedCoreExceptions = coreExceptionsData?.map((exc: any, index: number) => ({
+        id: `CORE-${new Date().getFullYear()}-${String(index + 1).padStart(3, '0')}`,
+        l04_business_area_name: exc.L04_BUSINESS_AREA_NAME || 'Unknown',
+        l06_name: exc.L06_NAME || 'Unknown',
+        named_no_name: exc.NAMEDPNL_NAME || exc.L06_NAME || 'Unknown',
+        ads_book_code: exc['SDS Book Code'] || 'N/A',
+        ads_book_path: exc['SDS Book Path'] || 'N/A',
+        system: exc.System || 'Unknown',
+        legal_entity: exc['Legal Entity'] || 'Unknown',
+        regulator: exc.Regulator || 'Unknown',
+        instrument_id: exc['Instrument Id'] || 'N/A',
+        equity_class_path: exc['Equity Class Type'] || 'N/A',
+        instrument_type: exc['Instrument Type'] || 'Unknown',
+        instrument_name: exc['Instrument Name'] || 'Unknown',
+        position_tbbb_classification: exc['Position TBBB Classification'] || 'Unknown',
+        as_of_time: exc['As of time'] || new Date().toISOString(),
+        bb_underlying: exc['BB Underlyings'] || 'N/A',
+        reason: exc.Reason || 'No reason provided',
+        look_through: exc['Look through'] || 'N/A',
+        sod_dealt_bb_underlying: exc['SOD Delta on BB Underlying'] || 'N/A',
+        position_av: parseFloat(exc['Position AV']) || 0,
+        tetb_av: parseFloat(exc['TETB AV']) || 0,
+        position_qty: parseFloat(exc['Position Qty']) || 0,
+        tetb_qty: parseFloat(exc['TETB Qty']) || 0,
+        tetb_match: exc['TETB Match'] === 'Match',
+        // Assign random status for core data
+        status: getRandomStatus() as Exception['status'],
+        priority: getRandomPriority() as Exception['priority'],
+        sla_status: getRandomSLAStatus() as Exception['sla_status'],
+        assigned_to: getRandomAssignee(),
+        created_date: exc['As of time'] || new Date().toISOString(),
+        due_date: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+        aging_days: Math.floor(Math.random() * 30)
+      })) || [];
+
+      allExceptions = [...allExceptions, ...processedCoreExceptions];
+    }
+
+    return allExceptions;
   } catch (error) {
-    console.error('Error loading sample data:', error);
-    return [];
+    console.error('Error loading exception data:', error);
+    // Return fallback sample data if loading fails
+    return getFallbackData();
   }
+};
+
+// Helper functions
+const mapStatus = (oldStatus: string): string => {
+  const statusMap: { [key: string]: string } = {
+    'Open': 'Challenge',
+    'In Progress': 'Reassignment',
+    'Resolved': 'Centralise',
+    'Closed': 'Writedown'
+  };
+  return statusMap[oldStatus] || oldStatus || 'Challenge';
+};
+
+const calculateAgingDays = (createdDate: string): number => {
+  if (!createdDate) return 0;
+  const created = new Date(createdDate);
+  const now = new Date();
+  const diffTime = Math.abs(now.getTime() - created.getTime());
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const getRandomStatus = (): string => {
+  const statuses = ['Unwind', 'Centralise', 'Writedown', 'Insufficient Data', 'Challenge', 'Reassignment'];
+  return statuses[Math.floor(Math.random() * statuses.length)];
+};
+
+const getRandomPriority = (): string => {
+  const priorities = ['Low', 'Medium', 'High', 'Critical'];
+  return priorities[Math.floor(Math.random() * priorities.length)];
+};
+
+const getRandomSLAStatus = (): string => {
+  const slaStatuses = ['Within SLA', 'SLA Breach', 'SLA Warning'];
+  return slaStatuses[Math.floor(Math.random() * slaStatuses.length)];
+};
+
+const getRandomAssignee = (): string => {
+  const assignees = ['John Smith', 'Sarah Johnson', 'Michael Chen', 'Emily Davis', 'David Wilson', 'Lisa Anderson', 'Robert Taylor', 'Jennifer Martinez'];
+  return assignees[Math.floor(Math.random() * assignees.length)];
+};
+
+const getFallbackData = (): Exception[] => {
+  return [
+    {
+      id: "EXC-2025-001",
+      l04_business_area_name: "Equity Derivatives",
+      l06_name: "Flow Derivatives Americas",
+      named_no_name: "Flow Derivatives Americas",
+      ads_book_code: "954807",
+      ads_book_path: "Barclays Group:Markets: Equities:Equity De",
+      system: "AMM",
+      legal_entity: "BCINC",
+      regulator: "FRB",
+      instrument_id: "1004592601",
+      equity_class_path: "Equity Option (Ex)",
+      instrument_type: "ESM",
+      instrument_name: "IWM 20Jun25 CAC 240 QUSA",
+      position_tbbb_classification: "Uncertain",
+      as_of_time: "2025-04-01T22:22:50.3812",
+      bb_underlying: "Sophis/ 67552599/ IWM. P",
+      reason: "[RuleEvaluationResult (ruleIdentifier=001, result=No",
+      look_through: "y",
+      sod_dealt_bb_underlying: "-2571066.384",
+      position_av: -101132.334,
+      tetb_av: -101132.33,
+      position_qty: -3000,
+      tetb_qty: -3000,
+      tetb_match: true,
+      status: "Challenge",
+      priority: "High",
+      sla_status: "SLA Breach",
+      assigned_to: "John Smith",
+      created_date: "2025-04-01T22:22:50.3812",
+      due_date: "2025-04-03T22:22:50.3812",
+      aging_days: 5
+    }
+  ];
 };
 
 const AdhocReports: React.FC = () => {
@@ -262,10 +328,7 @@ const AdhocReports: React.FC = () => {
         setIsLoading(true);
         setError(null);
         
-        // Simulate loading delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const data = loadSampleData();
+        const data = await loadExceptionData();
         setExceptions(data);
         setFilteredData(data);
       } catch (error) {
@@ -366,11 +429,12 @@ const AdhocReports: React.FC = () => {
       const reportName = selectedReport === "exceptions" ? "Exceptions Report" : 
                         selectedReport === "reassignment" ? "Reassignment Report" : "TPRT Report";
       
-      // Create CSV content
+      // Create comprehensive CSV content
       const headers = [
         "Exception ID",
         "L04 Business Area",
         "L06 Name",
+        "Named/No Name",
         "Status",
         "Priority",
         "SLA Status",
@@ -378,14 +442,25 @@ const AdhocReports: React.FC = () => {
         "Legal Entity",
         "Regulator",
         "ADS Book Code",
+        "ADS Book Path",
         "Instrument ID",
+        "Instrument Type",
         "Instrument Name",
+        "Equity Class Path",
+        "Position TBBB Classification",
         "Position AV",
         "TETB AV",
         "Position Qty",
         "TETB Qty",
+        "TETB Match",
+        "BB Underlying",
+        "Look Through",
+        "SOD Dealt BB Underlying",
+        "Assigned To",
         "Aging Days",
         "Created Date",
+        "Due Date",
+        "As Of Time",
         "Reason"
       ];
 
@@ -395,6 +470,7 @@ const AdhocReports: React.FC = () => {
           exc.id || "",
           exc.l04_business_area_name || "",
           exc.l06_name || "",
+          exc.named_no_name || "",
           exc.status || "",
           exc.priority || "",
           exc.sla_status || "",
@@ -402,16 +478,27 @@ const AdhocReports: React.FC = () => {
           exc.legal_entity || "",
           exc.regulator || "",
           exc.ads_book_code || "",
+          exc.ads_book_path || "",
           exc.instrument_id || "",
+          exc.instrument_type || "",
           exc.instrument_name || "",
+          exc.equity_class_path || "",
+          exc.position_tbbb_classification || "",
           exc.position_av || 0,
           exc.tetb_av || 0,
           exc.position_qty || 0,
           exc.tetb_qty || 0,
+          exc.tetb_match ? "Match" : "Mismatch",
+          exc.bb_underlying || "",
+          exc.look_through || "",
+          exc.sod_dealt_bb_underlying || "",
+          exc.assigned_to || "",
           exc.aging_days || 0,
           exc.created_date || "",
+          exc.due_date || "",
+          exc.as_of_time || "",
           exc.reason || ""
-        ].map(field => `"${field}"`).join(","))
+        ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
       ].join("\n");
 
       // Create and download file
@@ -542,6 +629,88 @@ const AdhocReports: React.FC = () => {
           </div>
         </div>
 
+        {/* Second row of filters */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 mt-2">
+          {/* L06 Name Filter */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium">L06 Name</label>
+            <Select value={filters.l06_name} onValueChange={(value) => handleFilterChange("l06_name", value)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="All L06" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All L06</SelectItem>
+                {getUniqueValues("l06_name").map(value => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Legal Entity Filter */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Legal Entity</label>
+            <Select value={filters.legal_entity} onValueChange={(value) => handleFilterChange("legal_entity", value)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="All Entities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Entities</SelectItem>
+                {getUniqueValues("legal_entity").map(value => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Regulator Filter */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium">Regulator</label>
+            <Select value={filters.regulator} onValueChange={(value) => handleFilterChange("regulator", value)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="All Regulators" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Regulators</SelectItem>
+                {getUniqueValues("regulator").map(value => (
+                  <SelectItem key={value} value={value}>{value}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* SLA Status Filter */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium">SLA Status</label>
+            <Select value={filters.sla_status} onValueChange={(value) => handleFilterChange("sla_status", value)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="All SLA" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All SLA</SelectItem>
+                <SelectItem value="Within SLA">Within SLA</SelectItem>
+                <SelectItem value="SLA Breach">SLA Breach</SelectItem>
+                <SelectItem value="SLA Warning">SLA Warning</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* ADS Book Code Filter */}
+          <div className="space-y-1">
+            <label className="text-xs font-medium">ADS Book Code</label>
+            <Input
+              type="text"
+              placeholder="Search book code..."
+              value={filters.ads_book_code}
+              onChange={(e) => handleFilterChange("ads_book_code", e.target.value)}
+              className="h-8 text-xs"
+            />
+          </div>
+
+          {/* Empty space for alignment */}
+          <div></div>
+        </div>
+
         <div className="flex justify-between items-center mt-3 pt-2 border-t">
           <div className="text-xs text-muted-foreground">
             Showing {filteredData.length} of {exceptions.length} records
@@ -624,7 +793,7 @@ const AdhocReports: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-xs">Exception ID</TableHead>
+                    <TableHead className="text-xs sticky left-0 bg-background">Exception ID</TableHead>
                     <TableHead className="text-xs">L04 Business Area</TableHead>
                     <TableHead className="text-xs">L06 Name</TableHead>
                     <TableHead className="text-xs">Status</TableHead>
@@ -632,9 +801,16 @@ const AdhocReports: React.FC = () => {
                     <TableHead className="text-xs">SLA Status</TableHead>
                     <TableHead className="text-xs">System</TableHead>
                     <TableHead className="text-xs">Legal Entity</TableHead>
+                    <TableHead className="text-xs">Regulator</TableHead>
                     <TableHead className="text-xs">Instrument ID</TableHead>
+                    <TableHead className="text-xs">Instrument Type</TableHead>
+                    <TableHead className="text-xs">Instrument Name</TableHead>
                     <TableHead className="text-xs">Position AV</TableHead>
                     <TableHead className="text-xs">TETB AV</TableHead>
+                    <TableHead className="text-xs">Position Qty</TableHead>
+                    <TableHead className="text-xs">TETB Qty</TableHead>
+                    <TableHead className="text-xs">TETB Match</TableHead>
+                    <TableHead className="text-xs">Assigned To</TableHead>
                     <TableHead className="text-xs">Aging Days</TableHead>
                     <TableHead className="text-xs">Created Date</TableHead>
                   </TableRow>
@@ -642,14 +818,14 @@ const AdhocReports: React.FC = () => {
                 <TableBody>
                   {filteredData.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={13} className="text-center text-xs text-muted-foreground py-8">
+                      <TableCell colSpan={20} className="text-center text-xs text-muted-foreground py-8">
                         No data matches the current filters
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredData.map((exception) => (
                       <TableRow key={exception.id}>
-                        <TableCell className="text-xs font-mono">{exception.id || 'N/A'}</TableCell>
+                        <TableCell className="text-xs font-mono sticky left-0 bg-background">{exception.id || 'N/A'}</TableCell>
                         <TableCell className="text-xs">{exception.l04_business_area_name || 'N/A'}</TableCell>
                         <TableCell className="text-xs">{exception.l06_name || 'N/A'}</TableCell>
                         <TableCell className="text-xs">
@@ -688,9 +864,33 @@ const AdhocReports: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-xs">{exception.system || 'N/A'}</TableCell>
                         <TableCell className="text-xs">{exception.legal_entity || 'N/A'}</TableCell>
+                        <TableCell className="text-xs">{exception.regulator || 'N/A'}</TableCell>
                         <TableCell className="text-xs font-mono">{exception.instrument_id || 'N/A'}</TableCell>
-                        <TableCell className="text-xs">{exception.position_av || 0}</TableCell>
-                        <TableCell className="text-xs">{exception.tetb_av || 0}</TableCell>
+                        <TableCell className="text-xs">{exception.instrument_type || 'N/A'}</TableCell>
+                        <TableCell className="text-xs max-w-[200px] truncate" title={exception.instrument_name || 'N/A'}>
+                          {exception.instrument_name || 'N/A'}
+                        </TableCell>
+                        <TableCell className="text-xs text-right">
+                          {exception.position_av ? exception.position_av.toLocaleString() : '0'}
+                        </TableCell>
+                        <TableCell className="text-xs text-right">
+                          {exception.tetb_av ? exception.tetb_av.toLocaleString() : '0'}
+                        </TableCell>
+                        <TableCell className="text-xs text-right">
+                          {exception.position_qty ? exception.position_qty.toLocaleString() : '0'}
+                        </TableCell>
+                        <TableCell className="text-xs text-right">
+                          {exception.tetb_qty ? exception.tetb_qty.toLocaleString() : '0'}
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          <Badge 
+                            variant={exception.tetb_match ? 'secondary' : 'destructive'}
+                            className="text-xs"
+                          >
+                            {exception.tetb_match ? 'Match' : 'Mismatch'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">{exception.assigned_to || 'Unassigned'}</TableCell>
                         <TableCell className="text-xs">
                           <Badge 
                             variant={
