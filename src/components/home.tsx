@@ -129,23 +129,24 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
-              <div className="bg-background p-4">
-                <h1 className="text-2xl font-bold mb-4">Adhoc Reports - TEST</h1>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Test Component</CardTitle>
-                    <CardDescription>
-                      This is a test to ensure the Reports tab is working
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      If you can see this, the Reports tab is working correctly.
-                    </p>
-                    <Button>Test Button</Button>
-                  </CardContent>
-                </Card>
-                <div className="mt-4">
+              <div className="w-full h-full min-h-[500px] bg-red-100 border-2 border-red-500 p-4">
+                <h1 className="text-3xl font-bold text-red-800 mb-4">🔴 REPORTS TAB IS WORKING! 🔴</h1>
+                <div className="bg-white p-4 rounded border">
+                  <h2 className="text-xl font-semibold mb-2">Debug Information:</h2>
+                  <p>Active Tab: {activeTab}</p>
+                  <p>This content should be visible when Reports tab is clicked.</p>
+                  <Button 
+                    onClick={() => {
+                      console.log("Button clicked in Reports tab");
+                      alert("Reports tab is working!");
+                    }}
+                    className="mt-2"
+                  >
+                    Click Me to Test
+                  </Button>
+                </div>
+                <div className="mt-4 bg-blue-100 p-4 rounded">
+                  <h3 className="font-semibold">AdhocReports Component Below:</h3>
                   <AdhocReports />
                 </div>
               </div>
