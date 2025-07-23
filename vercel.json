@@ -1,5 +1,5 @@
 {
-  "buildCommand": "next build",
+  "buildCommand": "vite build",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "outputDirectory": ".next"
+  "outputDirectory": "dist"
 }
