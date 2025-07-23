@@ -73,6 +73,19 @@ const Home = () => {
         </div>
       </header>
 
+      {/* Debug Info */}
+      <div style={{
+        backgroundColor: '#fef3c7',
+        border: '2px solid #f59e0b',
+        padding: '10px',
+        margin: '10px',
+        textAlign: 'center',
+        fontSize: '18px',
+        fontWeight: 'bold'
+      }}>
+        🟡 CURRENT ACTIVE TAB: {activeTab} 🟡
+      </div>
+
       {/* Main Content */}
       <main className="container px-4 py-6">
         <div className="mb-6">
@@ -129,24 +142,53 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
-              <div className="w-full h-full min-h-[500px] bg-red-100 border-2 border-red-500 p-4">
-                <h1 className="text-3xl font-bold text-red-800 mb-4">🔴 REPORTS TAB IS WORKING! 🔴</h1>
-                <div className="bg-white p-4 rounded border">
-                  <h2 className="text-xl font-semibold mb-2">Debug Information:</h2>
-                  <p>Active Tab: {activeTab}</p>
-                  <p>This content should be visible when Reports tab is clicked.</p>
+              <div style={{
+                width: '100%',
+                minHeight: '500px',
+                backgroundColor: '#fee2e2',
+                border: '4px solid #dc2626',
+                padding: '20px',
+                position: 'relative',
+                zIndex: 1
+              }}>
+                <h1 style={{
+                  fontSize: '2rem',
+                  fontWeight: 'bold',
+                  color: '#991b1b',
+                  marginBottom: '20px'
+                }}>
+                  🔴 REPORTS TAB IS WORKING! 🔴
+                </h1>
+                <div style={{
+                  backgroundColor: 'white',
+                  padding: '20px',
+                  borderRadius: '8px',
+                  border: '1px solid #ccc',
+                  marginBottom: '20px'
+                }}>
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '10px' }}>
+                    Debug Information:
+                  </h2>
+                  <p style={{ marginBottom: '5px' }}>Active Tab: {activeTab}</p>
+                  <p style={{ marginBottom: '10px' }}>This content should be visible when Reports tab is clicked.</p>
                   <Button 
                     onClick={() => {
                       console.log("Button clicked in Reports tab");
                       alert("Reports tab is working!");
                     }}
-                    className="mt-2"
+                    style={{ marginTop: '10px' }}
                   >
                     Click Me to Test
                   </Button>
                 </div>
-                <div className="mt-4 bg-blue-100 p-4 rounded">
-                  <h3 className="font-semibold">AdhocReports Component Below:</h3>
+                <div style={{
+                  backgroundColor: '#dbeafe',
+                  padding: '20px',
+                  borderRadius: '8px'
+                }}>
+                  <h3 style={{ fontWeight: '600', marginBottom: '10px' }}>
+                    AdhocReports Component Below:
+                  </h3>
                   <AdhocReports />
                 </div>
               </div>
