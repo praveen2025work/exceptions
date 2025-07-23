@@ -32,7 +32,7 @@ const navItems = [
 ];
 
 const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
