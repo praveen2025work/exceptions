@@ -15,7 +15,6 @@ import { Bell, Filter, Search, Settings } from "lucide-react";
 import ExceptionDashboard from "./ExceptionDashboard";
 import WorkflowTab from "./WorkflowTab";
 import WorkflowStepTab from "./WorkflowStepTab";
-import AdhocReports from "./AdhocReports";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -70,11 +69,12 @@ const Home = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             {/* Tab Navigation */}
             <div className="mb-6">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="exceptions">Workflow</TabsTrigger>
                 <TabsTrigger value="workflow">Exceptions</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
+                <TabsTrigger value="adhoc-reports">Adhoc Reports</TabsTrigger>
                 <TabsTrigger value="admin">Admin</TabsTrigger>
               </TabsList>
             </div>
@@ -132,6 +132,22 @@ const Home = () => {
             </TabsContent>
 
 
+
+            <TabsContent value="adhoc-reports">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Adhoc Reports</CardTitle>
+                  <CardDescription>
+                    Adhoc reporting functionality will be displayed here.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    This is a placeholder for the Adhoc Reports tab.
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="admin">
               <Card>
