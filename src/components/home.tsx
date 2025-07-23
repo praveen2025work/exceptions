@@ -15,6 +15,7 @@ import { Bell, Filter, Search, Settings } from "lucide-react";
 import ExceptionDashboard from "./ExceptionDashboard";
 import WorkflowTab from "./WorkflowTab";
 import WorkflowStepTab from "./WorkflowStepTab";
+import AdhocReports from "./AdhocReports";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -134,19 +135,7 @@ const Home = () => {
 
 
             <TabsContent value="adhoc-reports">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Adhoc Reports</CardTitle>
-                  <CardDescription>
-                    Adhoc reporting functionality will be displayed here.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    This is a placeholder for the Adhoc Reports tab.
-                  </p>
-                </CardContent>
-              </Card>
+              <AdhocReports />
             </TabsContent>
 
             <TabsContent value="admin">

@@ -238,7 +238,6 @@ const AdhocReports: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Memoized filtered data
   const filteredData = useMemo(() => {
     let filtered = [...SAMPLE_DATA];
 
@@ -253,10 +252,9 @@ const AdhocReports: React.FC = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(item => 
-        item.id.toLowerCase().includes(term) ||
-        item.l04_business_area_name.toLowerCase().includes(term) ||
-        item.l06_name.toLowerCase().includes(term) ||
-        item.instrument_name.toLowerCase().includes(term)
+        Object.values(item).some(val => 
+          String(val).toLowerCase().includes(term)
+        )
       );
     }
 
@@ -264,25 +262,16 @@ const AdhocReports: React.FC = () => {
   }, [statusFilter, priorityFilter, searchTerm]);
 
   const downloadCSV = () => {
-    const headers = [
-      "Exception ID", "L04 Business Area", "L06 Name", "Status", "Priority", 
-      "System", "Legal Entity", "Instrument Name", "Position AV", "TETB AV"
-    ];
-
+    const headers = Object.keys(SAMPLE_DATA[0]);
     const csvContent = [
       headers.join(","),
-      ...filteredData.map(item => [
-        item.id,
-        item.l04_business_area_name,
-        item.l06_name,
-        item.status,
-        item.priority,
-        item.system,
-        item.legal_entity,
-        item.instrument_name,
-        item.position_av,
-        item.tetb_av
-      ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
+      ...filteredData.map(item => 
+        headers.map(header => {
+          const value = item[header as keyof Exception];
+          const stringValue = String(value).replace(/"/g, '""');
+          return `"${stringValue}"`;
+        }).join(",")
+      )
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -304,7 +293,6 @@ const AdhocReports: React.FC = () => {
 
   const renderExceptionsReport = () => (
     <div className="space-y-4">
-      {/* Filters */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
@@ -317,7 +305,7 @@ const AdhocReports: React.FC = () => {
             <div>
               <label className="text-sm font-medium mb-2 block">Search</label>
               <Input
-                placeholder="Search exceptions..."
+                placeholder="Search all fields..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -370,7 +358,6 @@ const AdhocReports: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Data Table */}
       <Card>
         <CardHeader>
           <CardTitle>Exception Data</CardTitle>
@@ -380,60 +367,34 @@ const AdhocReports: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Exception ID</TableHead>
-                  <TableHead>L04 Business Area</TableHead>
-                  <TableHead>L06 Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>System</TableHead>
-                  <TableHead>Legal Entity</TableHead>
-                  <TableHead>Instrument Name</TableHead>
-                  <TableHead className="text-right">Position AV</TableHead>
-                  <TableHead className="text-right">TETB AV</TableHead>
+                  {Object.keys(SAMPLE_DATA[0]).map(key => <TableHead key={key}>{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</TableHead>)}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={Object.keys(SAMPLE_DATA[0]).length} className="text-center py-8 text-muted-foreground">
                       No data matches the current filters
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredData.map((item) => (
                     <TableRow key={item.id}>
-                      <TableCell className="font-mono">{item.id}</TableCell>
-                      <TableCell>{item.l04_business_area_name}</TableCell>
-                      <TableCell>{item.l06_name}</TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          item.status === 'Challenge' || item.status === 'Insufficient Data' 
-                            ? 'destructive' 
-                            : 'secondary'
-                        }>
-                          {item.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          item.priority === 'Critical' || item.priority === 'High' 
-                            ? 'destructive' 
-                            : 'secondary'
-                        }>
-                          {item.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{item.system}</TableCell>
-                      <TableCell>{item.legal_entity}</TableCell>
-                      <TableCell className="max-w-[200px] truncate" title={item.instrument_name}>
-                        {item.instrument_name}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {item.position_av.toLocaleString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {item.tetb_av.toLocaleString()}
-                      </TableCell>
+                      {Object.entries(item).map(([key, value]) => (
+                        <TableCell key={key} className="max-w-[200px] truncate" title={String(value)}>
+                          {key === 'status' || key === 'priority' ? (
+                            <Badge variant={
+                              (value === 'Challenge' || value === 'Insufficient Data' || value === 'Critical' || value === 'High')
+                                ? 'destructive' 
+                                : 'secondary'
+                            }>
+                              {String(value)}
+                            </Badge>
+                          ) : (
+                            String(value)
+                          )}
+                        </TableCell>
+                      ))}
                     </TableRow>
                   ))
                 )}
@@ -523,7 +484,7 @@ const AdhocReports: React.FC = () => {
 
             <TabsContent value="tprt" className="mt-6">
               {renderTPRTReport()}
-            </TabsContent>
+            </T>
           </Tabs>
         </CardContent>
       </Card>
