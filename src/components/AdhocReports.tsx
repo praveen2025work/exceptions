@@ -234,19 +234,19 @@ const SAMPLE_DATA: Exception[] = [
 
 const AdhocReports: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState("exceptions");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [priorityFilter, setPriorityFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Memoized filtered data
   const filteredData = useMemo(() => {
     let filtered = [...SAMPLE_DATA];
 
-    if (statusFilter) {
+    if (statusFilter && statusFilter !== "all") {
       filtered = filtered.filter(item => item.status === statusFilter);
     }
 
-    if (priorityFilter) {
+    if (priorityFilter && priorityFilter !== "all") {
       filtered = filtered.filter(item => item.priority === priorityFilter);
     }
 
@@ -295,8 +295,8 @@ const AdhocReports: React.FC = () => {
   };
 
   const clearFilters = () => {
-    setStatusFilter("");
-    setPriorityFilter("");
+    setStatusFilter("all");
+    setPriorityFilter("all");
     setSearchTerm("");
   };
 
@@ -327,7 +327,7 @@ const AdhocReports: React.FC = () => {
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="Unwind">Unwind</SelectItem>
                   <SelectItem value="Centralise">Centralise</SelectItem>
                   <SelectItem value="Writedown">Writedown</SelectItem>
@@ -344,7 +344,7 @@ const AdhocReports: React.FC = () => {
                   <SelectValue placeholder="All Priorities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Priorities</SelectItem>
+                  <SelectItem value="all">All Priorities</SelectItem>
                   <SelectItem value="Critical">Critical</SelectItem>
                   <SelectItem value="High">High</SelectItem>
                   <SelectItem value="Medium">Medium</SelectItem>
