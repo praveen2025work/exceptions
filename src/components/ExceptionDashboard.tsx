@@ -186,15 +186,24 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {agingMetrics.map((metric, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>{metric.label}</span>
-                      <span>{metric.count} ({metric.percentage}%)</span>
+                {agingMetrics.map((metric, index) => {
+                  const getProgressColor = (label: string) => {
+                    if (label.includes("0-7")) return "bg-green-500";
+                    if (label.includes("8-14")) return "bg-yellow-500";
+                    if (label.includes("15-30")) return "bg-orange-500";
+                    return "bg-red-500";
+                  };
+
+                  return (
+                    <div key={index}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>{metric.label}</span>
+                        <span>{metric.count} ({metric.percentage}%)</span>
+                      </div>
+                      <Progress value={metric.percentage} className="h-2" indicatorClassName={getProgressColor(metric.label)} />
                     </div>
-                    <Progress value={metric.percentage} className="h-2" />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
