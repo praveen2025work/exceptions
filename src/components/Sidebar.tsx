@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Home, List, GitBranch, FileText, FileBarChart, UserCog } from 'lucide-react';
+import {
+  Home,
+  List,
+  GitBranch,
+  FileText,
+  FileBarChart,
+  UserCog,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface SidebarProps {
   activeView: string;
@@ -17,20 +32,56 @@ const navItems = [
 ];
 
 const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
-    <aside className="w-64 flex-shrink-0 border-r bg-background p-4">
-      <div className="flex flex-col gap-2">
-        {navItems.map((item) => (
-          <Button
-            key={item.id}
-            variant={activeView === item.id ? 'secondary' : 'ghost'}
-            className="w-full justify-start"
-            onClick={() => setActiveView(item.id)}
-          >
-            <item.icon className="mr-2 h-4 w-4" />
-            {item.label}
+    <aside
+      className={`flex-shrink-0 border-r bg-background transition-all duration-300 ${
+        isCollapsed ? 'w-20' : 'w-64'
+      }`}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex items-center justify-between p-4">
+          {!isCollapsed && (
+            <h2 className="text-lg font-semibold">Navigation</h2>
+          )}
+          <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </Button>
-        ))}
+        </div>
+        <nav className="flex-1 space-y-2 p-4">
+          <TooltipProvider>
+            {navItems.map((item) => (
+              <Tooltip key={item.id} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={activeView === item.id ? 'secondary' : 'ghost'}
+                    className={`w-full ${
+                      isCollapsed ? 'justify-center' : 'justify-start'
+                    }`}
+                    onClick={() => setActiveView(item.id)}
+                  >
+                    <item.icon className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
+                    {!isCollapsed && item.label}
+                  </Button>
+                </TooltipTrigger>
+                {isCollapsed && (
+                  <TooltipContent side="right">
+                    <p>{item.label}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            ))}
+          </TooltipProvider>
+        </nav>
       </div>
     </aside>
   );
