@@ -129,7 +129,26 @@ const Home = () => {
             </TabsContent>
 
             <TabsContent value="reports" className="mt-6">
-              <AdhocReports />
+              <div className="bg-background p-4">
+                <h1 className="text-2xl font-bold mb-4">Adhoc Reports - TEST</h1>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Test Component</CardTitle>
+                    <CardDescription>
+                      This is a test to ensure the Reports tab is working
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">
+                      If you can see this, the Reports tab is working correctly.
+                    </p>
+                    <Button>Test Button</Button>
+                  </CardContent>
+                </Card>
+                <div className="mt-4">
+                  <AdhocReports />
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="adhoc-reports" className="mt-6">
