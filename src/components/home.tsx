@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import ExceptionDashboard from "./ExceptionDashboard";
 import WorkflowTab from "./WorkflowTab";
 import WorkflowStepTab from "./WorkflowStepTab";
@@ -16,6 +16,7 @@ import AdhocReports from "./AdhocReports";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "./ThemeToggle";
 import Sidebar from "./Sidebar";
+import { Notifications } from "./Notifications";
 
 const Home = () => {
   const [activeView, setActiveView] = useState("dashboard");
@@ -80,10 +81,7 @@ const Home = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon">
-                  <Bell className="h-5 w-5" />
-                  <span className="sr-only">Notifications</span>
-                </Button>
+                <Notifications />
 
                 <ThemeToggle />
 
