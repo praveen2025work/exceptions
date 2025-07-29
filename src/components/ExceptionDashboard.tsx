@@ -141,9 +141,8 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   };
 
   return (
-    <div className="bg-background p-2 w-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="bg-background w-full flex flex-col">
+      <div className="flex justify-end items-center mb-4">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8">
             <RefreshCw className="h-3.5 w-3.5" />

@@ -1,6 +1,12 @@
-import React from "react";
-import Home from "../src/components/home";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function IndexPage() {
-  return <Home />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/dashboard");
+  }, [router]);
+
+  return null;
 }

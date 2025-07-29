@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import {
   Home,
@@ -17,21 +18,17 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-interface SidebarProps {
-  activeView: string;
-  setActiveView: (view: string) => void;
-}
-
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home },
-  { id: 'exceptions', label: 'Workflow', icon: List },
-  { id: 'workflow', label: 'Exceptions', icon: GitBranch },
-  { id: 'reports', label: 'Reports', icon: FileText },
-  { id: 'adhoc-reports', label: 'Adhoc Reports', icon: FileBarChart },
-  { id: 'admin', label: 'Admin', icon: UserCog },
+  { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
+  { id: 'exceptions', label: 'Exceptions', icon: List, href: '/exceptions' },
+  { id: 'workflow', label: 'Workflow', icon: GitBranch, href: '/workflow' },
+  { id: 'reports', label: 'Reports', icon: FileText, href: '/reports' },
+  { id: 'adhoc-reports', label: 'Adhoc Reports', icon: FileBarChart, href: '/adhoc-reports' },
+  { id: 'admin', label: 'Admin', icon: UserCog, href: '/admin' },
 ];
 
-const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
+const Sidebar = () => {
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const toggleSidebar = () => {
@@ -63,11 +60,16 @@ const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
               <Tooltip key={item.id} delayDuration={0}>
                 <TooltipTrigger asChild>
                   <Button
-                    variant={activeView === item.id ? 'secondary' : 'ghost'}
+                    variant={
+                      router.pathname === item.href || 
+                      (router.pathname === '/' && item.href === '/dashboard') 
+                        ? 'secondary' 
+                        : 'ghost'
+                    }
                     className={`w-full ${
                       isCollapsed ? 'justify-center' : 'justify-start'
                     }`}
-                    onClick={() => setActiveView(item.id)}
+                    onClick={() => router.push(item.href)}
                   >
                     <item.icon className={`h-4 w-4 ${!isCollapsed && 'mr-2'}`} />
                     {!isCollapsed && item.label}

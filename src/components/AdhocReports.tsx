@@ -447,9 +447,8 @@ const AdhocReports: React.FC = () => {
   );
 
   return (
-    <div className="bg-background p-4 h-full w-full">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Adhoc Reports</h1>
+    <div className="bg-background h-full w-full">
+      <div className="flex justify-end items-center mb-6">
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
