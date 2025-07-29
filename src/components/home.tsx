@@ -71,7 +71,7 @@ const Home = () => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
       <div className="flex min-h-screen bg-background">
-        <Sidebar activeView={activeView} setActiveView={setActiveView} />
+        <Sidebar />
         <div className="flex flex-1 flex-col">
           {/* Header */}
           <header className="sticky top-0 z-10 border-b bg-background">
