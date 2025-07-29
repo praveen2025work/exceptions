@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -11,13 +12,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   Download, 
   Filter, 
   RefreshCw, 
   FileText, 
   Users, 
-  BarChart3
+  BarChart3,
+  Settings,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { 
   Table, 
@@ -27,6 +34,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
+import exceptionsData from '../data/exceptions.json';
 
 // Types
 interface Exception {
@@ -63,183 +71,90 @@ interface Exception {
   aging_days: number;
 }
 
-// Sample data
-const SAMPLE_DATA: Exception[] = [
-  {
-    id: "EXC-2024-001",
-    l04_business_area_name: "Fixed Income Trading",
-    l06_name: "Government Bonds",
-    named_no_name: "US Treasury 10Y",
-    ads_book_code: "FI-GOV-001",
-    ads_book_path: "/Trading/FixedIncome/Government/US",
-    system: "Murex",
-    legal_entity: "Goldman Sachs International",
-    regulator: "FCA",
-    instrument_id: "US912828XG55",
-    equity_class_path: "/Bonds/Government/US/10Y",
-    instrument_type: "Government Bond",
-    instrument_name: "US Treasury Note 2.875% 15-May-2032",
-    position_tbbb_classification: "Level 1",
-    as_of_time: "2024-06-02T09:00:00Z",
-    bb_underlying: "US10Y",
-    reason: "Position mismatch between systems",
-    look_through: "Direct",
-    sod_dealt_bb_underlying: "US10Y",
-    position_av: 15750000.50,
-    tetb_av: 15850000.75,
-    position_qty: 15000000,
-    tetb_qty: 15100000,
-    tetb_match: false,
-    status: "Challenge",
-    priority: "High",
-    sla_status: "Within SLA",
-    assigned_to: "John Smith",
-    created_date: "2024-06-01T14:30:00Z",
-    due_date: "2024-06-03T17:00:00Z",
-    aging_days: 1
-  },
-  {
-    id: "EXC-2024-002",
-    l04_business_area_name: "Equity Trading",
-    l06_name: "Large Cap Stocks",
-    named_no_name: "Apple Inc",
-    ads_book_code: "EQ-LC-002",
-    ads_book_path: "/Trading/Equity/LargeCap/US",
-    system: "Bloomberg AIM",
-    legal_entity: "Goldman Sachs & Co LLC",
-    regulator: "SEC",
-    instrument_id: "AAPL",
-    equity_class_path: "/Equity/US/Technology/AAPL",
-    instrument_type: "Common Stock",
-    instrument_name: "Apple Inc Common Stock",
-    position_tbbb_classification: "Level 1",
-    as_of_time: "2024-06-02T09:00:00Z",
-    bb_underlying: "AAPL US",
-    reason: "Quantity discrepancy in overnight processing",
-    look_through: "Direct",
-    sod_dealt_bb_underlying: "AAPL US",
-    position_av: 18500000.00,
-    tetb_av: 18500000.00,
-    position_qty: 100000,
-    tetb_qty: 98500,
-    tetb_match: false,
-    status: "Reassignment",
-    priority: "Medium",
-    sla_status: "Within SLA",
-    assigned_to: "Sarah Johnson",
-    created_date: "2024-06-01T16:45:00Z",
-    due_date: "2024-06-04T17:00:00Z",
-    aging_days: 1
-  },
-  {
-    id: "EXC-2024-003",
-    l04_business_area_name: "Derivatives Trading",
-    l06_name: "Interest Rate Swaps",
-    named_no_name: "USD 5Y IRS",
-    ads_book_code: "DER-IRS-003",
-    ads_book_path: "/Trading/Derivatives/IRS/USD",
-    system: "Calypso",
-    legal_entity: "Goldman Sachs International",
-    regulator: "CFTC",
-    instrument_id: "USD5Y_IRS_001",
-    equity_class_path: "/Derivatives/IRS/USD/5Y",
-    instrument_type: "Interest Rate Swap",
-    instrument_name: "USD 5Y Interest Rate Swap",
-    position_tbbb_classification: "Level 2",
-    as_of_time: "2024-06-02T09:00:00Z",
-    bb_underlying: "USSW5 Curncy",
-    reason: "Mark-to-market valuation difference",
-    look_through: "Underlying",
-    sod_dealt_bb_underlying: "USSW5 Curncy",
-    position_av: 2500000.25,
-    tetb_av: 2485000.50,
-    position_qty: 50000000,
-    tetb_qty: 50000000,
-    tetb_match: true,
-    status: "Centralise",
-    priority: "Low",
-    sla_status: "Within SLA",
-    assigned_to: "Michael Chen",
-    created_date: "2024-05-30T11:20:00Z",
-    due_date: "2024-06-02T17:00:00Z",
-    aging_days: 3
-  },
-  {
-    id: "EXC-2024-004",
-    l04_business_area_name: "Credit Trading",
-    l06_name: "Corporate Bonds",
-    named_no_name: "Microsoft Corp Bond",
-    ads_book_code: "CR-CB-004",
-    ads_book_path: "/Trading/Credit/Corporate/US",
-    system: "Kondor+",
-    legal_entity: "Goldman Sachs & Co LLC",
-    regulator: "FINRA",
-    instrument_id: "MSFT_2.4_2050",
-    equity_class_path: "/Bonds/Corporate/US/Technology",
-    instrument_type: "Corporate Bond",
-    instrument_name: "Microsoft Corp 2.4% 08-Aug-2050",
-    position_tbbb_classification: "Level 2",
-    as_of_time: "2024-06-02T09:00:00Z",
-    bb_underlying: "MSFT 2.4 08/08/50",
-    reason: "Settlement date mismatch",
-    look_through: "Direct",
-    sod_dealt_bb_underlying: "MSFT 2.4 08/08/50",
-    position_av: 5250000.00,
-    tetb_av: 5275000.00,
-    position_qty: 5000000,
-    tetb_qty: 5025000,
-    tetb_match: false,
-    status: "Challenge",
-    priority: "High",
-    sla_status: "SLA Breach",
-    assigned_to: "Emily Davis",
-    created_date: "2024-05-28T13:15:00Z",
-    due_date: "2024-05-31T17:00:00Z",
-    aging_days: 5
-  },
-  {
-    id: "EXC-2024-005",
-    l04_business_area_name: "FX Trading",
-    l06_name: "Major Currency Pairs",
-    named_no_name: "EUR/USD Spot",
-    ads_book_code: "FX-MAJ-005",
-    ads_book_path: "/Trading/FX/Major/EURUSD",
-    system: "360T",
-    legal_entity: "Goldman Sachs International",
-    regulator: "FCA",
-    instrument_id: "EURUSD_SPOT",
-    equity_class_path: "/FX/Major/EURUSD",
-    instrument_type: "FX Spot",
-    instrument_name: "EUR/USD Spot Rate",
-    position_tbbb_classification: "Level 1",
-    as_of_time: "2024-06-02T09:00:00Z",
-    bb_underlying: "EURUSD Curncy",
-    reason: "Trade booking error",
-    look_through: "Direct",
-    sod_dealt_bb_underlying: "EURUSD Curncy",
-    position_av: 1085000.00,
-    tetb_av: 1085000.00,
-    position_qty: 1000000,
-    tetb_qty: 1000000,
-    tetb_match: true,
-    status: "Reassignment",
-    priority: "Medium",
-    sla_status: "Within SLA",
-    assigned_to: "David Wilson",
-    created_date: "2024-06-02T08:30:00Z",
-    due_date: "2024-06-05T17:00:00Z",
-    aging_days: 0
-  }
-];
-
 const AdhocReports: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState("exceptions");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [businessAreaFilter, setBusinessAreaFilter] = useState("");
+  const [l06Filter, setL06Filter] = useState("");
+  const [systemFilter, setSystemFilter] = useState("");
+  const [assignedToFilter, setAssignedToFilter] = useState("");
+  const [dateFromFilter, setDateFromFilter] = useState("");
+  const [dateToFilter, setDateToFilter] = useState("");
+
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
+    id: true,
+    l04_business_area_name: true,
+    l06_name: true,
+    named_no_name: false,
+    ads_book_code: false,
+    ads_book_path: false,
+    system: true,
+    legal_entity: false,
+    regulator: false,
+    instrument_id: true,
+    equity_class_path: false,
+    instrument_type: true,
+    instrument_name: true,
+    position_tbbb_classification: false,
+    as_of_time: false,
+    bb_underlying: false,
+    reason: true,
+    look_through: false,
+    sod_dealt_bb_underlying: false,
+    position_av: true,
+    tetb_av: true,
+    position_qty: false,
+    tetb_qty: false,
+    tetb_match: false,
+    status: true,
+    priority: true,
+    assigned_to: true,
+    created_date: true,
+    due_date: true,
+    sla_status: true,
+    aging_days: true
+  });
+
+  // Column definitions with friendly names
+  const columnDefinitions = {
+    id: 'Exception ID',
+    l04_business_area_name: 'Business Area',
+    l06_name: 'L06 Name',
+    named_no_name: 'Named/No Name',
+    ads_book_code: 'ADS Book Code',
+    ads_book_path: 'ADS Book Path',
+    system: 'System',
+    legal_entity: 'Legal Entity',
+    regulator: 'Regulator',
+    instrument_id: 'Instrument ID',
+    equity_class_path: 'Equity Class Path',
+    instrument_type: 'Instrument Type',
+    instrument_name: 'Instrument Name',
+    position_tbbb_classification: 'Position TBBB Classification',
+    as_of_time: 'As Of Time',
+    bb_underlying: 'BB Underlying',
+    reason: 'Reason',
+    look_through: 'Look Through',
+    sod_dealt_bb_underlying: 'SOD Dealt BB Underlying',
+    position_av: 'Position AV',
+    tetb_av: 'TETB AV',
+    position_qty: 'Position Qty',
+    tetb_qty: 'TETB Qty',
+    tetb_match: 'TETB Match',
+    status: 'Status',
+    priority: 'Priority',
+    assigned_to: 'Assigned To',
+    created_date: 'Created Date',
+    due_date: 'Due Date',
+    sla_status: 'SLA Status',
+    aging_days: 'Aging Days'
+  };
 
   const filteredData = useMemo(() => {
-    let filtered = [...SAMPLE_DATA];
+    let filtered = [...(exceptionsData.exceptions as Exception[])];
 
     if (statusFilter && statusFilter !== "all") {
       filtered = filtered.filter(item => item.status === statusFilter);
@@ -258,16 +173,68 @@ const AdhocReports: React.FC = () => {
       );
     }
 
+    if (businessAreaFilter) {
+      filtered = filtered.filter(item => 
+        item.l04_business_area_name.toLowerCase().includes(businessAreaFilter.toLowerCase())
+      );
+    }
+
+    if (l06Filter) {
+      filtered = filtered.filter(item => 
+        item.l06_name.toLowerCase().includes(l06Filter.toLowerCase())
+      );
+    }
+
+    if (systemFilter) {
+      filtered = filtered.filter(item => 
+        item.system.toLowerCase().includes(systemFilter.toLowerCase())
+      );
+    }
+
+    if (assignedToFilter) {
+      filtered = filtered.filter(item => 
+        item.assigned_to.toLowerCase().includes(assignedToFilter.toLowerCase())
+      );
+    }
+
+    if (dateFromFilter) {
+      filtered = filtered.filter(item => 
+        new Date(item.created_date) >= new Date(dateFromFilter)
+      );
+    }
+
+    if (dateToFilter) {
+      filtered = filtered.filter(item => 
+        new Date(item.created_date) <= new Date(dateToFilter)
+      );
+    }
+
     return filtered;
-  }, [statusFilter, priorityFilter, searchTerm]);
+  }, [statusFilter, priorityFilter, searchTerm, businessAreaFilter, l06Filter, systemFilter, assignedToFilter, dateFromFilter, dateToFilter]);
+
+  const visibleColumnKeys = useMemo(() => {
+    return Object.keys(visibleColumns).filter(key => visibleColumns[key]);
+  }, [visibleColumns]);
+
+  const handleColumnToggle = (columnKey: string) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnKey]: !prev[columnKey]
+    }));
+  };
 
   const downloadCSV = () => {
-    const headers = Object.keys(SAMPLE_DATA[0]);
+    if (filteredData.length === 0) return;
+    
+    // Only include visible columns in the export
+    const visibleKeys = visibleColumnKeys;
+    const headers = visibleKeys.map(key => columnDefinitions[key as keyof typeof columnDefinitions]).join(',');
+    
     const csvContent = [
-      headers.join(","),
+      headers,
       ...filteredData.map(item => 
-        headers.map(header => {
-          const value = item[header as keyof Exception];
+        visibleKeys.map(key => {
+          const value = item[key as keyof Exception];
           const stringValue = String(value).replace(/"/g, '""');
           return `"${stringValue}"`;
         }).join(",")
@@ -289,6 +256,56 @@ const AdhocReports: React.FC = () => {
     setStatusFilter("all");
     setPriorityFilter("all");
     setSearchTerm("");
+    setBusinessAreaFilter("");
+    setL06Filter("");
+    setSystemFilter("");
+    setAssignedToFilter("");
+    setDateFromFilter("");
+    setDateToFilter("");
+  };
+
+  const resetColumnSelection = () => {
+    setVisibleColumns({
+      id: true,
+      l04_business_area_name: true,
+      l06_name: true,
+      named_no_name: false,
+      ads_book_code: false,
+      ads_book_path: false,
+      system: true,
+      legal_entity: false,
+      regulator: false,
+      instrument_id: true,
+      equity_class_path: false,
+      instrument_type: true,
+      instrument_name: true,
+      position_tbbb_classification: false,
+      as_of_time: false,
+      bb_underlying: false,
+      reason: true,
+      look_through: false,
+      sod_dealt_bb_underlying: false,
+      position_av: true,
+      tetb_av: true,
+      position_qty: false,
+      tetb_qty: false,
+      tetb_match: false,
+      status: true,
+      priority: true,
+      assigned_to: true,
+      created_date: true,
+      due_date: true,
+      sla_status: true,
+      aging_days: true
+    });
+  };
+
+  const selectAllColumns = () => {
+    const allSelected = Object.keys(columnDefinitions).reduce((acc, key) => {
+      acc[key] = true;
+      return acc;
+    }, {} as Record<string, boolean>);
+    setVisibleColumns(allSelected);
   };
 
   const renderExceptionsReport = () => (
@@ -301,9 +318,9 @@ const AdhocReports: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Search</label>
+              <Label className="text-sm font-medium mb-2 block">Search</Label>
               <Input
                 placeholder="Search all fields..."
                 value={searchTerm}
@@ -311,7 +328,7 @@ const AdhocReports: React.FC = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
+              <Label className="text-sm font-medium mb-2 block">Status</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Statuses" />
@@ -328,7 +345,7 @@ const AdhocReports: React.FC = () => {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Priority</label>
+              <Label className="text-sm font-medium mb-2 block">Priority</Label>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
                 <SelectTrigger>
                   <SelectValue placeholder="All Priorities" />
@@ -342,64 +359,178 @@ const AdhocReports: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end gap-2">
-              <Button variant="outline" onClick={clearFilters}>
-                Clear Filters
-              </Button>
-              <Button onClick={downloadCSV}>
-                <Download className="h-4 w-4 mr-2" />
-                Download CSV
-              </Button>
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Business Area</Label>
+              <Input
+                placeholder="Filter by business area"
+                value={businessAreaFilter}
+                onChange={(e) => setBusinessAreaFilter(e.target.value)}
+              />
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <Label className="text-sm font-medium mb-2 block">L06 Name</Label>
+              <Input
+                placeholder="Filter by L06 name"
+                value={l06Filter}
+                onChange={(e) => setL06Filter(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium mb-2 block">System</Label>
+              <Input
+                placeholder="Filter by system"
+                value={systemFilter}
+                onChange={(e) => setSystemFilter(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Assigned To</Label>
+              <Input
+                placeholder="Filter by assignee"
+                value={assignedToFilter}
+                onChange={(e) => setAssignedToFilter(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Date From</Label>
+              <Input
+                type="date"
+                value={dateFromFilter}
+                onChange={(e) => setDateFromFilter(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Date To</Label>
+              <Input
+                type="date"
+                value={dateToFilter}
+                onChange={(e) => setDateToFilter(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center pt-2">
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Columns ({visibleColumnKeys.length})
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80" align="start">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium">Select Columns</h4>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={selectAllColumns}>
+                          <Eye className="h-3 w-3 mr-1" />
+                          All
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={resetColumnSelection}>
+                          <EyeOff className="h-3 w-3 mr-1" />
+                          Reset
+                        </Button>
+                      </div>
+                    </div>
+                    <ScrollArea className="h-64">
+                      <div className="space-y-2">
+                        {Object.entries(columnDefinitions).map(([key, label]) => (
+                          <div key={key} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={key}
+                              checked={visibleColumns[key]}
+                              onCheckedChange={() => handleColumnToggle(key)}
+                            />
+                            <Label htmlFor={key} className="text-sm font-normal cursor-pointer">
+                              {label}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                Clear Filters
+              </Button>
+            </div>
+            
+            <Button onClick={downloadCSV} className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Download CSV ({filteredData.length} records)
+            </Button>
+          </div>
+
           <div className="mt-4 text-sm text-muted-foreground">
-            Showing {filteredData.length} of {SAMPLE_DATA.length} records
+            Showing {filteredData.length} of {exceptionsData.exceptions.length} records
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle>Exception Data</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {Object.keys(SAMPLE_DATA[0]).map(key => <TableHead key={key}>{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</TableHead>)}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={Object.keys(SAMPLE_DATA[0]).length} className="text-center py-8 text-muted-foreground">
-                      No data matches the current filters
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredData.map((item) => (
-                    <TableRow key={item.id}>
-                      {Object.entries(item).map(([key, value]) => (
-                        <TableCell key={key} className="max-w-[200px] truncate" title={String(value)}>
-                          {key === 'status' || key === 'priority' ? (
-                            <Badge variant={
-                              (value === 'Challenge' || value === 'Insufficient Data' || value === 'Critical' || value === 'High')
-                                ? 'destructive' 
-                                : 'secondary'
-                            }>
-                              {String(value)}
-                            </Badge>
-                          ) : (
-                            String(value)
-                          )}
-                        </TableCell>
+        <CardContent className="p-0">
+          <div className="border rounded-md">
+            <ScrollArea className="h-[600px] w-full">
+              <div className="min-w-full">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background z-10">
+                    <TableRow>
+                      {visibleColumnKeys.map((key) => (
+                        <TableHead key={key} className="whitespace-nowrap px-4 py-3 border-r last:border-r-0 bg-muted/50">
+                          {columnDefinitions[key as keyof typeof columnDefinitions]}
+                        </TableHead>
                       ))}
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={visibleColumnKeys.length} className="text-center py-8 text-muted-foreground">
+                          No data matches the current filters
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredData.map((item, index) => (
+                        <TableRow key={item.id} className={index % 2 === 0 ? 'bg-muted/20' : ''}>
+                          {visibleColumnKeys.map((key) => (
+                            <TableCell key={key} className="whitespace-nowrap px-4 py-2 border-r last:border-r-0">
+                              {key === 'status' || key === 'priority' ? (
+                                <Badge variant={
+                                  (item[key as keyof Exception] === 'Challenge' || 
+                                   item[key as keyof Exception] === 'Insufficient Data' || 
+                                   item[key as keyof Exception] === 'Critical' || 
+                                   item[key as keyof Exception] === 'High')
+                                    ? 'destructive' 
+                                    : 'secondary'
+                                }>
+                                  {String(item[key as keyof Exception])}
+                                </Badge>
+                              ) : key === 'tetb_match' ? (
+                                item[key as keyof Exception] ? 'Yes' : 'No'
+                              ) : (
+                                String(item[key as keyof Exception] || '')
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </ScrollArea>
           </div>
         </CardContent>
       </Card>
@@ -448,7 +579,7 @@ const AdhocReports: React.FC = () => {
 
   return (
     <div className="bg-background h-full w-full">
-      <div className="flex justify-end items-center mb-6">
+      <div className="flex justify-end items-center mb-4">
         <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
@@ -473,15 +604,15 @@ const AdhocReports: React.FC = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="exceptions" className="mt-6">
+            <TabsContent value="exceptions" className="mt-4">
               {renderExceptionsReport()}
             </TabsContent>
 
-            <TabsContent value="reassignment" className="mt-6">
+            <TabsContent value="reassignment" className="mt-4">
               {renderReassignmentReport()}
             </TabsContent>
 
-            <TabsContent value="tprt" className="mt-6">
+            <TabsContent value="tprt" className="mt-4">
               {renderTPRTReport()}
             </TabsContent>
           </Tabs>
