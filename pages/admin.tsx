@@ -7,10 +7,6 @@ export default function AdminPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Admin</h1>
-        </div>
-        
         <Tabs defaultValue="settings" className="h-full flex flex-col">
           <TabsList className="grid w-full grid-cols-2 max-w-md">
             <TabsTrigger value="settings">Settings</TabsTrigger>

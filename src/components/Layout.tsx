@@ -22,7 +22,7 @@ const pageNames: Record<string, string> = {
   "/workflow": "Workflow",
   "/reports": "Reports",
   "/adhoc-reports": "Adhoc Reports",
-  "/admin": "Admin Panel",
+  "/admin": "Admin",
 };
 
 const LayoutContent = ({ children }: LayoutProps) => {

@@ -372,9 +372,6 @@ export const UploadTracking: React.FC = React.memo(() => {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">Upload Tracking</h2>
-        </div>
         <div className="flex gap-2">
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
