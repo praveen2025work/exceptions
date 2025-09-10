@@ -44,6 +44,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   const [agingMetrics, setAgingMetrics] = useState<AgingMetric[]>([]);
   const [filters, setFilters] = useState({
     ads_book_code: "",
+    instrument_id: "",
     system: "",
     legal_entity: "",
     regulator: "",
