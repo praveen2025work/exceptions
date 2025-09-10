@@ -41,7 +41,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useUser } from '@/contexts/UserContext';
-import { UploadTracking, CreateUploadTrackingRequest, UpdateUploadTrackingRequest } from '@/types/uploadTracking';
+import { UploadTracking as UploadTrackingType, CreateUploadTrackingRequest, UpdateUploadTrackingRequest } from '@/types/uploadTracking';
 import { uploadTrackingService } from '@/utils/uploadTrackingService';
 
 const UPLOAD_TYPES = [
@@ -99,15 +99,15 @@ const initialFormData: FormData = {
 };
 
 export const UploadTracking: React.FC = React.memo(() => {
-  const [records, setRecords] = useState<UploadTracking[]>([]);
+  const [records, setRecords] = useState<UploadTrackingType[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState<keyof UploadTracking>('createdAt');
+  const [sortField, setSortField] = useState<keyof UploadTrackingType>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<UploadTracking | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<UploadTrackingType | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isEditing, setIsEditing] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
@@ -169,7 +169,7 @@ export const UploadTracking: React.FC = React.memo(() => {
   );
 
   // Handle sorting
-  const handleSort = useCallback((field: keyof UploadTracking) => {
+  const handleSort = useCallback((field: keyof UploadTrackingType) => {
     if (field === sortField) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
@@ -277,7 +277,7 @@ export const UploadTracking: React.FC = React.memo(() => {
   }, [user]);
 
   // Open edit form
-  const openEditForm = useCallback((record: UploadTracking) => {
+  const openEditForm = useCallback((record: UploadTrackingType) => {
     setFormData({
       uploadType: record.uploadType,
       updatedBy: user?.userName || record.updatedBy || '',
@@ -293,13 +293,13 @@ export const UploadTracking: React.FC = React.memo(() => {
   }, [user]);
 
   // Open detail view
-  const openDetailView = useCallback((record: UploadTracking) => {
+  const openDetailView = useCallback((record: UploadTrackingType) => {
     setSelectedRecord(record);
     setIsDetailOpen(true);
   }, []);
 
   // Open delete confirmation
-  const openDeleteConfirmation = useCallback((record: UploadTracking) => {
+  const openDeleteConfirmation = useCallback((record: UploadTrackingType) => {
     setSelectedRecord(record);
     setIsDeleteOpen(true);
   }, []);
