@@ -57,9 +57,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         return;
       }
       
-      // Get the API URL from environment variables or use a default
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-      const response = await fetch(`${apiUrl}/api/getADUsers`, {
+      // Get the User Info API URL from environment variables or use a default
+      const userInfoApiUrl = process.env.NEXT_PUBLIC_USER_INFO_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${userInfoApiUrl}/api/getADUsers`, {
         method: 'GET',
         credentials: 'include', // Include credentials for Windows authentication
         headers: {

@@ -5,6 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:dev": "cp .env.dev .env.local && next build && npm run post-build:dev",
+    "build:uat": "cp .env.uat .env.local && next build && npm run post-build:uat",
+    "build:prod": "cp .env.prod .env.local && next build && npm run post-build:prod",
+    "build:dr": "cp .env.dr .env.local && next build && npm run post-build:dr",
+    "post-build:dev": "mkdir -p dist/dev && cp -r out/* dist/dev/",
+    "post-build:uat": "mkdir -p dist/uat && cp -r out/* dist/uat/",
+    "post-build:prod": "mkdir -p dist/prod && cp -r out/* dist/prod/",
+    "post-build:dr": "mkdir -p dist/dr && cp -r out/* dist/dr/",
+    "build:all": "npm run build:dev && npm run build:uat && npm run build:prod && npm run build:dr",
     "start": "next start",
     "lint": "next lint"
   },
