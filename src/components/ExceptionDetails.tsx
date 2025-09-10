@@ -681,6 +681,8 @@ const ExceptionDetails = ({
                                 setEditingComment(null);
                                 setEditCommentText("");
                               }}
+                            >
+                              Cancel
                             </Button>
                           </div>
                         </div>
