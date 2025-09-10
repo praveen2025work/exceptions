@@ -46,7 +46,7 @@ import {
   X,
 } from "lucide-react";
 import { Exception } from "@/types/exception";
-import { loadAndTransformData } from "@/utils/dataTransform";
+import { fetchAndTransformExceptions } from "@/utils/apiDataTransform";
 
 // Define the workflow steps
 const WORKFLOW_STEPS = [
@@ -103,51 +103,55 @@ const WorkflowStepTab: React.FC<WorkflowStepTabProps> = ({
 
   // Initialize with sample data and workflow information
   useEffect(() => {
-    const data = loadAndTransformData();
-    const workflowExceptions: WorkflowException[] = data.exceptions.map((exc, index) => {
-      const currentStep = Math.floor(Math.random() * 7); // 0 = not started, 1-6 = steps
-      const overallStatus = currentStep === 0 ? "Not Started" : 
-                           currentStep === 6 ? "Completed" : 
-                           Math.random() > 0.9 ? "Blocked" : 
-                           Math.random() > 0.95 ? "On Hold" : "In Progress";
-      
-      const stepStatuses: Record<number, "pending" | "in_progress" | "completed" | "blocked"> = {};
-      const stepAssignees: Record<number, string> = {};
-      const stepComments: Record<number, string> = {};
-      const stepCompletedDates: Record<number, string> = {};
-      
-      // Set step statuses based on current step
-      for (let i = 1; i <= 6; i++) {
-        if (i < currentStep) {
-          stepStatuses[i] = "completed";
-          stepAssignees[i] = USERS[Math.floor(Math.random() * USERS.length)].name;
-          stepComments[i] = `Step ${i} completed successfully`;
-          stepCompletedDates[i] = new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString();
-        } else if (i === currentStep && overallStatus === "In Progress") {
-          stepStatuses[i] = "in_progress";
-          stepAssignees[i] = USERS[Math.floor(Math.random() * USERS.length)].name;
-        } else if (i === currentStep && overallStatus === "Blocked") {
-          stepStatuses[i] = "blocked";
-          stepAssignees[i] = USERS[Math.floor(Math.random() * USERS.length)].name;
-          stepComments[i] = "Blocked pending additional information";
-        } else {
-          stepStatuses[i] = "pending";
+    const loadData = async () => {
+      const data = await fetchAndTransformExceptions();
+      const workflowExceptions: WorkflowException[] = data.map((exc, index) => {
+        const currentStep = Math.floor(Math.random() * 7); // 0 = not started, 1-6 = steps
+        const overallStatus = currentStep === 0 ? "Not Started" : 
+                             currentStep === 6 ? "Completed" : 
+                             Math.random() > 0.9 ? "Blocked" : 
+                             Math.random() > 0.95 ? "On Hold" : "In Progress";
+        
+        const stepStatuses: Record<number, "pending" | "in_progress" | "completed" | "blocked"> = {};
+        const stepAssignees: Record<number, string> = {};
+        const stepComments: Record<number, string> = {};
+        const stepCompletedDates: Record<number, string> = {};
+        
+        // Set step statuses based on current step
+        for (let i = 1; i <= 6; i++) {
+          if (i < currentStep) {
+            stepStatuses[i] = "completed";
+            stepAssignees[i] = USERS[Math.floor(Math.random() * USERS.length)].name;
+            stepComments[i] = `Step ${i} completed successfully`;
+            stepCompletedDates[i] = new Date(Date.now() - Math.random() * 10 * 24 * 60 * 60 * 1000).toISOString();
+          } else if (i === currentStep && overallStatus === "In Progress") {
+            stepStatuses[i] = "in_progress";
+            stepAssignees[i] = USERS[Math.floor(Math.random() * USERS.length)].name;
+          } else if (i === currentStep && overallStatus === "Blocked") {
+            stepStatuses[i] = "blocked";
+            stepAssignees[i] = USERS[Math.floor(Math.random() * USERS.length)].name;
+            stepComments[i] = "Blocked pending additional information";
+          } else {
+            stepStatuses[i] = "pending";
+          }
         }
-      }
 
-      return {
-        ...exc,
-        currentStep,
-        overallStatus,
-        stepStatuses,
-        stepAssignees,
-        stepComments,
-        stepCompletedDates,
-      };
-    });
+        return {
+          ...exc,
+          currentStep,
+          overallStatus,
+          stepStatuses,
+          stepAssignees,
+          stepComments,
+          stepCompletedDates,
+        };
+      });
 
-    setExceptions(workflowExceptions);
-    setFilteredExceptions(workflowExceptions);
+      setExceptions(workflowExceptions);
+      setFilteredExceptions(workflowExceptions);
+    };
+
+    loadData();
   }, []);
 
   // Apply filters

@@ -64,7 +64,7 @@ import {
   Plus,
 } from "lucide-react";
 import { Exception, L04Category, L06Category, ExceptionFilters } from "@/types/exception";
-import { loadAndTransformData } from "@/utils/dataTransform";
+import { fetchAndTransformExceptions } from "@/utils/apiDataTransform";
 
 // Define role-based access permissions
 const ROLE_PERMISSIONS = {
@@ -151,12 +151,39 @@ const WorkflowTab: React.FC<WorkflowTabProps> = ({
 
   // Initialize with data from core data transformation
   useEffect(() => {
-    const data = loadAndTransformData();
-    setL04Categories(data.l04_categories);
-    setExceptions(data.exceptions);
-    
-    // Initialize sample comments and queries
-    generateSampleCommentsAndQueries(data.exceptions);
+    const loadData = async () => {
+      const data = await fetchAndTransformExceptions();
+      
+      // This part is a bit of a hack for now, as the category generation was part of the old flow.
+      // Ideally, the API would provide this or it would be generated from the fetched data.
+      const l04Map = new Map<string, Map<string, number>>();
+      data.forEach(exception => {
+        const l04Name = exception.l04_business_area_name || 'Unknown L04';
+        const l06Name = exception.l06_name || 'Unknown L06';
+        if (!l04Map.has(l04Name)) {
+          l04Map.set(l04Name, new Map());
+        }
+        const l06Map = l04Map.get(l04Name)!;
+        l06Map.set(l06Name, (l06Map.get(l06Name) || 0) + 1);
+      });
+      
+      const l04_categories: L04Category[] = Array.from(l04Map.entries()).map(([l04Name, l06Map]) => ({
+        name: l04Name,
+        count: Array.from(l06Map.values()).reduce((sum, count) => sum + count, 0),
+        l06_categories: Array.from(l06Map.entries()).map(([l06Name, count]) => ({
+          name: l06Name,
+          count
+        }))
+      }));
+
+      setL04Categories(l04_categories);
+      setExceptions(data);
+      
+      // Initialize sample comments and queries
+      generateSampleCommentsAndQueries(data);
+    };
+
+    loadData();
   }, []);
 
   // Generate sample comments and queries for demo
