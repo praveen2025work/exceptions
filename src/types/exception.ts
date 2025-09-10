@@ -106,6 +106,7 @@ export interface ExceptionData {
 
 export interface ExceptionFilters {
   ads_book_code: string;
+  instrument_id: string;
   system: string;
   legal_entity: string;
   regulator: string;

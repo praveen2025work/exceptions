@@ -45,7 +45,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Exception, ExceptionFilters, ExceptionStatus } from "@/types/exception";
+import { Exception, ExceptionFilters } from "@/types/exception";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -296,7 +296,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const uniqueSystems = Array.from(new Set(exceptions.map(e => e.system).filter(Boolean)));
   const uniqueLegalEntities = Array.from(new Set(exceptions.map(e => e.legal_entity).filter(Boolean)));
   const uniqueRegulators = Array.from(new Set(exceptions.map(e => e.regulator).filter(Boolean)));
-  const uniqueStatuses = Array.from(new Set(exceptions.map(e => e.status).filter(Boolean))) as ExceptionStatus[];
+  const uniqueStatuses = Array.from(new Set(exceptions.map(e => e.status).filter(Boolean)));
 
   if (isLoading) {
     return (
@@ -359,7 +359,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </Select>
                 <Input
                   placeholder="Filter by instrument ID..."
-                  value={filters.instrument_id}
+                  value={(filters as any).instrument_id}
                   onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
                   className="h-8"
                 />
