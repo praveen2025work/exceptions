@@ -373,7 +373,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     const aValue = a[sortField];
     const bValue = b[sortField];
     
-    if (aValue === undefined || bValue === undefined) {
+    if (aValue === undefined || bValue === undefined || aValue === null || bValue === null) {
       return 0;
     }
     
