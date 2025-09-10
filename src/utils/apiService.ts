@@ -120,6 +120,15 @@ export class ApiService {
       loadingMessage
     );
   }
+
+  // Exception-specific methods
+  async getExceptionCategories(): Promise<ApiResponse<any[]>> {
+    return this.get('/api/exception-categories', 'Loading exception categories...');
+  }
+
+  async getExceptions(pageSize: number = 100): Promise<ApiResponse<any[]>> {
+    return this.get(`/api/exceptions?pageSize=${pageSize}`, 'Loading exceptions...');
+  }
 }
 
 // Hook to create an API service instance with loading and user context

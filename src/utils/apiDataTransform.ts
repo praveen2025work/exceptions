@@ -1,5 +1,6 @@
-import { ApiException, Exception, CoreException } from "@/types/exception";
+import { ApiException, Exception, CoreException, ExceptionCategory } from "@/types/exception";
 import { transformCoreToFunctional } from './dataTransform';
+import { apiService } from './apiService';
 import mockData from '../data/core-exceptions.json';
 
 // Helper function to determine priority based on aging
@@ -17,6 +18,67 @@ const getSlaStatus = (agingDays: number): 'Within SLA' | 'SLA Breach' | 'SLA War
   return 'Within SLA';
 };
 
+// Helper function to map old status values to new ones
+const mapStatus = (oldStatus: string | null): Exception['status'] => {
+  if (!oldStatus) return 'Open';
+  
+  switch (oldStatus.toLowerCase()) {
+    case 'unwind':
+    case 'centralise':
+    case 'writedown':
+      return 'Resolved';
+    case 'challenge':
+    case 'insufficient data':
+      return 'In Progress';
+    case 'reassignment':
+      return 'Open';
+    default:
+      return 'Open';
+  }
+};
+
+// Cache for exception categories
+let categoriesCache: ExceptionCategory[] | null = null;
+
+// Helper function to get category name by ID
+const getCategoryName = (categoryId: string | null, categories: ExceptionCategory[]): string => {
+  if (!categoryId || !categories.length) return 'N/A';
+  
+  const category = categories.find(cat => cat.id.toString() === categoryId);
+  return category ? category.categoryName : 'N/A';
+};
+
+// Fetch exception categories
+export const fetchExceptionCategories = async (): Promise<ExceptionCategory[]> => {
+  if (categoriesCache) {
+    return categoriesCache;
+  }
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  
+  if (apiUrl && apiUrl !== 'mock') {
+    try {
+      const response = await apiService.getExceptionCategories();
+      if (response.success && response.data) {
+        categoriesCache = response.data;
+        return response.data;
+      }
+    } catch (error) {
+      console.error("Failed to fetch exception categories:", error);
+    }
+  }
+  
+  // Mock categories for fallback
+  const mockCategories: ExceptionCategory[] = [
+    { id: 2, categoryName: "FO Unwind", classification: "BankingBook" },
+    { id: 3, categoryName: "FO Challenge", classification: "BankingBook" },
+    { id: 4, categoryName: "FO Request Reassignment", classification: "BankingBook" }
+  ];
+  
+  categoriesCache = mockCategories;
+  return mockCategories;
+};
+
 // Helper function to parse L04 and L06 from the book path
 const parseBookPath = (bookPath: string): { l04: string, l06: string } => {
     const parts = bookPath.split(':');
@@ -27,7 +89,10 @@ const parseBookPath = (bookPath: string): { l04: string, l06: string } => {
 }
 
 // Transforms the raw API data into the format the UI components expect
-export const transformApiExceptions = (apiData: ApiException[]): Exception[] => {
+export const transformApiExceptions = async (apiData: ApiException[]): Promise<Exception[]> => {
+  // Fetch categories for mapping
+  const categories = await fetchExceptionCategories();
+  
   return apiData.map((item) => {
     const { l04, l06 } = parseBookPath(item.sdsBookPath);
     const createdDate = new Date(item.asOfTime);
@@ -57,11 +122,13 @@ export const transformApiExceptions = (apiData: ApiException[]): Exception[] => 
       position_av: item.positionAv,
       tetb_av: 0, // Field not present in new API
       position_qty: item.positionQty,
-      tetb_qty: 0, // Field not present in new API
+      tetb_qty: item.originalQty, // Use originalQty for tetb_qty
       tetb_match: false, // Field not present in new API
       
       // Calculated/Defaulted functional fields
-      status: (item.status as Exception['status']) || 'Challenge', // Default to 'Challenge' if null
+      status: mapStatus(item.status), // Use new status mapping
+      categoryId: item.categoryId,
+      categoryName: getCategoryName(item.categoryId, categories),
       priority: getPriority(item.aging),
       sla_status: getSlaStatus(item.aging),
       assigned_to: 'Unassigned',
@@ -78,15 +145,14 @@ export const fetchAndTransformExceptions = async (): Promise<Exception[]> => {
 
   if (apiUrl && apiUrl !== 'mock') {
     try {
-      // Use the API URL from environment variables
-      const response = await fetch(apiUrl);
+      // Use the API service to fetch exceptions with page size 100
+      const response = await apiService.getExceptions(100);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.success && response.data) {
+        return await transformApiExceptions(response.data);
+      } else {
+        throw new Error(response.error || 'Failed to fetch exceptions');
       }
-      
-      const data: ApiException[] = await response.json();
-      return transformApiExceptions(data);
     } catch (error) {
       console.error("Failed to fetch or transform API data:", error);
       console.log("Falling back to mock data due to API error.");

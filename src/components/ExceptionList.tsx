@@ -101,7 +101,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const { user } = useUser();
   const { setLoading } = useLoading();
 
-  const itemsPerPage = 15;
+  const itemsPerPage = 100;
 
   useEffect(() => {
     setFilters(propFilters);
@@ -273,7 +273,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         exception.status,
         exception.priority,
         exception.assigned_to,
-        exception.reason
+        exception.reason,
+        exception.categoryName
       ].filter(Boolean);
       
       const matchesSearch = searchableFields.some(field => 
@@ -418,18 +419,14 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Unwind":
+      case "Open":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
-      case "Centralise":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 ocean:bg-purple-200/70 ocean:text-purple-900 modern:bg-purple-900/40 modern:text-purple-400";
-      case "Writedown":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 ocean:bg-orange-200/70 ocean:text-orange-900 modern:bg-orange-900/40 modern:text-orange-400";
-      case "Insufficient Data":
+      case "In Progress":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
-      case "Challenge":
+      case "Resolved":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
+      case "Rejected":
         return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
-      case "Reassignment":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-300 ocean:bg-gray-200/70 ocean:text-gray-900 modern:bg-gray-700/40 modern:text-gray-400";
       default:
         return "";
     }
@@ -662,10 +659,10 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         </div>
       </div>
 
-      {/* Search Bar */}
+      {/* Search Bar with Pagination Info */}
       <div className="flex justify-between items-center px-4 py-3 border-b bg-background/30">
         <div className="flex items-center gap-4">
-          {selectedExceptions.length > 0 && (
+          {selectedExceptions.length > 0 ? (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
                 {selectedExceptions.length} selected
@@ -697,9 +694,46 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </Button>
               </div>
             </div>
+          ) : (
+            <div className="text-xs text-muted-foreground">
+              Showing {startIndex + 1} to{" "}
+              {Math.min(startIndex + itemsPerPage, filteredExceptions.length)} of{" "}
+              {filteredExceptions.length} exceptions
+            </div>
           )}
         </div>
         <div className="flex items-center gap-2">
+          {totalPages > 1 && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    className={
+                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                    }
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink isActive={true}>
+                    {currentPage}
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    className={
+                      currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
           <div className="relative">
             <Search className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
             <Input 
@@ -867,6 +901,20 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       ))}
                   </div>
                 </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[120px]"
+                  onClick={() => handleSort("categoryName")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    Category
+                    {sortField === "categoryName" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
                 <TableHead className="w-16 bg-background text-center text-xs font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -910,6 +958,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center text-xs font-mono">{exception.aging_days}</TableCell>
+                    <TableCell className="text-xs">{exception.categoryName || 'N/A'}</TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center">
                         <Button
@@ -969,7 +1018,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </TableRow>
                   {expandedRows.includes(exception.id) && (
                     <TableRow>
-                      <TableCell colSpan={12} className="bg-muted/20 p-4 border-b">
+                      <TableCell colSpan={13} className="bg-muted/20 p-4 border-b">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                           <div>
                             <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Business Information</h4>
@@ -1016,6 +1065,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                               <p><span className="font-medium">SLA Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getSLAStatusColor(exception.sla_status)}`}>{exception.sla_status}</Badge></p>
                               <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
                               <p><span className="font-medium">Aging Days:</span> {exception.aging_days}</p>
+                              <p><span className="font-medium">Category:</span> {exception.categoryName || 'N/A'}</p>
                               <p><span className="font-medium">Reason:</span> {exception.reason}</p>
                               <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
                               <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
@@ -1030,7 +1080,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               ))}
               {paginatedExceptions.length === 0 && !isLoading && (
                 <TableRow>
-                  <TableCell colSpan={12} className="text-center py-12">
+                  <TableCell colSpan={13} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
                       <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
                         <Search className="h-4 w-4 text-muted-foreground" />
@@ -1043,63 +1093,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             </TableBody>
           </Table>
         </div>
-      </div>
-
-      {/* Pagination Footer */}
-      <div className="border-t bg-background/50 px-4 py-3 flex justify-between items-center">
-        <div className="text-xs text-muted-foreground">
-          Showing {startIndex + 1} to{" "}
-          {Math.min(startIndex + itemsPerPage, filteredExceptions.length)} of{" "}
-          {filteredExceptions.length} exceptions
-        </div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                className={
-                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
-                }
-              />
-            </PaginationItem>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              // Show pages around current page
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
-
-              return (
-                <PaginationItem key={i}>
-                  <PaginationLink
-                    isActive={pageNum === currentPage}
-                    onClick={() => setCurrentPage(pageNum)}
-                  >
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              );
-            })}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  setCurrentPage(Math.min(totalPages, currentPage + 1))
-                }
-                className={
-                  currentPage === totalPages
-                    ? "pointer-events-none opacity-50"
-                    : ""
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
       </div>
     </div>
   );
