@@ -140,7 +140,7 @@ const AdhocReports: React.FC = () => {
   };
 
   const filteredData = useMemo(() => {
-    if (isLoading) {
+    if (isLoading || !exceptions.length) {
       return [];
     }
     let filtered = [...exceptions];
@@ -199,7 +199,7 @@ const AdhocReports: React.FC = () => {
     }
 
     return filtered;
-  }, [statusFilter, priorityFilter, searchTerm, businessAreaFilter, l06Filter, systemFilter, assignedToFilter, dateFromFilter, dateToFilter]);
+  }, [exceptions, isLoading, statusFilter, priorityFilter, searchTerm, businessAreaFilter, l06Filter, systemFilter, assignedToFilter, dateFromFilter, dateToFilter]);
 
   const visibleColumnKeys = useMemo(() => {
     return Object.keys(visibleColumns).filter(key => visibleColumns[key]);

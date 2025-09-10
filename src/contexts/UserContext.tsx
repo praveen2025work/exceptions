@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import mockUsers from '@/data/mock-users.json';
 
 export interface ADUser {
   samAccountName: string;
@@ -50,21 +51,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       const isMockEnv = process.env.NEXT_PUBLIC_CO_DEV_ENV === 'mock' || process.env.NODE_ENV === 'development';
       
       if (isMockEnv) {
-        // Use mock user data in mock environment
-        setUser({
-          samAccountName: 'user123',
-          description: 'Kumar, Praveen: IT Department (New York)',
-          displayName: 'Kumar, Praveen : Senior Developer (New York)',
-          distinguishedName: 'CN=Kumar\\, Praveen: IT Department (New York),OU=Users,OU=NYC,OU=AMERICAS,OU=COMPANY,DC=DOMAIN,DC=COMPANY,DC=com',
-          emailAddress: 'praveen.kumar@company.com',
-          employeeId: '1234567',
-          name: 'Kumar, Praveen: IT Department (New York)',
-          givenName: 'Praveen',
-          middleName: null,
-          surname: 'Kumar',
-          domain: null,
-          userName: 'user123'
-        });
+        // Use random mock user data in mock environment
+        const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
+        setUser(randomUser);
         return;
       }
       
@@ -88,21 +77,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       console.error('Error fetching user data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch user data');
       
-      // Fallback to mock user data on error
-      setUser({
-        samAccountName: 'user123',
-        description: 'Kumar, Praveen: IT Department (New York)',
-        displayName: 'Kumar, Praveen : Senior Developer (New York)',
-        distinguishedName: 'CN=Kumar\\, Praveen: IT Department (New York),OU=Users,OU=NYC,OU=AMERICAS,OU=COMPANY,DC=DOMAIN,DC=COMPANY,DC=com',
-        emailAddress: 'praveen.kumar@company.com',
-        employeeId: '1234567',
-        name: 'Kumar, Praveen: IT Department (New York)',
-        givenName: 'Praveen',
-        middleName: null,
-        surname: 'Kumar',
-        domain: null,
-        userName: 'user123'
-      });
+      // Fallback to random mock user data on error
+      const fallbackUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
+      setUser(fallbackUser);
     } finally {
       setLoading(false);
     }
