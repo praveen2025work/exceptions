@@ -163,13 +163,32 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       if (!matchesSearch) return false;
     }
 
-    // Apply text filters (book code, instrument id)
-    const bookCodeFilter = filters.ads_book_code?.trim().toLowerCase();
-    const instrumentIdFilter = (filters as any).instrument_id?.trim().toLowerCase();
+    // Apply text filters with && and || support
+    const bookCodeFilter = filters.ads_book_code?.trim();
+    const instrumentIdFilter = (filters as any).instrument_id?.trim();
     
     if (bookCodeFilter || instrumentIdFilter) {
-      const bookCodeMatch = bookCodeFilter && exception.ads_book_code?.toLowerCase().includes(bookCodeFilter);
-      const instrumentIdMatch = instrumentIdFilter && exception.instrument_id?.toLowerCase().includes(instrumentIdFilter);
+      const evaluateFilter = (filterValue: string, fieldValue: string) => {
+        if (!filterValue) return true;
+        
+        // Check for && operator
+        if (filterValue.includes('&&')) {
+          const terms = filterValue.split('&&').map(term => term.trim().toLowerCase());
+          return terms.every(term => fieldValue.toLowerCase().includes(term));
+        }
+        
+        // Check for || operator
+        if (filterValue.includes('||')) {
+          const terms = filterValue.split('||').map(term => term.trim().toLowerCase());
+          return terms.some(term => fieldValue.toLowerCase().includes(term));
+        }
+        
+        // Default single term search
+        return fieldValue.toLowerCase().includes(filterValue.toLowerCase());
+      };
+      
+      const bookCodeMatch = bookCodeFilter ? evaluateFilter(bookCodeFilter, exception.ads_book_code || '') : true;
+      const instrumentIdMatch = instrumentIdFilter ? evaluateFilter(instrumentIdFilter, exception.instrument_id || '') : true;
 
       if (textFilterOperator === "AND") {
         if ((bookCodeFilter && !bookCodeMatch) || (instrumentIdFilter && !instrumentIdMatch)) {
@@ -409,7 +428,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             Clear
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
           <div className="lg:col-span-2">
             <p className="text-xs mb-1 text-muted-foreground font-medium">Book Code & Instrument ID</p>
             <div className="flex items-center gap-2">
@@ -474,6 +493,24 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           </div>
 
           <div>
+            <p className="text-xs mb-1 text-muted-foreground font-medium">Regulator</p>
+            <Select
+              value={filters.regulator || "all"}
+              onValueChange={(value) => setFilters({...filters, regulator: value === "all" ? "" : value})}
+            >
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="Regulator" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Regulators</SelectItem>
+                {uniqueRegulators.map(regulator => (
+                  <SelectItem key={regulator} value={regulator}>{regulator}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <p className="text-xs mb-1 text-muted-foreground font-medium">Status</p>
             <Select
               value={filters.status || "all"}
@@ -484,9 +521,10 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
-                {uniqueStatuses.map(status => (
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
-                ))}
+                <SelectItem value="Open">Open</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Resolved">Resolved</SelectItem>
+                <SelectItem value="Rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -805,33 +843,49 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                           <div>
                             <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Business Information</h4>
                             <div className="space-y-1 text-xs">
+                              <p><span className="font-medium">Exception ID:</span> {exception.id}</p>
                               <p><span className="font-medium">Book Code:</span> {exception.ads_book_code}</p>
                               <p><span className="font-medium">Book Path:</span> {exception.ads_book_path}</p>
                               <p><span className="font-medium">L04 Area:</span> {exception.l04_business_area_name}</p>
                               <p><span className="font-medium">L06 Category:</span> {exception.l06_name}</p>
-                              <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
+                              <p><span className="font-medium">Named PnL:</span> {exception.named_no_name}</p>
+                              <p><span className="font-medium">System:</span> {exception.system}</p>
+                              <p><span className="font-medium">Legal Entity:</span> {exception.legal_entity}</p>
+                              <p><span className="font-medium">Regulator:</span> {exception.regulator}</p>
                             </div>
                           </div>
                           <div>
                             <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Instrument Details</h4>
                             <div className="space-y-1 text-xs">
                               <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
+                              <p><span className="font-medium">Instrument Name:</span> {exception.instrument_name}</p>
+                              <p><span className="font-medium">Instrument Type:</span> {exception.instrument_type}</p>
                               <p><span className="font-medium">Equity Class:</span> {exception.equity_class_path}</p>
-                              <p><span className="font-medium">Classification:</span> {exception.position_tbbb_classification}</p>
+                              <p><span className="font-medium">TBBB Classification:</span> {exception.position_tbbb_classification}</p>
+                              <p><span className="font-medium">BB Underlying:</span> {exception.bb_underlying}</p>
+                              <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
                             </div>
                           </div>
                           <div>
                             <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Position & Valuation</h4>
                             <div className="space-y-1 text-xs">
                               <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
+                              <p><span className="font-medium">TETB AV:</span> {formatCurrency(exception.tetb_av)}</p>
                               <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
-                              <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
+                              <p><span className="font-medium">TETB Qty:</span> {formatNumber(exception.tetb_qty)}</p>
+                              <p><span className="font-medium">TETB Match:</span> {exception.tetb_match ? 'Yes' : 'No'}</p>
+                              <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
                             </div>
                           </div>
                           <div>
-                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Exception Details</h4>
+                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Exception Management</h4>
                             <div className="space-y-1 text-xs">
-                              <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
+                              <p><span className="font-medium">Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>{exception.status}</Badge></p>
+                              <p><span className="font-medium">Priority:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getPriorityColor(exception.priority)}`}>{exception.priority}</Badge></p>
+                              <p><span className="font-medium">SLA Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getSLAStatusColor(exception.sla_status)}`}>{exception.sla_status}</Badge></p>
+                              <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
+                              <p><span className="font-medium">Aging Days:</span> {exception.aging_days}</p>
+                              <p><span className="font-medium">Reason:</span> {exception.reason}</p>
                               <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
                               <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
                               <p><span className="font-medium">Due Date:</span> {new Date(exception.due_date).toLocaleDateString()}</p>

@@ -382,12 +382,191 @@ const ExceptionDetails = ({
       <div className="flex-1 overflow-auto">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6 pt-4">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="info">Info</TabsTrigger>
               <TabsTrigger value="audit">Audit History</TabsTrigger>
               <TabsTrigger value="documents">Documents</TabsTrigger>
             </TabsList>
           </div>
+
+          <TabsContent value="info" className="p-6 pt-4">
+            <div className="space-y-6">
+              <h3 className="text-sm font-medium text-foreground mb-4">Complete Exception Information</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Business Information */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Business Information</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Exception ID</Label>
+                      <Input value={exceptionData.id} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Book Code</Label>
+                      <Input value={exceptionData.bookCode} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Book Path</Label>
+                      <Input value="Barclays Group:Markets:Equities:Prime:Prime Delta 1:APAC:Delta One Synthetics:Index/Sector/CIB:Delta 1 - Non Index PnL:IS-Taiwan:Conversion - BCSL[15170]" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">L04 Business Area</Label>
+                      <Input value="Markets" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">L06 Category</Label>
+                      <Input value="Equities" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Named PnL</Label>
+                      <Input value="Prime Delta 1" readOnly className="mt-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* System Information */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">System Information</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">System</Label>
+                      <Input value={exceptionData.system} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Legal Entity</Label>
+                      <Input value={exceptionData.legalEntity} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Regulator</Label>
+                      <Input value={exceptionData.regulator} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">As of Time</Label>
+                      <Input value="2025-09-09 13:40:48" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Processed Exceptions</Label>
+                      <Input value="2025-09-10 14:54:00" readOnly className="mt-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Instrument Information */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Instrument Information</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Instrument ID</Label>
+                      <Input value={exceptionData.instrumentId} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Instrument Name</Label>
+                      <Input value="00687B.TWO" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Instrument Type</Label>
+                      <Input value="SICOVAM" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Equity Class Type</Label>
+                      <Input value="Fund (Ex)" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">ESM Security Type</Label>
+                      <Input value="ETF" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Position TBBB Classification</Label>
+                      <Input value={positionTbbbClassification} readOnly className="mt-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Position Information */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Position Information</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Position AV</Label>
+                      <Input value="1,090,157.60" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Position Qty</Label>
+                      <Input value={exceptionData.positionQty.toLocaleString()} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Original Qty</Label>
+                      <Input value={exceptionData.originalQty.toLocaleString()} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">BB Underlyings</Label>
+                      <Input value="Sophis/131907931/00687B.TWO" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">SOD Delta on BB Underlying</Label>
+                      <Input value="1,090,157.60" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Look Through</Label>
+                      <Input value="Y" readOnly className="mt-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Exception Management */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Exception Management</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Status</Label>
+                      <Input value={status === "OPEN" ? "Open" : status === "IN PROGRESS" ? "In Progress" : status === "RESOLVED" ? "Resolved" : "Rejected"} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Priority</Label>
+                      <Input value="High" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">SLA Status</Label>
+                      <Input value="Within SLA" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Aging (Days)</Label>
+                      <Input value={exceptionData.aging.toString()} readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Assigned To</Label>
+                      <Input value="John Smith" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Category ID</Label>
+                      <Input value="null" readOnly className="mt-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Information */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Additional Information</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Created Date</Label>
+                      <Input value="2025-09-09" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Due Date</Label>
+                      <Input value="2025-09-12" readOnly className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Reason</Label>
+                      <Textarea value="Position classification mismatch" readOnly className="mt-1" rows={2} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
 
           <TabsContent value="details" className="p-6 pt-4">
             <div className="space-y-6">
