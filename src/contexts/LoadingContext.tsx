@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -25,12 +25,14 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Loading...');
 
-  const setLoading = (loading: boolean, message: string = 'Loading...') => {
+  const setLoading = useCallback((loading: boolean, message: string = 'Loading...') => {
     setIsLoading(loading);
-    setLoadingMessage(message);
-  };
+    if (loading) {
+      setLoadingMessage(message);
+    }
+  }, []);
 
-  const withLoading = async <T,>(promise: Promise<T>, message: string = 'Loading...'): Promise<T> => {
+  const withLoading = useCallback(async <T,>(promise: Promise<T>, message: string = 'Loading...'): Promise<T> => {
     try {
       setLoading(true, message);
       const result = await promise;
@@ -38,10 +40,17 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading]);
+
+  const contextValue = useMemo(() => ({
+    isLoading,
+    loadingMessage,
+    setLoading,
+    withLoading
+  }), [isLoading, loadingMessage, setLoading, withLoading]);
 
   return (
-    <LoadingContext.Provider value={{ isLoading, loadingMessage, setLoading, withLoading }}>
+    <LoadingContext.Provider value={contextValue}>
       {children}
     </LoadingContext.Provider>
   );

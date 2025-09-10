@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -67,6 +67,219 @@ interface ExceptionListProps {
   onToggleMetricsAndAging?: () => void;
 }
 
+// Memoized utility functions
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(value);
+};
+
+const formatNumber = (value: number) => {
+  return new Intl.NumberFormat('en-US').format(value);
+};
+
+// Memoized color functions
+const getSLAStatusColor = (status: string) => {
+  switch (status) {
+    case "Within SLA":
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
+    case "SLA Warning":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
+    case "SLA Breach":
+      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
+    default:
+      return "";
+  }
+};
+
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case "Low":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
+    case "Medium":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
+    case "High":
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 ocean:bg-orange-200/70 ocean:text-orange-900 modern:bg-orange-900/40 modern:text-orange-400";
+    case "Critical":
+      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
+    default:
+      return "";
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "Open":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
+    case "In Progress":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
+    case "Resolved":
+      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
+    case "Rejected":
+      return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
+    default:
+      return "";
+  }
+};
+
+// Memoized table row component
+const ExceptionRow = React.memo<{
+  exception: Exception;
+  isSelected: boolean;
+  isExpanded: boolean;
+  onSelect: (id: string, checked: boolean) => void;
+  onToggleExpand: (id: string) => void;
+  onExceptionSelect: (exception: Exception) => void;
+  onBulkAction: (action: string, exceptionIds: string[]) => void;
+}>(({ exception, isSelected, isExpanded, onSelect, onToggleExpand, onExceptionSelect, onBulkAction }) => (
+  <>
+    <TableRow
+      className="cursor-pointer hover:bg-muted/30 border-b"
+      onClick={() => onExceptionSelect(exception)}
+    >
+      <TableCell className="p-2" onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelect(exception.id, !!checked)}
+        />
+      </TableCell>
+      <TableCell className="font-mono text-xs">{exception.id}</TableCell>
+      <TableCell className="text-xs">{exception.ads_book_code}</TableCell>
+      <TableCell>
+        <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+          {exception.system}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-xs">{exception.legal_entity}</TableCell>
+      <TableCell className="font-mono text-xs">{exception.instrument_id}</TableCell>
+      <TableCell>
+        <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+          {exception.position_tbbb_classification}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-right text-xs font-mono">{formatNumber(exception.position_qty)}</TableCell>
+      <TableCell className="text-right text-xs font-mono">{formatNumber(exception.tetb_qty)}</TableCell>
+      <TableCell>
+        <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>
+          {exception.status}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-center text-xs font-mono">{exception.aging_days}</TableCell>
+      <TableCell className="text-xs">{exception.categoryName || 'N/A'}</TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand(exception.id);
+            }}
+          >
+            {isExpanded ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <MoreHorizontal className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                onExceptionSelect(exception);
+              }}>
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                onBulkAction("assign", [exception.id]);
+              }}>
+                Assign
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                onBulkAction("trigger-workflow", [exception.id]);
+              }}>
+                Start Workflow
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </TableCell>
+    </TableRow>
+    {isExpanded && (
+      <TableRow>
+        <TableCell colSpan={13} className="bg-muted/20 p-4 border-b">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Business Information</h4>
+              <div className="space-y-1 text-xs">
+                <p><span className="font-medium">Exception ID:</span> {exception.id}</p>
+                <p><span className="font-medium">Book Code:</span> {exception.ads_book_code}</p>
+                <p><span className="font-medium">Book Path:</span> {exception.ads_book_path}</p>
+                <p><span className="font-medium">L04 Area:</span> {exception.l04_business_area_name}</p>
+                <p><span className="font-medium">L06 Category:</span> {exception.l06_name}</p>
+                <p><span className="font-medium">Named PnL:</span> {exception.named_no_name}</p>
+                <p><span className="font-medium">System:</span> {exception.system}</p>
+                <p><span className="font-medium">Legal Entity:</span> {exception.legal_entity}</p>
+                <p><span className="font-medium">Regulator:</span> {exception.regulator}</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Instrument Details</h4>
+              <div className="space-y-1 text-xs">
+                <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
+                <p><span className="font-medium">Instrument Name:</span> {exception.instrument_name}</p>
+                <p><span className="font-medium">Instrument Type:</span> {exception.instrument_type}</p>
+                <p><span className="font-medium">Equity Class:</span> {exception.equity_class_path}</p>
+                <p><span className="font-medium">TBBB Classification:</span> {exception.position_tbbb_classification}</p>
+                <p><span className="font-medium">BB Underlying:</span> {exception.bb_underlying}</p>
+                <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Position & Valuation</h4>
+              <div className="space-y-1 text-xs">
+                <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
+                <p><span className="font-medium">TETB AV:</span> {formatCurrency(exception.tetb_av)}</p>
+                <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
+                <p><span className="font-medium">TETB Qty:</span> {formatNumber(exception.tetb_qty)}</p>
+                <p><span className="font-medium">TETB Match:</span> {exception.tetb_match ? 'Yes' : 'No'}</p>
+                <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Exception Management</h4>
+              <div className="space-y-1 text-xs">
+                <p><span className="font-medium">Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>{exception.status}</Badge></p>
+                <p><span className="font-medium">Priority:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getPriorityColor(exception.priority)}`}>{exception.priority}</Badge></p>
+                <p><span className="font-medium">SLA Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getSLAStatusColor(exception.sla_status)}`}>{exception.sla_status}</Badge></p>
+                <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
+                <p><span className="font-medium">Aging Days:</span> {exception.aging_days}</p>
+                <p><span className="font-medium">Category:</span> {exception.categoryName || 'N/A'}</p>
+                <p><span className="font-medium">Reason:</span> {exception.reason}</p>
+                <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
+                <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
+                <p><span className="font-medium">Due Date:</span> {new Date(exception.due_date).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+        </TableCell>
+      </TableRow>
+    )}
+  </>
+));
+
+ExceptionRow.displayName = 'ExceptionRow';
+
 const ExceptionList: React.FC<ExceptionListProps> = ({
   exceptions,
   isLoading,
@@ -107,8 +320,158 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     setFilters(propFilters);
   }, [propFilters]);
 
-  // API handlers
-  const handleRefresh = async () => {
+  // Memoized unique values for dropdowns
+  const uniqueValues = useMemo(() => ({
+    systems: Array.from(new Set(exceptions.map(e => e.system).filter(Boolean))),
+    legalEntities: Array.from(new Set(exceptions.map(e => e.legal_entity).filter(Boolean))),
+    regulators: Array.from(new Set(exceptions.map(e => e.regulator).filter(Boolean))),
+    statuses: Array.from(new Set(exceptions.map(e => e.status).filter(Boolean))),
+  }), [exceptions]);
+
+  // Memoized filtered and sorted exceptions
+  const processedExceptions = useMemo(() => {
+    // Apply filters
+    const filtered = exceptions.filter((exception) => {
+      // Search functionality
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const searchableFields = [
+          exception.id,
+          exception.instrument_id,
+          exception.ads_book_code,
+          exception.instrument_name,
+          exception.l04_business_area_name,
+          exception.l06_name,
+          exception.named_no_name,
+          exception.system,
+          exception.legal_entity,
+          exception.regulator,
+          exception.status,
+          exception.priority,
+          exception.assigned_to,
+          exception.reason,
+          exception.categoryName
+        ].filter(Boolean);
+        
+        const matchesSearch = searchableFields.some(field => 
+          field?.toString().toLowerCase().includes(searchLower)
+        );
+        
+        if (!matchesSearch) return false;
+      }
+
+      // Apply text filters with && and || support
+      const bookCodeFilter = filters.ads_book_code?.trim();
+      const instrumentIdFilter = (filters as any).instrument_id?.trim();
+      
+      if (bookCodeFilter || instrumentIdFilter) {
+        const evaluateFilter = (filterValue: string, fieldValue: string) => {
+          if (!filterValue) return true;
+          
+          // Check for && operator
+          if (filterValue.includes('&&')) {
+            const terms = filterValue.split('&&').map(term => term.trim().toLowerCase());
+            return terms.every(term => fieldValue.toLowerCase().includes(term));
+          }
+          
+          // Check for || operator
+          if (filterValue.includes('||')) {
+            const terms = filterValue.split('||').map(term => term.trim().toLowerCase());
+            return terms.some(term => fieldValue.toLowerCase().includes(term));
+          }
+          
+          // Default single term search
+          return fieldValue.toLowerCase().includes(filterValue.toLowerCase());
+        };
+        
+        const bookCodeMatch = bookCodeFilter ? evaluateFilter(bookCodeFilter, exception.ads_book_code || '') : true;
+        const instrumentIdMatch = instrumentIdFilter ? evaluateFilter(instrumentIdFilter, exception.instrument_id || '') : true;
+
+        if (textFilterOperator === "AND") {
+          if ((bookCodeFilter && !bookCodeMatch) || (instrumentIdFilter && !instrumentIdMatch)) {
+            return false;
+          }
+        } else { // OR logic
+          if (bookCodeFilter && instrumentIdFilter) {
+            if (!bookCodeMatch && !instrumentIdMatch) return false;
+          } else if (bookCodeFilter && !bookCodeMatch) {
+            return false;
+          } else if (instrumentIdFilter && !instrumentIdMatch) {
+            return false;
+          }
+        }
+      }
+
+      // Apply classification filter
+      if (
+        classificationFilter &&
+        classificationFilter !== "all" &&
+        exception.position_tbbb_classification !== classificationFilter
+      ) {
+        return false;
+      }
+
+      // Apply dropdown filters
+      if (
+        filters.system &&
+        filters.system !== "all" &&
+        exception.system !== filters.system
+      ) {
+        return false;
+      }
+      if (
+        filters.legal_entity &&
+        filters.legal_entity !== "all" &&
+        exception.legal_entity !== filters.legal_entity
+      ) {
+        return false;
+      }
+      if (
+        filters.regulator &&
+        filters.regulator !== "all" &&
+        exception.regulator !== filters.regulator
+      ) {
+        return false;
+      }
+      if (
+        filters.status &&
+        filters.status !== "all" &&
+        exception.status !== filters.status
+      ) {
+        return false;
+      }
+      
+      return true;
+    });
+
+    // Sort filtered exceptions
+    const sorted = [...filtered].sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+      
+      if (aValue === undefined || bValue === undefined || aValue === null || bValue === null) {
+        return 0;
+      }
+      
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [exceptions, searchTerm, filters, textFilterOperator, classificationFilter, sortField, sortDirection]);
+
+  // Memoized pagination
+  const paginationData = useMemo(() => {
+    const totalPages = Math.ceil(processedExceptions.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedExceptions = processedExceptions.slice(startIndex, startIndex + itemsPerPage);
+    
+    return { totalPages, startIndex, paginatedExceptions };
+  }, [processedExceptions, currentPage, itemsPerPage]);
+
+  // Memoized event handlers
+  const handleRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
       const response = await apiService.get('/api/exceptions', 'Refreshing exceptions...');
@@ -118,7 +481,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           title: "Success",
           description: "Exception data refreshed successfully",
         });
-        // Trigger parent component to refresh data
         window.location.reload();
       } else {
         toast({
@@ -136,14 +498,13 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [apiService]);
 
-  const handleDownload = async () => {
+  const handleDownload = useCallback(async () => {
     try {
       const response = await apiService.get('/api/exceptions/export', 'Preparing download...');
       
       if (response.success) {
-        // Create and trigger download
         const csvData = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
         const blob = new Blob([csvData], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
@@ -173,9 +534,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         variant: "destructive",
       });
     }
-  };
+  }, [apiService]);
 
-  const handleBulkActionWithUser = async (action: string, exceptionIds: string[]) => {
+  const handleBulkActionWithUser = useCallback(async (action: string, exceptionIds: string[]) => {
     if (!user?.userName) {
       toast({
         title: "Error",
@@ -199,7 +560,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           description: `${action} completed successfully for ${exceptionIds.length} exception(s)`,
         });
         setSelectedExceptions([]);
-        // Call the original onBulkAction to update parent state
         onBulkAction(action, exceptionIds);
       } else {
         toast({
@@ -215,240 +575,55 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         variant: "destructive",
       });
     }
-  };
+  }, [apiService, user?.userName, onBulkAction]);
 
-  const handleSort = (field: keyof Exception) => {
+  const handleSort = useCallback((field: keyof Exception) => {
     if (field === sortField) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
       setSortDirection("asc");
     }
-  };
+  }, [sortField, sortDirection]);
 
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
-      setSelectedExceptions(
-        paginatedExceptions.map((exception) => exception.id),
-      );
+      setSelectedExceptions(paginationData.paginatedExceptions.map((exception) => exception.id));
     } else {
       setSelectedExceptions([]);
     }
-  };
+  }, [paginationData.paginatedExceptions]);
 
-  const handleSelectException = (id: string, checked: boolean) => {
+  const handleSelectException = useCallback((id: string, checked: boolean) => {
     if (checked) {
-      setSelectedExceptions([...selectedExceptions, id]);
+      setSelectedExceptions(prev => [...prev, id]);
     } else {
-      setSelectedExceptions(
-        selectedExceptions.filter((exceptionId) => exceptionId !== id),
-      );
+      setSelectedExceptions(prev => prev.filter((exceptionId) => exceptionId !== id));
     }
-  };
+  }, []);
 
-  const toggleRowExpand = (id: string) => {
-    if (expandedRows.includes(id)) {
-      setExpandedRows(expandedRows.filter((rowId) => rowId !== id));
-    } else {
-      setExpandedRows([...expandedRows, id]);
-    }
-  };
+  const toggleRowExpand = useCallback((id: string) => {
+    setExpandedRows(prev => 
+      prev.includes(id) 
+        ? prev.filter((rowId) => rowId !== id)
+        : [...prev, id]
+    );
+  }, []);
 
-  // Apply search and filters to exceptions
-  const filteredExceptions = [...exceptions].filter((exception) => {
-    // Search functionality
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      const searchableFields = [
-        exception.id,
-        exception.instrument_id,
-        exception.ads_book_code,
-        exception.instrument_name,
-        exception.l04_business_area_name,
-        exception.l06_name,
-        exception.named_no_name,
-        exception.system,
-        exception.legal_entity,
-        exception.regulator,
-        exception.status,
-        exception.priority,
-        exception.assigned_to,
-        exception.reason,
-        exception.categoryName
-      ].filter(Boolean);
-      
-      const matchesSearch = searchableFields.some(field => 
-        field?.toString().toLowerCase().includes(searchLower)
-      );
-      
-      if (!matchesSearch) return false;
-    }
-
-    // Apply text filters with && and || support
-    const bookCodeFilter = filters.ads_book_code?.trim();
-    const instrumentIdFilter = (filters as any).instrument_id?.trim();
-    
-    if (bookCodeFilter || instrumentIdFilter) {
-      const evaluateFilter = (filterValue: string, fieldValue: string) => {
-        if (!filterValue) return true;
-        
-        // Check for && operator
-        if (filterValue.includes('&&')) {
-          const terms = filterValue.split('&&').map(term => term.trim().toLowerCase());
-          return terms.every(term => fieldValue.toLowerCase().includes(term));
-        }
-        
-        // Check for || operator
-        if (filterValue.includes('||')) {
-          const terms = filterValue.split('||').map(term => term.trim().toLowerCase());
-          return terms.some(term => fieldValue.toLowerCase().includes(term));
-        }
-        
-        // Default single term search
-        return fieldValue.toLowerCase().includes(filterValue.toLowerCase());
-      };
-      
-      const bookCodeMatch = bookCodeFilter ? evaluateFilter(bookCodeFilter, exception.ads_book_code || '') : true;
-      const instrumentIdMatch = instrumentIdFilter ? evaluateFilter(instrumentIdFilter, exception.instrument_id || '') : true;
-
-      if (textFilterOperator === "AND") {
-        if ((bookCodeFilter && !bookCodeMatch) || (instrumentIdFilter && !instrumentIdMatch)) {
-          return false;
-        }
-      } else { // OR logic
-        if (bookCodeFilter && instrumentIdFilter) {
-          if (!bookCodeMatch && !instrumentIdMatch) return false;
-        } else if (bookCodeFilter && !bookCodeMatch) {
-          return false;
-        } else if (instrumentIdFilter && !instrumentIdMatch) {
-          return false;
-        }
-      }
-    }
-
-    // Apply classification filter
-    if (
-      classificationFilter &&
-      classificationFilter !== "all" &&
-      exception.position_tbbb_classification !== classificationFilter
-    ) {
-      return false;
-    }
-
-    // Apply dropdown filters
-    if (
-      filters.system &&
-      filters.system !== "all" &&
-      exception.system !== filters.system
-    ) {
-      return false;
-    }
-    if (
-      filters.legal_entity &&
-      filters.legal_entity !== "all" &&
-      exception.legal_entity !== filters.legal_entity
-    ) {
-      return false;
-    }
-    if (
-      filters.regulator &&
-      filters.regulator !== "all" &&
-      exception.regulator !== filters.regulator
-    ) {
-      return false;
-    }
-    if (
-      filters.status &&
-      filters.status !== "all" &&
-      exception.status !== filters.status
-    ) {
-      return false;
-    }
-    
-    return true;
-  });
-
-  // Sort filtered exceptions
-  const sortedExceptions = [...filteredExceptions].sort((a, b) => {
-    const aValue = a[sortField];
-    const bValue = b[sortField];
-    
-    if (aValue === undefined || bValue === undefined || aValue === null || bValue === null) {
-      return 0;
-    }
-    
-    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const totalPages = Math.ceil(filteredExceptions.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedExceptions = sortedExceptions.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
-
-  const getSLAStatusColor = (status: string) => {
-    switch (status) {
-      case "Within SLA":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
-      case "SLA Warning":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
-      case "SLA Breach":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
-      default:
-        return "";
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "Low":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
-      case "High":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 ocean:bg-orange-200/70 ocean:text-orange-900 modern:bg-orange-900/40 modern:text-orange-400";
-      case "Critical":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
-      default:
-        return "";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Open":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 ocean:bg-blue-200/70 ocean:text-blue-900 modern:bg-blue-900/40 modern:text-blue-400";
-      case "In Progress":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 ocean:bg-yellow-200/70 ocean:text-yellow-900 modern:bg-yellow-900/40 modern:text-yellow-400";
-      case "Resolved":
-        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 ocean:bg-green-200/70 ocean:text-green-900 modern:bg-green-900/40 modern:text-green-400";
-      case "Rejected":
-        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 ocean:bg-red-200/70 ocean:text-red-900 modern:bg-red-900/40 modern:text-red-400";
-      default:
-        return "";
-    }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat('en-US').format(value);
-  };
-
-  // Get unique values for filter dropdowns - filter out empty/null/undefined values
-  const uniqueSystems = Array.from(new Set(exceptions.map(e => e.system).filter(Boolean)));
-  const uniqueLegalEntities = Array.from(new Set(exceptions.map(e => e.legal_entity).filter(Boolean)));
-  const uniqueRegulators = Array.from(new Set(exceptions.map(e => e.regulator).filter(Boolean)));
-  const uniqueStatuses = Array.from(new Set(exceptions.map(e => e.status).filter(Boolean)));
+  const clearFilters = useCallback(() => {
+    setSearchTerm("");
+    setClassificationFilter("all");
+    setFilters({
+      ads_book_code: "",
+      system: "",
+      legal_entity: "",
+      regulator: "",
+      status: "",
+      l04_business_area_name: "",
+      l06_name: "",
+      instrument_id: "",
+    });
+  }, []);
 
   if (isLoading) {
     return (
@@ -469,7 +644,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           <div className="flex items-center gap-4">
             <h2 className="text-sm font-semibold whitespace-nowrap">Exception List</h2>
             <span className="text-sm text-muted-foreground whitespace-nowrap">
-              {filteredExceptions.length} exceptions
+              {processedExceptions.length} exceptions
             </span>
           </div>
           
@@ -537,20 +712,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             variant="ghost" 
             size="sm"
             className="h-7 text-xs"
-            onClick={() => {
-              setSearchTerm("");
-              setClassificationFilter("all");
-              setFilters({
-                ads_book_code: "",
-                system: "",
-                legal_entity: "",
-                regulator: "",
-                status: "",
-                l04_business_area_name: "",
-                l06_name: "",
-                instrument_id: "",
-              });
-            }}
+            onClick={clearFilters}
           >
             <Filter className="h-3 w-3 mr-1" />
             Clear
@@ -595,7 +757,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Systems</SelectItem>
-                {uniqueSystems.map(system => (
+                {uniqueValues.systems.map(system => (
                   <SelectItem key={system} value={system}>{system}</SelectItem>
                 ))}
               </SelectContent>
@@ -613,7 +775,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Entities</SelectItem>
-                {uniqueLegalEntities.map(entity => (
+                {uniqueValues.legalEntities.map(entity => (
                   <SelectItem key={entity} value={entity}>{entity}</SelectItem>
                 ))}
               </SelectContent>
@@ -631,7 +793,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Regulators</SelectItem>
-                {uniqueRegulators.map(regulator => (
+                {uniqueValues.regulators.map(regulator => (
                   <SelectItem key={regulator} value={regulator}>{regulator}</SelectItem>
                 ))}
               </SelectContent>
@@ -696,14 +858,14 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             </div>
           ) : (
             <div className="text-xs text-muted-foreground">
-              Showing {startIndex + 1} to{" "}
-              {Math.min(startIndex + itemsPerPage, filteredExceptions.length)} of{" "}
-              {filteredExceptions.length} exceptions
+              Showing {paginationData.startIndex + 1} to{" "}
+              {Math.min(paginationData.startIndex + itemsPerPage, processedExceptions.length)} of{" "}
+              {processedExceptions.length} exceptions
             </div>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {totalPages > 1 && (
+          {paginationData.totalPages > 1 && (
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
@@ -722,10 +884,10 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 <PaginationItem>
                   <PaginationNext
                     onClick={() =>
-                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      setCurrentPage(Math.min(paginationData.totalPages, currentPage + 1))
                     }
                     className={
-                      currentPage === totalPages
+                      currentPage === paginationData.totalPages
                         ? "pointer-events-none opacity-50"
                         : ""
                     }
@@ -755,8 +917,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 <TableHead className="w-10 bg-background">
                   <Checkbox
                     checked={
-                      paginatedExceptions.length > 0 &&
-                      selectedExceptions.length === paginatedExceptions.length
+                      paginationData.paginatedExceptions.length > 0 &&
+                      selectedExceptions.length === paginationData.paginatedExceptions.length
                     }
                     onCheckedChange={handleSelectAll}
                   />
@@ -919,166 +1081,19 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedExceptions.map((exception) => (
-                <React.Fragment key={exception.id}>
-                  <TableRow
-                    className="cursor-pointer hover:bg-muted/30 border-b"
-                    onClick={() => onExceptionSelect(exception)}
-                  >
-                    <TableCell
-                      className="p-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Checkbox
-                        checked={selectedExceptions.includes(exception.id)}
-                        onCheckedChange={(checked) =>
-                          handleSelectException(exception.id, !!checked)
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">{exception.id}</TableCell>
-                    <TableCell className="text-xs">{exception.ads_book_code}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                        {exception.system}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs">{exception.legal_entity}</TableCell>
-                    <TableCell className="font-mono text-xs">{exception.instrument_id}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                        {exception.position_tbbb_classification}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right text-xs font-mono">{formatNumber(exception.position_qty)}</TableCell>
-                    <TableCell className="text-right text-xs font-mono">{formatNumber(exception.tetb_qty)}</TableCell>
-                    <TableCell>
-                      <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>
-                        {exception.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center text-xs font-mono">{exception.aging_days}</TableCell>
-                    <TableCell className="text-xs">{exception.categoryName || 'N/A'}</TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleRowExpand(exception.id);
-                          }}
-                        >
-                          {expandedRows.includes(exception.id) ? (
-                            <ChevronUp className="h-3 w-3" />
-                          ) : (
-                            <ChevronDown className="h-3 w-3" />
-                          )}
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0"
-                            >
-                              <MoreHorizontal className="h-3 w-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onExceptionSelect(exception);
-                              }}
-                            >
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBulkActionWithUser("assign", [exception.id]);
-                              }}
-                            >
-                              Assign
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleBulkActionWithUser("trigger-workflow", [exception.id]);
-                              }}
-                            >
-                              Start Workflow
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                  {expandedRows.includes(exception.id) && (
-                    <TableRow>
-                      <TableCell colSpan={13} className="bg-muted/20 p-4 border-b">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div>
-                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Business Information</h4>
-                            <div className="space-y-1 text-xs">
-                              <p><span className="font-medium">Exception ID:</span> {exception.id}</p>
-                              <p><span className="font-medium">Book Code:</span> {exception.ads_book_code}</p>
-                              <p><span className="font-medium">Book Path:</span> {exception.ads_book_path}</p>
-                              <p><span className="font-medium">L04 Area:</span> {exception.l04_business_area_name}</p>
-                              <p><span className="font-medium">L06 Category:</span> {exception.l06_name}</p>
-                              <p><span className="font-medium">Named PnL:</span> {exception.named_no_name}</p>
-                              <p><span className="font-medium">System:</span> {exception.system}</p>
-                              <p><span className="font-medium">Legal Entity:</span> {exception.legal_entity}</p>
-                              <p><span className="font-medium">Regulator:</span> {exception.regulator}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Instrument Details</h4>
-                            <div className="space-y-1 text-xs">
-                              <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
-                              <p><span className="font-medium">Instrument Name:</span> {exception.instrument_name}</p>
-                              <p><span className="font-medium">Instrument Type:</span> {exception.instrument_type}</p>
-                              <p><span className="font-medium">Equity Class:</span> {exception.equity_class_path}</p>
-                              <p><span className="font-medium">TBBB Classification:</span> {exception.position_tbbb_classification}</p>
-                              <p><span className="font-medium">BB Underlying:</span> {exception.bb_underlying}</p>
-                              <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Position & Valuation</h4>
-                            <div className="space-y-1 text-xs">
-                              <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
-                              <p><span className="font-medium">TETB AV:</span> {formatCurrency(exception.tetb_av)}</p>
-                              <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
-                              <p><span className="font-medium">TETB Qty:</span> {formatNumber(exception.tetb_qty)}</p>
-                              <p><span className="font-medium">TETB Match:</span> {exception.tetb_match ? 'Yes' : 'No'}</p>
-                              <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Exception Management</h4>
-                            <div className="space-y-1 text-xs">
-                              <p><span className="font-medium">Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>{exception.status}</Badge></p>
-                              <p><span className="font-medium">Priority:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getPriorityColor(exception.priority)}`}>{exception.priority}</Badge></p>
-                              <p><span className="font-medium">SLA Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getSLAStatusColor(exception.sla_status)}`}>{exception.sla_status}</Badge></p>
-                              <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
-                              <p><span className="font-medium">Aging Days:</span> {exception.aging_days}</p>
-                              <p><span className="font-medium">Category:</span> {exception.categoryName || 'N/A'}</p>
-                              <p><span className="font-medium">Reason:</span> {exception.reason}</p>
-                              <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
-                              <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
-                              <p><span className="font-medium">Due Date:</span> {new Date(exception.due_date).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </React.Fragment>
+              {paginationData.paginatedExceptions.map((exception) => (
+                <ExceptionRow
+                  key={exception.id}
+                  exception={exception}
+                  isSelected={selectedExceptions.includes(exception.id)}
+                  isExpanded={expandedRows.includes(exception.id)}
+                  onSelect={handleSelectException}
+                  onToggleExpand={toggleRowExpand}
+                  onExceptionSelect={onExceptionSelect}
+                  onBulkAction={handleBulkActionWithUser}
+                />
               ))}
-              {paginatedExceptions.length === 0 && !isLoading && (
+              {paginationData.paginatedExceptions.length === 0 && !isLoading && (
                 <TableRow>
                   <TableCell colSpan={13} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
@@ -1098,4 +1113,4 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   );
 };
 
-export default ExceptionList;
+export default React.memo(ExceptionList);

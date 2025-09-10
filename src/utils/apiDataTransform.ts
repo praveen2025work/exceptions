@@ -37,21 +37,35 @@ const mapStatus = (oldStatus: string | null): Exception['status'] => {
   }
 };
 
-// Cache for exception categories
-let categoriesCache: ExceptionCategory[] | null = null;
+// Cache for exception categories with expiration
+let categoriesCache: { data: ExceptionCategory[]; timestamp: number } | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-// Helper function to get category name by ID
+// Helper function to get category name by ID with memoization
+const categoryNameCache = new Map<string, string>();
+
 const getCategoryName = (categoryId: string | null, categories: ExceptionCategory[]): string => {
   if (!categoryId || !categories.length) return 'N/A';
   
+  // Check cache first
+  const cacheKey = `${categoryId}-${categories.length}`;
+  if (categoryNameCache.has(cacheKey)) {
+    return categoryNameCache.get(cacheKey)!;
+  }
+  
   const category = categories.find(cat => cat.id.toString() === categoryId);
-  return category ? category.categoryName : 'N/A';
+  const result = category ? category.categoryName : 'N/A';
+  
+  // Cache the result
+  categoryNameCache.set(cacheKey, result);
+  return result;
 };
 
-// Fetch exception categories
+// Fetch exception categories with caching and error handling
 export const fetchExceptionCategories = async (): Promise<ExceptionCategory[]> => {
-  if (categoriesCache) {
-    return categoriesCache;
+  // Check cache validity
+  if (categoriesCache && (Date.now() - categoriesCache.timestamp) < CACHE_DURATION) {
+    return categoriesCache.data;
   }
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -60,7 +74,10 @@ export const fetchExceptionCategories = async (): Promise<ExceptionCategory[]> =
     try {
       const response = await apiService.getExceptionCategories();
       if (response.success && response.data) {
-        categoriesCache = response.data;
+        categoriesCache = {
+          data: response.data,
+          timestamp: Date.now()
+        };
         return response.data;
       }
     } catch (error) {
@@ -75,29 +92,54 @@ export const fetchExceptionCategories = async (): Promise<ExceptionCategory[]> =
     { id: 4, categoryName: "FO Request Reassignment", classification: "BankingBook" }
   ];
   
-  categoriesCache = mockCategories;
+  categoriesCache = {
+    data: mockCategories,
+    timestamp: Date.now()
+  };
   return mockCategories;
 };
 
-// Helper function to parse L04 and L06 from the book path
+// Optimized book path parsing with memoization
+const bookPathCache = new Map<string, { l04: string, l06: string }>();
+
 const parseBookPath = (bookPath: string): { l04: string, l06: string } => {
-    const parts = bookPath.split(':');
-    // This is an assumption based on the example path. Adjust if the structure varies.
-    const l04 = parts.length > 3 ? parts[3] : 'N/A';
-    const l06 = parts.length > 6 ? parts[6] : 'N/A';
-    return { l04, l06 };
-}
+  if (bookPathCache.has(bookPath)) {
+    return bookPathCache.get(bookPath)!;
+  }
+  
+  const parts = bookPath.split(':');
+  const result = {
+    l04: parts.length > 3 ? parts[3] : 'N/A',
+    l06: parts.length > 6 ? parts[6] : 'N/A'
+  };
+  
+  bookPathCache.set(bookPath, result);
+  return result;
+};
+
+// Optimized date calculations
+const calculateDueDate = (createdDate: Date): Date => {
+  const dueDate = new Date(createdDate);
+  dueDate.setDate(createdDate.getDate() + 14); // Assuming a 14-day SLA for due date
+  return dueDate;
+};
 
 // Transforms the raw API data into the format the UI components expect
 export const transformApiExceptions = async (apiData: ApiException[]): Promise<Exception[]> => {
-  // Fetch categories for mapping
+  // Fetch categories for mapping once
   const categories = await fetchExceptionCategories();
+  
+  // Pre-calculate common values to avoid repeated calculations
+  const currentTime = Date.now();
   
   return apiData.map((item) => {
     const { l04, l06 } = parseBookPath(item.sdsBookPath);
     const createdDate = new Date(item.asOfTime);
-    const dueDate = new Date(createdDate);
-    dueDate.setDate(createdDate.getDate() + 14); // Assuming a 14-day SLA for due date
+    const dueDate = calculateDueDate(createdDate);
+    const status = mapStatus(item.status);
+    const priority = getPriority(item.aging);
+    const slaStatus = getSlaStatus(item.aging);
+    const categoryName = getCategoryName(item.categoryId, categories);
 
     return {
       id: item.exceptionId,
@@ -126,11 +168,11 @@ export const transformApiExceptions = async (apiData: ApiException[]): Promise<E
       tetb_match: false, // Field not present in new API
       
       // Calculated/Defaulted functional fields
-      status: mapStatus(item.status), // Use new status mapping
+      status,
       categoryId: item.categoryId,
-      categoryName: getCategoryName(item.categoryId, categories),
-      priority: getPriority(item.aging),
-      sla_status: getSlaStatus(item.aging),
+      categoryName,
+      priority,
+      sla_status: slaStatus,
       assigned_to: 'Unassigned',
       created_date: createdDate.toISOString(),
       due_date: dueDate.toISOString(),
@@ -139,8 +181,16 @@ export const transformApiExceptions = async (apiData: ApiException[]): Promise<E
   });
 };
 
-// Fetches and transforms exception data from the new API or uses mock data
-export const fetchAndTransformExceptions = async (): Promise<Exception[]> => {
+// Optimized data fetching with better error handling and caching
+let dataCache: { data: Exception[]; timestamp: number } | null = null;
+const DATA_CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+
+export const fetchAndTransformExceptions = async (forceRefresh = false): Promise<Exception[]> => {
+  // Check cache validity unless force refresh is requested
+  if (!forceRefresh && dataCache && (Date.now() - dataCache.timestamp) < DATA_CACHE_DURATION) {
+    return dataCache.data;
+  }
+
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (apiUrl && apiUrl !== 'mock') {
@@ -149,19 +199,52 @@ export const fetchAndTransformExceptions = async (): Promise<Exception[]> => {
       const response = await apiService.getExceptions(100);
       
       if (response.success && response.data) {
-        return await transformApiExceptions(response.data);
+        const transformedData = await transformApiExceptions(response.data);
+        
+        // Cache the result
+        dataCache = {
+          data: transformedData,
+          timestamp: Date.now()
+        };
+        
+        return transformedData;
       } else {
         throw new Error(response.error || 'Failed to fetch exceptions');
       }
     } catch (error) {
       console.error("Failed to fetch or transform API data:", error);
       console.log("Falling back to mock data due to API error.");
+      
       // Fallback to mock data in case of API error
-      return transformCoreToFunctional(mockData as CoreException[]);
+      const mockTransformed = transformCoreToFunctional(mockData as CoreException[]);
+      
+      // Cache mock data with shorter duration
+      dataCache = {
+        data: mockTransformed,
+        timestamp: Date.now() - (DATA_CACHE_DURATION / 2) // Shorter cache for mock data
+      };
+      
+      return mockTransformed;
     }
   } else {
     // Use mock data if no API_URL is provided or if it's set to 'mock'
     console.log("Using mock data.");
-    return transformCoreToFunctional(mockData as CoreException[]);
+    const mockTransformed = transformCoreToFunctional(mockData as CoreException[]);
+    
+    // Cache mock data
+    dataCache = {
+      data: mockTransformed,
+      timestamp: Date.now()
+    };
+    
+    return mockTransformed;
   }
+};
+
+// Clear cache function for manual refresh
+export const clearDataCache = (): void => {
+  dataCache = null;
+  categoriesCache = null;
+  categoryNameCache.clear();
+  bookPathCache.clear();
 };
