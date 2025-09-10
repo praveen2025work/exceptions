@@ -45,7 +45,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Exception, ExceptionFilters } from "@/types/exception";
+import { Exception, ExceptionFilters, ExceptionStatus } from "@/types/exception";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -71,6 +71,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     status: "",
     l04_business_area_name: "",
     l06_name: "",
+    instrument_id: "",
   },
   workflowStatus = {},
 }) => {
@@ -81,6 +82,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState(propFilters);
+  const [textFilterOperator, setTextFilterOperator] = useState<"AND" | "OR">("OR");
 
   const itemsPerPage = 15;
 
@@ -154,13 +156,30 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       if (!matchesSearch) return false;
     }
 
-    // Apply filters
-    if (
-      filters.ads_book_code &&
-      !exception.ads_book_code?.toLowerCase().includes(filters.ads_book_code.toLowerCase())
-    ) {
-      return false;
+    // Apply text filters (book code, instrument id)
+    const bookCodeFilter = filters.ads_book_code?.trim().toLowerCase();
+    const instrumentIdFilter = (filters as any).instrument_id?.trim().toLowerCase();
+    
+    if (bookCodeFilter || instrumentIdFilter) {
+      const bookCodeMatch = bookCodeFilter && exception.ads_book_code?.toLowerCase().includes(bookCodeFilter);
+      const instrumentIdMatch = instrumentIdFilter && exception.instrument_id?.toLowerCase().includes(instrumentIdFilter);
+
+      if (textFilterOperator === "AND") {
+        if ((bookCodeFilter && !bookCodeMatch) || (instrumentIdFilter && !instrumentIdMatch)) {
+          return false;
+        }
+      } else { // OR logic
+        if (bookCodeFilter && instrumentIdFilter) {
+          if (!bookCodeMatch && !instrumentIdMatch) return false;
+        } else if (bookCodeFilter && !bookCodeMatch) {
+          return false;
+        } else if (instrumentIdFilter && !instrumentIdMatch) {
+          return false;
+        }
+      }
     }
+
+    // Apply dropdown filters
     if (
       filters.system &&
       filters.system !== "all" &&
@@ -189,20 +208,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     ) {
       return false;
     }
-    if (
-      filters.l04_business_area_name &&
-      filters.l04_business_area_name !== "all" &&
-      exception.l04_business_area_name !== filters.l04_business_area_name
-    ) {
-      return false;
-    }
-    if (
-      filters.l06_name &&
-      filters.l06_name !== "all" &&
-      exception.l06_name !== filters.l06_name
-    ) {
-      return false;
-    }
+    
     return true;
   });
 
@@ -290,8 +296,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const uniqueSystems = Array.from(new Set(exceptions.map(e => e.system).filter(Boolean)));
   const uniqueLegalEntities = Array.from(new Set(exceptions.map(e => e.legal_entity).filter(Boolean)));
   const uniqueRegulators = Array.from(new Set(exceptions.map(e => e.regulator).filter(Boolean)));
-  const uniqueL04Areas = Array.from(new Set(exceptions.map(e => e.l04_business_area_name).filter(Boolean)));
-  const uniqueL06Categories = Array.from(new Set(exceptions.map(e => e.l06_name).filter(Boolean)));
+  const uniqueStatuses = Array.from(new Set(exceptions.map(e => e.status).filter(Boolean))) as ExceptionStatus[];
 
   if (isLoading) {
     return (
@@ -323,6 +328,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   status: "",
                   l04_business_area_name: "",
                   l06_name: "",
+                  instrument_id: "",
                 });
               }}
             >
@@ -332,16 +338,34 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           </div>
         </CardHeader>
         <CardContent className="p-3">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-3">
-            <div>
-              <p className="text-xs mb-1 text-muted-foreground">Book Code</p>
-              <Input
-                placeholder="Search book codes..."
-                value={filters.ads_book_code}
-                onChange={(e) => setFilters({...filters, ads_book_code: e.target.value})}
-                className="h-8"
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+            <div className="lg:col-span-2">
+              <p className="text-xs mb-1 text-muted-foreground">Book Code & Instrument ID</p>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Filter by book code..."
+                  value={filters.ads_book_code}
+                  onChange={(e) => setFilters({ ...filters, ads_book_code: e.target.value })}
+                  className="h-8"
+                />
+                <Select value={textFilterOperator} onValueChange={(value: "AND" | "OR") => setTextFilterOperator(value)}>
+                  <SelectTrigger className="h-8 w-[80px] flex-shrink-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="OR">OR</SelectItem>
+                    <SelectItem value="AND">AND</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  placeholder="Filter by instrument ID..."
+                  value={filters.instrument_id}
+                  onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
+                  className="h-8"
+                />
+              </div>
             </div>
+            
             <div>
               <p className="text-xs mb-1 text-muted-foreground">System</p>
               <Select
@@ -359,6 +383,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </SelectContent>
               </Select>
             </div>
+
             <div>
               <p className="text-xs mb-1 text-muted-foreground">Legal Entity</p>
               <Select
@@ -376,6 +401,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </SelectContent>
               </Select>
             </div>
+
             <div>
               <p className="text-xs mb-1 text-muted-foreground">Regulator</p>
               <Select
@@ -393,40 +419,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <p className="text-xs mb-1 text-muted-foreground">L04 Business Area</p>
-              <Select
-                value={filters.l04_business_area_name || "all"}
-                onValueChange={(value) => setFilters({...filters, l04_business_area_name: value === "all" ? "" : value})}
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select L04" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All L04 Areas</SelectItem>
-                  {uniqueL04Areas.map(area => (
-                    <SelectItem key={area} value={area}>{area}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <p className="text-xs mb-1 text-muted-foreground">L06 Category</p>
-              <Select
-                value={filters.l06_name || "all"}
-                onValueChange={(value) => setFilters({...filters, l06_name: value === "all" ? "" : value})}
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select L06" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All L06 Categories</SelectItem>
-                  {uniqueL06Categories.map(category => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
             <div>
               <p className="text-xs mb-1 text-muted-foreground">Status</p>
               <Select
@@ -438,12 +431,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Unwind">Unwind</SelectItem>
-                  <SelectItem value="Centralise">Centralise</SelectItem>
-                  <SelectItem value="Writedown">Writedown</SelectItem>
-                  <SelectItem value="Insufficient Data">Insufficient Data</SelectItem>
-                  <SelectItem value="Challenge">Challenge</SelectItem>
-                  <SelectItem value="Reassignment">Reassignment</SelectItem>
+                  {uniqueStatuses.map(status => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
