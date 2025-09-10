@@ -72,6 +72,40 @@
     --gradient-from: 217.2 91.2% 59.8%;
     --gradient-to: 262.1 83.3% 57.8%;
   }
+
+  .blue {
+    --background: 210 100% 98%;
+    --foreground: 210 100% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 100% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 100% 15%;
+
+    --primary: 195 100% 47%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 195 20% 92%;
+    --secondary-foreground: 195 100% 25%;
+
+    --muted: 195 20% 92%;
+    --muted-foreground: 195 30% 45%;
+
+    --accent: 195 30% 88%;
+    --accent-foreground: 195 100% 25%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 195 30% 85%;
+    --input: 195 30% 85%;
+    --ring: 195 100% 47%;
+
+    /* Blue theme gradient colors */
+    --gradient-from: 195 100% 47%;
+    --gradient-to: 210 100% 60%;
+  }
 }
 
 @layer base {

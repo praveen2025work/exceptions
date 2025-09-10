@@ -8,16 +8,11 @@ module.exports = {
     './src/**/*.{ts,tsx}',
   ],
   safelist: [
-    'ocean',
-    'modern',
-    'ocean:rotate-0',
-    'ocean:scale-100',
-    'modern:rotate-0', 
-    'modern:scale-100',
-    'ocean:-rotate-90',
-    'ocean:scale-0',
-    'modern:-rotate-90',
-    'modern:scale-0'
+    'blue',
+    'blue:rotate-0',
+    'blue:scale-100',
+    'blue:-rotate-90',
+    'blue:scale-0'
   ],
   prefix: "",
   theme: {
