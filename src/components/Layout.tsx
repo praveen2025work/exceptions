@@ -1,12 +1,15 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings } from "lucide-react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { UserProvider } from "@/contexts/UserContext";
+import { LoadingProvider, useLoading } from "@/contexts/LoadingContext";
 import { ThemeToggle } from "./ThemeToggle";
 import Sidebar from "./Sidebar";
 import { Notifications } from "./Notifications";
+import { UserProfile } from "./UserProfile";
+import { LoadingOverlay } from "@/components/ui/loading-spinner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,12 +25,13 @@ const pageNames: Record<string, string> = {
   "/admin": "Admin Panel",
 };
 
-const Layout = ({ children }: LayoutProps) => {
+const LayoutContent = ({ children }: LayoutProps) => {
   const router = useRouter();
+  const { isLoading, loadingMessage } = useLoading();
   const currentPageName = pageNames[router.pathname] || "Exception Hub";
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
+    <>
       <div className="flex h-screen bg-background overflow-hidden">
         <Sidebar />
         <div className="flex flex-1 flex-col min-w-0">
@@ -52,21 +56,7 @@ const Layout = ({ children }: LayoutProps) => {
                   <span className="sr-only">Settings</span>
                 </Button>
 
-                <div className="flex items-center gap-3 pl-3 border-l">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={process.env.NEXT_PUBLIC_AVATAR_URL || "https://api.dicebear.com/7.x/avataaars/svg?seed=praveen"}
-                      alt="User"
-                    />
-                    <AvatarFallback className="text-xs">PK</AvatarFallback>
-                  </Avatar>
-                  <div className="hidden md:block">
-                    <p className="text-sm font-medium">Praveen Kumar</p>
-                    <p className="text-xs text-muted-foreground">
-                      Compliance Officer
-                    </p>
-                  </div>
-                </div>
+                <UserProfile />
               </div>
             </div>
           </header>
@@ -77,6 +67,21 @@ const Layout = ({ children }: LayoutProps) => {
           </main>
         </div>
       </div>
+      
+      {/* Global Loading Overlay */}
+      {isLoading && <LoadingOverlay message={loadingMessage} />}
+    </>
+  );
+};
+
+const Layout = ({ children }: LayoutProps) => {
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
+      <LoadingProvider>
+        <UserProvider>
+          <LayoutContent>{children}</LayoutContent>
+        </UserProvider>
+      </LoadingProvider>
     </ThemeProvider>
   );
 };

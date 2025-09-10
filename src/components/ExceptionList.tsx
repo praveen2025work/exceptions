@@ -50,6 +50,11 @@ import {
 import { Exception, ExceptionFilters } from "@/types/exception";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useApiService } from "@/utils/apiService";
+import { useUser } from "@/contexts/UserContext";
+import { useLoading } from "@/contexts/LoadingContext";
+import { toast } from "@/components/ui/use-toast";
 
 interface ExceptionListProps {
   exceptions: Exception[];
@@ -90,12 +95,126 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const [filters, setFilters] = useState(propFilters);
   const [textFilterOperator, setTextFilterOperator] = useState<"AND" | "OR">("OR");
   const [classificationFilter, setClassificationFilter] = useState<string>("all");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const apiService = useApiService();
+  const { user } = useUser();
+  const { setLoading } = useLoading();
 
   const itemsPerPage = 15;
 
   useEffect(() => {
     setFilters(propFilters);
   }, [propFilters]);
+
+  // API handlers
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      const response = await apiService.get('/api/exceptions', 'Refreshing exceptions...');
+      
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Exception data refreshed successfully",
+        });
+        // Trigger parent component to refresh data
+        window.location.reload();
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to refresh data",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh exception data",
+        variant: "destructive",
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const response = await apiService.get('/api/exceptions/export', 'Preparing download...');
+      
+      if (response.success) {
+        // Create and trigger download
+        const blob = new Blob([response.data], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `exceptions_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: "Success",
+          description: "Exception data downloaded successfully",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || "Failed to download data",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download exception data",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBulkActionWithUser = async (action: string, exceptionIds: string[]) => {
+    if (!user?.userName) {
+      toast({
+        title: "Error",
+        description: "User information not available",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await apiService.post('/api/exceptions/bulk-action', {
+        action,
+        exceptionIds,
+        performedBy: user.userName,
+        timestamp: new Date().toISOString()
+      }, `Performing ${action} on ${exceptionIds.length} exception(s)...`);
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: `${action} completed successfully for ${exceptionIds.length} exception(s)`,
+        });
+        setSelectedExceptions([]);
+        // Call the original onBulkAction to update parent state
+        onBulkAction(action, exceptionIds);
+      } else {
+        toast({
+          title: "Error",
+          description: response.error || `Failed to perform ${action}`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to perform ${action}`,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleSort = (field: keyof Exception) => {
     if (field === sortField) {
@@ -376,11 +495,22 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 </>
               )}
             </Button>
-            <Button variant="ghost" size="sm" className="h-7 text-xs whitespace-nowrap">
-              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs whitespace-nowrap"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Button variant="ghost" size="sm" className="h-7 text-xs whitespace-nowrap">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs whitespace-nowrap"
+              onClick={handleDownload}
+            >
               <Download className="h-3.5 w-3.5 mr-1" />
               Download
             </Button>
@@ -544,7 +674,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   size="sm"
                   variant="outline"
                   className="h-6 text-xs px-2"
-                  onClick={() => onBulkAction("assign", selectedExceptions)}
+                  onClick={() => handleBulkActionWithUser("assign", selectedExceptions)}
                 >
                   Assign
                 </Button>
@@ -552,7 +682,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   size="sm"
                   variant="outline"
                   className="h-6 text-xs px-2"
-                  onClick={() => onBulkAction("trigger-workflow", selectedExceptions)}
+                  onClick={() => handleBulkActionWithUser("trigger-workflow", selectedExceptions)}
                 >
                   Workflow
                 </Button>
@@ -818,7 +948,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onBulkAction("assign", [exception.id]);
+                                handleBulkActionWithUser("assign", [exception.id]);
                               }}
                             >
                               Assign
@@ -826,7 +956,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onBulkAction("trigger-workflow", [exception.id]);
+                                handleBulkActionWithUser("trigger-workflow", [exception.id]);
                               }}
                             >
                               Start Workflow
