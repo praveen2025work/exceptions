@@ -77,11 +77,11 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
     const totalExceptions = exceptions.length;
     const completedToday = exceptions.filter(exc => 
-      (exc.status === 'Unwind' || exc.status === 'Centralise' || exc.status === 'Writedown') && 
+      exc.status === 'Resolved' && 
       new Date(exc.created_date).toDateString() === new Date().toDateString()
     ).length;
     const slaBreaches = exceptions.filter(exc => exc.sla_status === 'SLA Breach').length;
-    const pendingReview = exceptions.filter(exc => exc.status === 'Challenge' || exc.status === 'Insufficient Data').length;
+    const pendingReview = exceptions.filter(exc => exc.status === 'In Progress' || exc.status === 'Open').length;
 
     return [
       { label: "Total Exceptions", value: totalExceptions, change: 12, status: "negative" },
@@ -144,11 +144,11 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
       console.log("Triggering workflow for exceptions:", exceptionIds);
       const newWorkflowStatus = { ...workflowStatus };
       exceptionIds.forEach((id) => {
-        newWorkflowStatus[id] = "Challenge";
+        newWorkflowStatus[id] = "In Progress";
         setExceptions((prev) =>
           prev.map((exception) =>
             exception.id === id
-              ? { ...exception, status: "Challenge" }
+              ? { ...exception, status: "In Progress" }
               : exception,
           ),
         );
