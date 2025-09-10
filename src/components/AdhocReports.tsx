@@ -241,6 +241,18 @@ const AdhocReports: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const refreshData = async () => {
+    setIsLoading(true);
+    try {
+      const data = await fetchAndTransformExceptions();
+      setExceptions(data);
+    } catch (error) {
+      console.error("Failed to refresh exception data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearFilters = () => {
     setStatusFilter("all");
     setPriorityFilter("all");
@@ -352,6 +364,10 @@ const AdhocReports: React.FC = () => {
               </Popover>
               <Button variant="outline" size="sm" onClick={clearFilters}>
                 Clear Filters
+              </Button>
+              <Button variant="outline" size="sm" onClick={refreshData} className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Refresh
               </Button>
               <Button onClick={downloadCSV} size="sm" className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
@@ -564,61 +580,71 @@ const AdhocReports: React.FC = () => {
   );
 
   const renderReassignmentReport = () => (
-    <Card>
-      <CardContent className="p-8 text-center">
-        <div className="space-y-4">
-          <Users className="h-8 w-8 mx-auto text-muted-foreground" />
-          <div>
-            <h3 className="text-lg font-semibold">Reassignment Report</h3>
-            <p className="text-sm text-muted-foreground mt-2">
-              This report will show reassignment history and analytics.
-            </p>
-          </div>
-          <Button variant="outline" disabled>
-            <Download className="h-4 w-4 mr-2" />
-            Download Report
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0 px-6 py-4 border-b bg-muted/30">
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={refreshData} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm" disabled className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Export
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="flex-1 flex items-center justify-center">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="space-y-4">
+              <Users className="h-8 w-8 mx-auto text-muted-foreground" />
+              <div>
+                <h3 className="text-lg font-semibold">Reassignment Report</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  This report will show reassignment history and analytics.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 
   const renderTPRTReport = () => (
-    <Card>
-      <CardContent className="p-8 text-center">
-        <div className="space-y-4">
-          <BarChart3 className="h-8 w-8 mx-auto text-muted-foreground" />
-          <div>
-            <h3 className="text-lg font-semibold">TPRT Report</h3>
-            <p className="text-sm text-muted-foreground mt-2">
-              This report will show TPRT (Third Party Risk Tracking) data and metrics.
-            </p>
-          </div>
-          <Button variant="outline" disabled>
-            <Download className="h-4 w-4 mr-2" />
-            Download Report
+    <div className="h-full flex flex-col">
+      <div className="flex-shrink-0 px-6 py-4 border-b bg-muted/30">
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={refreshData} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button variant="outline" size="sm" disabled className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Export
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="flex-1 flex items-center justify-center">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <div className="space-y-4">
+              <BarChart3 className="h-8 w-8 mx-auto text-muted-foreground" />
+              <div>
+                <h3 className="text-lg font-semibold">TPRT Report</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  This report will show TPRT (Third Party Risk Tracking) data and metrics.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="flex-shrink-0 px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Ad-hoc Reports</h1>
-            <p className="text-muted-foreground">Generate and export custom reports</p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="flex-1 overflow-hidden">
         <Tabs value={selectedReport} onValueChange={setSelectedReport} defaultValue="exceptions" className="h-full flex flex-col">
@@ -644,11 +670,11 @@ const AdhocReports: React.FC = () => {
               {renderExceptionsReport()}
             </TabsContent>
 
-            <TabsContent value="reassignment" className="h-full m-0 p-6">
+            <TabsContent value="reassignment" className="h-full m-0 p-0">
               {renderReassignmentReport()}
             </TabsContent>
 
-            <TabsContent value="tprt" className="h-full m-0 p-6">
+            <TabsContent value="tprt" className="h-full m-0 p-0">
               {renderTPRTReport()}
             </TabsContent>
           </div>
