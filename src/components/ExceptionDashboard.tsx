@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   const [workflowStatus, setWorkflowStatus] = useState<Record<string, string>>(
     {},
   );
+  const detailsPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -70,6 +71,27 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
 
     loadData();
   }, [propMetrics, propAgingMetrics]);
+
+  // Handle click outside to close details panel
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showDetails &&
+        detailsPanelRef.current &&
+        !detailsPanelRef.current.contains(event.target as Node)
+      ) {
+        handleCloseDetails();
+      }
+    };
+
+    if (showDetails) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDetails]);
 
   const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
     const totalExceptions = exceptions.length;
@@ -231,11 +253,6 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
           {/* Exception List - Full Height */}
           <div className="flex-1 overflow-hidden px-6 pb-6">
             <Card className="h-full border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-              <CardHeader className="pb-3 pt-4 px-4 border-b">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-base font-semibold">Exception List</CardTitle>
-                </div>
-              </CardHeader>
               <CardContent className="p-0 h-full">
                 <div className="h-full">
                   <ExceptionList
@@ -256,7 +273,10 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
       </div>
 
       {/* Details Panel */}
-      <div className={`transition-all duration-300 ${showDetails ? 'w-1/3' : 'w-0'} overflow-hidden border-l bg-background/50`}>
+      <div 
+        ref={detailsPanelRef}
+        className={`transition-all duration-300 ${showDetails ? 'w-1/3' : 'w-0'} overflow-hidden border-l bg-background/50`}
+      >
         {showDetails && (
           <div className="h-full">
             <ExceptionDetails
