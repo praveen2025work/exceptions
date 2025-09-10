@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { AlertCircle, RefreshCw, Download, TrendingUp, Clock } from "lucide-react";
 import ExceptionList from "./ExceptionList";
 import ExceptionDetails from "./ExceptionDetails";
-import { loadAndTransformData } from "@/utils/dataTransform";
+import { fetchAndTransformExceptions } from "@/utils/apiDataTransform";
 import { Exception } from "@/types/exception";
 
 interface ExceptionMetric {
@@ -37,6 +37,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   );
   const [showDetails, setShowDetails] = useState(false);
   const [exceptions, setExceptions] = useState<Exception[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState<ExceptionMetric[]>([]);
   const [agingMetrics, setAgingMetrics] = useState<AgingMetric[]>([]);
   const [filters, setFilters] = useState({
@@ -53,14 +54,20 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   );
 
   useEffect(() => {
-    const data = loadAndTransformData();
-    setExceptions(data.exceptions);
-    
-    const calculatedMetrics = calculateMetrics(data.exceptions);
-    const calculatedAgingMetrics = calculateAgingMetrics(data.exceptions);
-    
-    setMetrics(propMetrics || calculatedMetrics);
-    setAgingMetrics(propAgingMetrics || calculatedAgingMetrics);
+    const loadData = async () => {
+      setIsLoading(true);
+      const fetchedExceptions = await fetchAndTransformExceptions();
+      setExceptions(fetchedExceptions);
+      
+      const calculatedMetrics = calculateMetrics(fetchedExceptions);
+      const calculatedAgingMetrics = calculateAgingMetrics(fetchedExceptions);
+      
+      setMetrics(propMetrics || calculatedMetrics);
+      setAgingMetrics(propAgingMetrics || calculatedAgingMetrics);
+      setIsLoading(false);
+    };
+
+    loadData();
   }, [propMetrics, propAgingMetrics]);
 
   const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
@@ -141,21 +148,22 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   };
 
   return (
-    <div className="bg-background w-full flex flex-col">
-      <div className="flex justify-end items-center mb-4">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8">
-            <RefreshCw className="h-3.5 w-3.5" />
-          </Button>
-          <Button variant="outline" size="sm" className="h-8">
-            <Download className="h-3.5 w-3.5" />
-          </Button>
+    <div className="bg-background w-full flex">
+      <div className={`transition-all duration-300 ${showDetails ? 'w-2/3' : 'w-full'}`}>
+        <div className="flex justify-end items-center mb-4">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-8">
+              <RefreshCw className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-8">
+              <Download className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium flex items-center">
                 <TrendingUp className="mr-2 h-5 w-5 text-primary" />
@@ -176,78 +184,83 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium flex items-center">
-                <Clock className="mr-2 h-5 w-5 text-primary" />
-                Exception Aging
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {agingMetrics.map((metric, index) => {
-                  const getProgressColor = (label: string) => {
-                    if (label.includes("0-7")) return "bg-green-500";
-                    if (label.includes("8-14")) return "bg-yellow-500";
-                    if (label.includes("15-30")) return "bg-orange-500";
-                    return "bg-red-500";
-                  };
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium flex items-center">
+                  <Clock className="mr-2 h-5 w-5 text-primary" />
+                  Exception Aging
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {agingMetrics.map((metric, index) => {
+                    const getProgressColor = (label: string) => {
+                      if (label.includes("0-7")) return "bg-green-500";
+                      if (label.includes("8-14")) return "bg-yellow-500";
+                      if (label.includes("15-30")) return "bg-orange-500";
+                      return "bg-red-500";
+                    };
 
-                  return (
-                    <div key={index}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{metric.label}</span>
-                        <span>{metric.count} ({metric.percentage}%)</span>
+                    return (
+                      <div key={index}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>{metric.label}</span>
+                          <span>{metric.count} ({metric.percentage}%)</span>
+                        </div>
+                        <Progress value={metric.percentage} className="h-2" indicatorClassName={getProgressColor(metric.label)} />
                       </div>
-                      <Progress value={metric.percentage} className="h-2" indicatorClassName={getProgressColor(metric.label)} />
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <Card>
+            <CardHeader className="pb-2 pt-4 px-4">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-base font-medium">Exception List</CardTitle>
+                <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">
+                  <TabsList className="h-8">
+                    <TabsTrigger value="all" className="text-xs px-2">All</TabsTrigger>
+                    <TabsTrigger value="challenge" className="text-xs px-2">Challenge</TabsTrigger>
+                    <TabsTrigger value="unwind" className="text-xs px-2">Unwind</TabsTrigger>
+                    <TabsTrigger value="centralise" className="text-xs px-2">Centralise</TabsTrigger>
+                    <TabsTrigger value="writedown" className="text-xs px-2">Writedown</TabsTrigger>
+                    <TabsTrigger value="insufficient-data" className="text-xs px-2">Insufficient Data</TabsTrigger>
+                    <TabsTrigger value="reassignment" className="text-xs px-2">Reassignment</TabsTrigger>
+                    <TabsTrigger value="sla-breach" className="flex items-center text-xs px-2">
+                      <AlertCircle className="h-3 w-3 mr-1 text-destructive" />
+                      SLA Breach
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
+            </CardHeader>
+            <CardContent className="p-2">
+              <ExceptionList
+                exceptions={exceptions}
+                isLoading={isLoading}
+                onExceptionSelect={handleExceptionSelect}
+                onBulkAction={handleBulkAction}
+                filters={filters}
+                workflowStatus={workflowStatus}
+              />
             </CardContent>
           </Card>
         </div>
-        <Card>
-          <CardHeader className="pb-2 pt-4 px-4">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-base font-medium">Exception List</CardTitle>
-              <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">
-                <TabsList className="h-8">
-                  <TabsTrigger value="all" className="text-xs px-2">All</TabsTrigger>
-                  <TabsTrigger value="challenge" className="text-xs px-2">Challenge</TabsTrigger>
-                  <TabsTrigger value="unwind" className="text-xs px-2">Unwind</TabsTrigger>
-                  <TabsTrigger value="centralise" className="text-xs px-2">Centralise</TabsTrigger>
-                  <TabsTrigger value="writedown" className="text-xs px-2">Writedown</TabsTrigger>
-                  <TabsTrigger value="insufficient-data" className="text-xs px-2">Insufficient Data</TabsTrigger>
-                  <TabsTrigger value="reassignment" className="text-xs px-2">Reassignment</TabsTrigger>
-                  <TabsTrigger value="sla-breach" className="flex items-center text-xs px-2">
-                    <AlertCircle className="h-3 w-3 mr-1 text-destructive" />
-                    SLA Breach
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </CardHeader>
-          <CardContent className="p-2">
-            <ExceptionList
-              onExceptionSelect={handleExceptionSelect}
-              onBulkAction={handleBulkAction}
-              filters={filters}
-              workflowStatus={workflowStatus}
-            />
-          </CardContent>
-        </Card>
       </div>
 
-      {showDetails && (
-        <div className="fixed inset-y-0 right-0 w-[30%] bg-background border-l shadow-lg overflow-y-auto z-50">
-          <ExceptionDetails
-            exceptionId={selectedException || ""}
-            onClose={handleCloseDetails}
-            onSave={handleSaveExceptionDetails}
-          />
-        </div>
-      )}
+      <div className={`transition-all duration-300 ${showDetails ? 'w-1/3' : 'w-0'} overflow-hidden`}>
+        {showDetails && (
+          <div className="bg-background border-l h-full">
+            <ExceptionDetails
+              exceptionId={selectedException || ""}
+              onClose={handleCloseDetails}
+              onSave={handleSaveExceptionDetails}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

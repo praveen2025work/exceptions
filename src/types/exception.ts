@@ -25,6 +25,33 @@ export interface CoreException {
   "TETB Match": string;
 }
 
+// New interface for the API response
+export interface ApiException {
+  status: string | null;
+  aging: number;
+  processed_exceptions: string;
+  sdsBookCode: number;
+  sdsBookPath: string;
+  system: string;
+  legalEntity: string;
+  regulator: string;
+  instrumentId: number;
+  equityClassType: string;
+  instrumentType: string;
+  instrumentName: string;
+  positionBbbClassification: string;
+  asOfTime: string;
+  bbUnderlyings: string;
+  sodDeltaOnBbUnderlying: number;
+  positionAv: number;
+  positionQty: number;
+  lookThrough: string;
+  esmSecurityType: string;
+  originalQty: number;
+  categoryId: string | null;
+  exceptionId: string;
+}
+
 // Functional data interface - includes calculated fields
 export interface Exception {
   id: string;

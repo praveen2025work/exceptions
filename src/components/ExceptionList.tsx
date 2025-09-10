@@ -46,10 +46,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Exception, ExceptionFilters } from "@/types/exception";
-import { loadAndTransformData } from "@/utils/dataTransform";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExceptionListProps {
-  exceptions?: Exception[];
+  exceptions: Exception[];
+  isLoading: boolean;
   onExceptionSelect?: (exception: Exception) => void;
   onBulkAction?: (action: string, exceptionIds: string[]) => void;
   filters?: ExceptionFilters;
@@ -57,7 +59,8 @@ interface ExceptionListProps {
 }
 
 const ExceptionList: React.FC<ExceptionListProps> = ({
-  exceptions: propExceptions,
+  exceptions,
+  isLoading,
   onExceptionSelect = () => {},
   onBulkAction = () => {},
   filters: propFilters = {
@@ -71,7 +74,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   },
   workflowStatus = {},
 }) => {
-  const [exceptions, setExceptions] = useState<Exception[]>([]);
   const [selectedExceptions, setSelectedExceptions] = useState<string[]>([]);
   const [sortField, setSortField] = useState<keyof Exception>("created_date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
@@ -82,16 +84,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   const itemsPerPage = 15;
 
-  // Initialize exceptions data
   useEffect(() => {
-    if (propExceptions) {
-      setExceptions(propExceptions);
-    } else {
-      // Load and transform data from core data
-      const data = loadAndTransformData();
-      setExceptions(data.exceptions);
-    }
-  }, [propExceptions]);
+    setFilters(propFilters);
+  }, [propFilters]);
 
   const handleSort = (field: keyof Exception) => {
     if (field === sortField) {
@@ -298,6 +293,16 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const uniqueL04Areas = Array.from(new Set(exceptions.map(e => e.l04_business_area_name).filter(Boolean)));
   const uniqueL06Categories = Array.from(new Set(exceptions.map(e => e.l06_name).filter(Boolean)));
 
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {[...Array(10)].map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-card rounded-lg border w-full">
       {/* Filters Section */}
@@ -503,11 +508,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         </div>
       )}
 
-      <div className="border rounded-md overflow-hidden">
+      <ScrollArea className="w-full whitespace-nowrap">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-10">
+              <TableHead className="sticky left-0 bg-card z-20 w-10">
                 <Checkbox
                   checked={
                     paginatedExceptions.length > 0 &&
@@ -517,7 +522,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 />
               </TableHead>
               <TableHead
-                className="cursor-pointer"
+                className="sticky left-10 bg-card z-20 cursor-pointer"
                 onClick={() => handleSort("id")}
               >
                 <div className="flex items-center">
@@ -532,39 +537,25 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("l04_business_area_name")}
-              >
-                <div className="flex items-center">
-                  L04 Business Area
-                  {sortField === "l04_business_area_name" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("l06_name")}
-              >
-                <div className="flex items-center">
-                  L06 Category
-                  {sortField === "l06_name" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
                 onClick={() => handleSort("instrument_name")}
               >
                 <div className="flex items-center">
-                  Instrument
+                  Instrument Name
                   {sortField === "instrument_name" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => handleSort("instrument_type")}
+              >
+                <div className="flex items-center">
+                  Instrument Type
+                  {sortField === "instrument_type" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -588,11 +579,25 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("tetb_match")}
+                onClick={() => handleSort("legal_entity")}
               >
                 <div className="flex items-center">
-                  TETB Match
-                  {sortField === "tetb_match" &&
+                  Legal Entity
+                  {sortField === "legal_entity" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => handleSort("regulator")}
+              >
+                <div className="flex items-center">
+                  Regulator
+                  {sortField === "regulator" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -668,7 +673,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   onClick={() => onExceptionSelect(exception)}
                 >
                   <TableCell
-                    className="p-2"
+                    className="sticky left-0 bg-card z-10 p-2"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Checkbox
@@ -678,26 +683,18 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       }
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-sm">{exception.id}</TableCell>
-                  <TableCell className="max-w-[150px] truncate" title={exception.l04_business_area_name}>
-                    {exception.l04_business_area_name}
-                  </TableCell>
-                  <TableCell className="max-w-[120px] truncate" title={exception.l06_name}>
-                    {exception.l06_name}
-                  </TableCell>
+                  <TableCell className="sticky left-10 bg-card z-10 font-mono text-sm">{exception.id}</TableCell>
                   <TableCell className="max-w-[200px] truncate" title={exception.instrument_name}>
-                    {exception.named_no_name}
+                    {exception.instrument_name}
                   </TableCell>
+                  <TableCell>{exception.instrument_type}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
                       {exception.system}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge className={exception.tetb_match ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}>
-                      {exception.tetb_match ? "Match" : "Mismatch"}
-                    </Badge>
-                  </TableCell>
+                  <TableCell>{exception.legal_entity}</TableCell>
+                  <TableCell>{exception.regulator}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(exception.status)}>
                       {exception.status}
@@ -805,10 +802,10 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                         <div>
                           <h4 className="font-medium mb-2 text-sm">Business Information</h4>
                           <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">ADS Book Code:</span> {exception.ads_book_code}</p>
-                            <p><span className="font-medium">ADS Book Path:</span> {exception.ads_book_path}</p>
-                            <p><span className="font-medium">Legal Entity:</span> {exception.legal_entity}</p>
-                            <p><span className="font-medium">Regulator:</span> {exception.regulator}</p>
+                            <p><span className="font-medium">Book Code:</span> {exception.ads_book_code}</p>
+                            <p><span className="font-medium">Book Path:</span> {exception.ads_book_path}</p>
+                            <p><span className="font-medium">L04 Area:</span> {exception.l04_business_area_name}</p>
+                            <p><span className="font-medium">L06 Category:</span> {exception.l06_name}</p>
                             <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
                           </div>
                         </div>
@@ -816,9 +813,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                           <h4 className="font-medium mb-2 text-sm">Instrument Details</h4>
                           <div className="space-y-1 text-xs">
                             <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
-                            <p><span className="font-medium">Instrument Name:</span> {exception.instrument_name}</p>
-                            <p><span className="font-medium">Instrument Type:</span> {exception.instrument_type}</p>
-                            <p><span className="font-medium">Equity Class Path:</span> {exception.equity_class_path}</p>
+                            <p><span className="font-medium">Equity Class:</span> {exception.equity_class_path}</p>
                             <p><span className="font-medium">Classification:</span> {exception.position_tbbb_classification}</p>
                           </div>
                         </div>
@@ -826,47 +821,17 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                           <h4 className="font-medium mb-2 text-sm">Position & Valuation</h4>
                           <div className="space-y-1 text-xs">
                             <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
-                            <p><span className="font-medium">TETB AV:</span> {formatCurrency(exception.tetb_av)}</p>
                             <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
-                            <p><span className="font-medium">TETB Qty:</span> {formatNumber(exception.tetb_qty)}</p>
-                            <p><span className="font-medium">TETB Match:</span> 
-                              <Badge className={`ml-2 ${exception.tetb_match ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                                {exception.tetb_match ? "Yes" : "No"}
-                              </Badge>
-                            </p>
+                            <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
                           </div>
                         </div>
                         <div>
                           <h4 className="font-medium mb-2 text-sm">Exception Details</h4>
                           <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Reason:</span> {exception.reason}</p>
-                            <p><span className="font-medium">BB Underlying:</span> {exception.bb_underlying}</p>
-                            <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
                             <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
                             <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
-                          </div>
-                          <div className="flex gap-2 mt-3">
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onExceptionSelect(exception);
-                              }}
-                            >
-                              View Full Details
-                            </Button>
-                            {!workflowStatus[exception.id] && (
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onBulkAction("trigger-workflow", [exception.id]);
-                                }}
-                              >
-                                Start Workflow
-                              </Button>
-                            )}
+                            <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
+                            <p><span className="font-medium">Due Date:</span> {new Date(exception.due_date).toLocaleDateString()}</p>
                           </div>
                         </div>
                       </div>
@@ -875,16 +840,17 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 )}
               </React.Fragment>
             ))}
-            {paginatedExceptions.length === 0 && (
+            {paginatedExceptions.length === 0 && !isLoading && (
               <TableRow>
                 <TableCell colSpan={13} className="text-center py-8">
-                  No exceptions found
+                  No exceptions found that match your criteria.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
 
       <div className="mt-4 flex justify-between items-center px-3">
         <div className="text-sm text-muted-foreground">
