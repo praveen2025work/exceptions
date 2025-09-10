@@ -527,25 +527,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("instrument_name")}
+                onClick={() => handleSort("ads_book_code")}
               >
                 <div className="flex items-center">
-                  Instrument Name
-                  {sortField === "instrument_name" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("instrument_type")}
-              >
-                <div className="flex items-center">
-                  Instrument Type
-                  {sortField === "instrument_type" &&
+                  SDS Book Code
+                  {sortField === "ads_book_code" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -583,11 +569,53 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("regulator")}
+                onClick={() => handleSort("instrument_id")}
               >
                 <div className="flex items-center">
-                  Regulator
-                  {sortField === "regulator" &&
+                  Instrument ID
+                  {sortField === "instrument_id" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => handleSort("position_tbbb_classification")}
+              >
+                <div className="flex items-center">
+                  Position TBBB Class
+                  {sortField === "position_tbbb_classification" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => handleSort("position_qty")}
+              >
+                <div className="flex items-center">
+                  Position Qty
+                  {sortField === "position_qty" &&
+                    (sortDirection === "asc" ? (
+                      <ChevronUp className="ml-1 h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4" />
+                    ))}
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer"
+                onClick={() => handleSort("tetb_qty")}
+              >
+                <div className="flex items-center">
+                  Original Qty
+                  {sortField === "tetb_qty" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
                     ) : (
@@ -611,24 +639,10 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               </TableHead>
               <TableHead
                 className="cursor-pointer"
-                onClick={() => handleSort("priority")}
-              >
-                <div className="flex items-center">
-                  Priority
-                  {sortField === "priority" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
                 onClick={() => handleSort("aging_days")}
               >
                 <div className="flex items-center">
-                  Aging (Days)
+                  Aging
                   {sortField === "aging_days" &&
                     (sortDirection === "asc" ? (
                       <ChevronUp className="ml-1 h-4 w-4" />
@@ -637,22 +651,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                     ))}
                 </div>
               </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("sla_status")}
-              >
-                <div className="flex items-center">
-                  SLA Status
-                  {sortField === "sla_status" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
               <TableHead className="w-10">Actions</TableHead>
-              <TableHead className="w-[120px]">Workflow</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -674,33 +673,27 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                     />
                   </TableCell>
                   <TableCell className="sticky left-10 bg-card z-10 font-mono text-sm">{exception.id}</TableCell>
-                  <TableCell className="max-w-[200px] truncate" title={exception.instrument_name}>
-                    {exception.instrument_name}
-                  </TableCell>
-                  <TableCell>{exception.instrument_type}</TableCell>
+                  <TableCell>{exception.ads_book_code}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-xs">
                       {exception.system}
                     </Badge>
                   </TableCell>
                   <TableCell>{exception.legal_entity}</TableCell>
-                  <TableCell>{exception.regulator}</TableCell>
+                  <TableCell className="font-mono text-sm">{exception.instrument_id}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {exception.position_tbbb_classification}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">{formatNumber(exception.position_qty)}</TableCell>
+                  <TableCell className="text-right">{formatNumber(exception.tetb_qty)}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(exception.status)}>
                       {exception.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge className={getPriorityColor(exception.priority)}>
-                      {exception.priority}
-                    </Badge>
-                  </TableCell>
                   <TableCell className="text-center">{exception.aging_days}</TableCell>
-                  <TableCell>
-                    <Badge className={getSLAStatusColor(exception.sla_status)}>
-                      {exception.sla_status}
-                    </Badge>
-                  </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center">
                       <Button
@@ -765,29 +758,11 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       </DropdownMenu>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    {workflowStatus[exception.id] ? (
-                      <Badge className={`bg-blue-100 text-blue-800`}>
-                        {workflowStatus[exception.id]}
-                      </Badge>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onBulkAction("trigger-workflow", [exception.id]);
-                        }}
-                      >
-                        Start Workflow
-                      </Button>
-                    )}
-                  </TableCell>
+
                 </TableRow>
                 {expandedRows.includes(exception.id) && (
                   <TableRow>
-                    <TableCell colSpan={13} className="bg-muted/30 p-4">
+                    <TableCell colSpan={12} className="bg-muted/30 p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                           <h4 className="font-medium mb-2 text-sm">Business Information</h4>
@@ -832,7 +807,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             ))}
             {paginatedExceptions.length === 0 && !isLoading && (
               <TableRow>
-                <TableCell colSpan={13} className="text-center py-8">
+                <TableCell colSpan={12} className="text-center py-8">
                   No exceptions found that match your criteria.
                 </TableCell>
               </TableRow>
