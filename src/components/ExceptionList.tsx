@@ -640,58 +640,12 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       {/* Single Row Header with All Elements */}
       <div className="px-4 py-3 border-b bg-background/30">
         <div className="flex items-center justify-between gap-4">
-          {/* Left side - Title and Count */}
+          {/* Left side - Title, Count, and Classification Tabs */}
           <div className="flex items-center gap-4">
             <h2 className="text-sm font-semibold whitespace-nowrap">Exception List</h2>
             <span className="text-sm text-muted-foreground whitespace-nowrap">
               {processedExceptions.length} exceptions
             </span>
-          </div>
-          
-          {/* Center - Action Buttons */}
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs whitespace-nowrap"
-              onClick={onToggleMetricsAndAging}
-            >
-              {showMetricsAndAging ? (
-                <>
-                  <EyeOff className="h-3.5 w-3.5 mr-1" />
-                  Hide Summary
-                </>
-              ) : (
-                <>
-                  <Eye className="h-3.5 w-3.5 mr-1" />
-                  Show Summary
-                </>
-              )}
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs whitespace-nowrap"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs whitespace-nowrap"
-              onClick={handleDownload}
-            >
-              <Download className="h-3.5 w-3.5 mr-1" />
-              Download
-            </Button>
-          </div>
-          
-          {/* Right side - Classification Label and Tabs */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium whitespace-nowrap">Position TBBB Classification</span>
             <Tabs value={classificationFilter} onValueChange={setClassificationFilter} className="w-auto">
               <TabsList className="h-8 bg-muted/50">
                 <TabsTrigger value="all" className="text-xs px-3 data-[state=active]:bg-background">All</TabsTrigger>
@@ -700,6 +654,42 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                 <TabsTrigger value="CentraliseAndWritedown" className="text-xs px-3 data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
               </TabsList>
             </Tabs>
+          </div>
+          
+          {/* Right side - Icon-based Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0"
+              onClick={onToggleMetricsAndAging}
+              title={showMetricsAndAging ? "Hide Summary" : "Show Summary"}
+            >
+              {showMetricsAndAging ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              title="Refresh"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0"
+              onClick={handleDownload}
+              title="Download"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
