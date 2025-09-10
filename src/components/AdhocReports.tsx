@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -34,44 +34,13 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import exceptionsData from '../data/exceptions.json';
-
-// Types
-interface Exception {
-  id: string;
-  l04_business_area_name: string;
-  l06_name: string;
-  named_no_name: string;
-  ads_book_code: string;
-  ads_book_path: string;
-  system: string;
-  legal_entity: string;
-  regulator: string;
-  instrument_id: string;
-  equity_class_path: string;
-  instrument_type: string;
-  instrument_name: string;
-  position_tbbb_classification: string;
-  as_of_time: string;
-  bb_underlying: string;
-  reason: string;
-  look_through: string;
-  sod_dealt_bb_underlying: string;
-  position_av: number;
-  tetb_av: number;
-  position_qty: number;
-  tetb_qty: number;
-  tetb_match: boolean;
-  status: 'Unwind' | 'Centralise' | 'Writedown' | 'Insufficient Data' | 'Challenge' | 'Reassignment';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  sla_status: 'Within SLA' | 'SLA Breach' | 'SLA Warning';
-  assigned_to: string;
-  created_date: string;
-  due_date: string;
-  aging_days: number;
-}
+import { fetchAndTransformExceptions } from "@/utils/apiDataTransform";
+import { Exception } from "@/types/exception";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AdhocReports: React.FC = () => {
+  const [exceptions, setExceptions] = useState<Exception[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState("exceptions");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
@@ -82,6 +51,23 @@ const AdhocReports: React.FC = () => {
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [dateFromFilter, setDateFromFilter] = useState("");
   const [dateToFilter, setDateToFilter] = useState("");
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchAndTransformExceptions();
+        setExceptions(data);
+      } catch (error) {
+        console.error("Failed to load exception data for reports:", error);
+        setExceptions([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // Column visibility state
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
@@ -154,7 +140,10 @@ const AdhocReports: React.FC = () => {
   };
 
   const filteredData = useMemo(() => {
-    let filtered = [...(exceptionsData.exceptions as Exception[])];
+    if (isLoading) {
+      return [];
+    }
+    let filtered = [...exceptions];
 
     if (statusFilter && statusFilter !== "all") {
       filtered = filtered.filter(item => item.status === statusFilter);
@@ -224,7 +213,7 @@ const AdhocReports: React.FC = () => {
   };
 
   const downloadCSV = () => {
-    if (filteredData.length === 0) return;
+    if (filteredData.length === 0 || isLoading) return;
     
     // Only include visible columns in the export
     const visibleKeys = visibleColumnKeys;
@@ -471,7 +460,11 @@ const AdhocReports: React.FC = () => {
           </div>
 
           <div className="mt-4 text-sm text-muted-foreground">
-            Showing {filteredData.length} of {exceptionsData.exceptions.length} records
+            {isLoading ? (
+              <Skeleton className="h-5 w-48" />
+            ) : (
+              `Showing ${filteredData.length} of ${exceptions.length} records`
+            )}
           </div>
         </CardContent>
       </Card>
@@ -495,7 +488,17 @@ const AdhocReports: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredData.length === 0 ? (
+                    {isLoading ? (
+                      Array.from({ length: 10 }).map((_, i) => (
+                        <TableRow key={i}>
+                          {visibleColumnKeys.map((key) => (
+                            <TableCell key={key} className="whitespace-nowrap px-4 py-2 border-r last:border-r-0">
+                              <Skeleton className="h-5 w-full" />
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : filteredData.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={visibleColumnKeys.length} className="text-center py-8 text-muted-foreground">
                           No data matches the current filters

@@ -1,4 +1,6 @@
-import { ApiException, Exception } from "@/types/exception";
+import { ApiException, Exception, CoreException } from "@/types/exception";
+import { transformCoreToFunctional } from './dataTransform';
+import mockData from '../data/core-exceptions.json';
 
 // Helper function to determine priority based on aging
 const getPriority = (agingDays: number): 'Low' | 'Medium' | 'High' | 'Critical' => {
@@ -70,26 +72,30 @@ export const transformApiExceptions = (apiData: ApiException[]): Exception[] => 
   });
 };
 
-// Fetches and transforms exception data from the new API
+// Fetches and transforms exception data from the new API or uses mock data
 export const fetchAndTransformExceptions = async (): Promise<Exception[]> => {
-  try {
-    // IMPORTANT: This is a direct call to an HTTP endpoint.
-    // In a real-world scenario, you might face CORS issues if the API server
-    // is not configured to allow requests from your app's domain.
-    // This can be solved by:
-    // 1. Enabling CORS on the API server (e.g., sgppwavd1049806:8080).
-    // 2. Using a proxy through your Next.js app to bypass browser CORS restrictions.
-    const response = await fetch('http://sgppwavd1049806:8080/api/exceptions');
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (apiUrl && apiUrl !== 'mock') {
+    try {
+      // Use the API URL from environment variables
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data: ApiException[] = await response.json();
+      return transformApiExceptions(data);
+    } catch (error) {
+      console.error("Failed to fetch or transform API data:", error);
+      console.log("Falling back to mock data due to API error.");
+      // Fallback to mock data in case of API error
+      return transformCoreToFunctional(mockData as CoreException[]);
     }
-    
-    const data: ApiException[] = await response.json();
-    return transformApiExceptions(data);
-  } catch (error) {
-    console.error("Failed to fetch or transform exception data:", error);
-    // Return an empty array or mock data in case of an error
-    return [];
+  } else {
+    // Use mock data if no API_URL is provided or if it's set to 'mock'
+    console.log("Using mock data.");
+    return transformCoreToFunctional(mockData as CoreException[]);
   }
 };
