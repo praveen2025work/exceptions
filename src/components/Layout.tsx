@@ -28,35 +28,37 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="exception-management-theme">
-      <div className="flex min-h-screen bg-background">
+      <div className="flex h-screen bg-background overflow-hidden">
         <Sidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col min-w-0">
           {/* Header */}
-          <header className="sticky top-0 z-10 border-b bg-background">
-            <div className="container flex h-16 items-center justify-between px-4">
+          <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex h-14 items-center justify-between px-6">
               <div className="flex items-center gap-4">
-                <h1 className="text-xl font-bold">Exception Hub</h1>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Exception Hub
+                </h1>
                 <span className="text-muted-foreground">•</span>
-                <h2 className="text-lg font-medium">{currentPageName}</h2>
+                <h2 className="text-lg font-medium text-muted-foreground">{currentPageName}</h2>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <Notifications />
 
                 <ThemeToggle />
 
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Settings className="h-4 w-4" />
                   <span className="sr-only">Settings</span>
                 </Button>
 
-                <div className="flex items-center gap-2">
-                  <Avatar>
+                <div className="flex items-center gap-3 pl-3 border-l">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage
                       src={process.env.NEXT_PUBLIC_AVATAR_URL || "https://api.dicebear.com/7.x/avataaars/svg?seed=praveen"}
                       alt="User"
                     />
-                    <AvatarFallback>PK</AvatarFallback>
+                    <AvatarFallback className="text-xs">PK</AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block">
                     <p className="text-sm font-medium">Praveen Kumar</p>
@@ -70,7 +72,7 @@ const Layout = ({ children }: LayoutProps) => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6">
+          <main className="flex-1 overflow-hidden">
             {children}
           </main>
         </div>

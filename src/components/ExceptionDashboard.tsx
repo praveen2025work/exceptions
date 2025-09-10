@@ -167,108 +167,148 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   };
 
   return (
-    <div className="bg-background w-full flex">
-      <div className={`transition-all duration-300 ${showDetails ? 'w-2/3' : 'w-full'}`}>
-        <div className="flex justify-end items-center mb-4">
+    <div className="h-full flex bg-background">
+      <div className={`transition-all duration-300 ${showDetails ? 'w-2/3' : 'w-full'} flex flex-col min-w-0`}>
+        {/* Action Bar */}
+        <div className="flex justify-between items-center p-6 pb-4 border-b bg-background/50">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+              <span>Live Data</span>
+            </div>
+            {!showMetricsAndAging && (
+              <div className="text-sm font-medium">
+                {filteredExceptions.length} exceptions
+              </div>
+            )}
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8" onClick={() => setShowMetricsAndAging(prev => !prev)} title={showMetricsAndAging ? 'Hide Summary' : 'Show Summary'}>
-              {showMetricsAndAging ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 text-xs" 
+              onClick={() => setShowMetricsAndAging(prev => !prev)} 
+              title={showMetricsAndAging ? 'Hide Summary' : 'Show Summary'}
+            >
+              {showMetricsAndAging ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
+              {showMetricsAndAging ? 'Hide Summary' : 'Show Summary'}
             </Button>
-            <Button variant="outline" size="sm" className="h-8">
+            <Button variant="ghost" size="sm" className="h-8">
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="outline" size="sm" className="h-8">
+            <Button variant="ghost" size="sm" className="h-8">
               <Download className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
 
-        <div className="space-y-4">
+        {/* Content Area */}
+        <div className="flex-1 overflow-hidden flex flex-col">
           {showMetricsAndAging && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium flex items-center">
-                <TrendingUp className="mr-2 h-5 w-5 text-primary" />
-                Key Metrics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {metrics.map((metric, index) => (
-                  <div key={index}>
-                    <p className="text-sm text-muted-foreground">{metric.label}</p>
-                    <p className="text-2xl font-bold">{metric.value}</p>
-                    <p className={`text-xs ${metric.status === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
-                      {metric.change > 0 ? '+' : ''}{metric.change}% vs last week
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium flex items-center">
-                  <Clock className="mr-2 h-5 w-5 text-primary" />
-                  Exception Aging
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {agingMetrics.map((metric, index) => {
-                    const getProgressColor = (label: string) => {
-                      if (label.includes("0-7")) return "bg-green-500";
-                      if (label.includes("8-14")) return "bg-yellow-500";
-                      if (label.includes("15-30")) return "bg-orange-500";
-                      return "bg-red-500";
-                    };
-
-                    return (
-                      <div key={index}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>{metric.label}</span>
-                          <span>{metric.count} ({metric.percentage}%)</span>
-                        </div>
-                        <Progress value={metric.percentage} className="h-2" indicatorClassName={getProgressColor(metric.label)} />
+            <div className="p-6 pb-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-semibold flex items-center">
+                      <div className="p-2 rounded-lg bg-primary/10 mr-3">
+                        <TrendingUp className="h-4 w-4 text-primary" />
                       </div>
-                    );
-                  })}
+                      Key Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      {metrics.map((metric, index) => (
+                        <div key={index} className="space-y-1">
+                          <p className="text-xs text-muted-foreground font-medium">{metric.label}</p>
+                          <p className="text-2xl font-bold">{metric.value.toLocaleString()}</p>
+                          <div className="flex items-center gap-1">
+                            <div className={`h-1.5 w-1.5 rounded-full ${metric.status === 'positive' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                            <p className={`text-xs font-medium ${metric.status === 'positive' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {metric.change > 0 ? '+' : ''}{metric.change}% vs last week
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-semibold flex items-center">
+                      <div className="p-2 rounded-lg bg-primary/10 mr-3">
+                        <Clock className="h-4 w-4 text-primary" />
+                      </div>
+                      Exception Aging
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {agingMetrics.map((metric, index) => {
+                        const getProgressColor = (label: string) => {
+                          if (label.includes("0-7")) return "bg-green-500";
+                          if (label.includes("8-14")) return "bg-yellow-500";
+                          if (label.includes("15-30")) return "bg-orange-500";
+                          return "bg-red-500";
+                        };
+
+                        return (
+                          <div key={index} className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium">{metric.label}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold">{metric.count}</span>
+                                <span className="text-xs text-muted-foreground">({metric.percentage}%)</span>
+                              </div>
+                            </div>
+                            <Progress value={metric.percentage} className="h-2" indicatorClassName={getProgressColor(metric.label)} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+          
+          {/* Exception List - Full Height */}
+          <div className="flex-1 overflow-hidden px-6 pb-6">
+            <Card className="h-full border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+              <CardHeader className="pb-3 pt-4 px-4 border-b">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-base font-semibold">Exception List</CardTitle>
+                  <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">
+                    <TabsList className="h-8 bg-muted/50">
+                      <TabsTrigger value="bankingbook" className="text-xs px-3 data-[state=active]:bg-background">BankingBook</TabsTrigger>
+                      <TabsTrigger value="uncertain" className="text-xs px-3 data-[state=active]:bg-background">Uncertain</TabsTrigger>
+                      <TabsTrigger value="centraliseAndWritedown" className="text-xs px-3 data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 h-full">
+                <div className="h-full">
+                  <ExceptionList
+                    exceptions={filteredExceptions}
+                    isLoading={isLoading}
+                    onExceptionSelect={handleExceptionSelect}
+                    onBulkAction={handleBulkAction}
+                    filters={filters}
+                    workflowStatus={workflowStatus}
+                  />
                 </div>
               </CardContent>
             </Card>
-            </div>
-          )}
-          <Card>
-            <CardHeader className="pb-2 pt-4 px-4">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-base font-medium">Exception List</CardTitle>
-                <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">
-                  <TabsList className="h-8">
-                    <TabsTrigger value="bankingbook" className="text-xs px-2">BankingBook</TabsTrigger>
-                    <TabsTrigger value="uncertain" className="text-xs px-2">Uncertain</TabsTrigger>
-                    <TabsTrigger value="centraliseAndWritedown" className="text-xs px-2">CentraliseAndWritedown</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </CardHeader>
-            <CardContent className="p-2">
-              <ExceptionList
-                exceptions={filteredExceptions}
-                isLoading={isLoading}
-                onExceptionSelect={handleExceptionSelect}
-                onBulkAction={handleBulkAction}
-                filters={filters}
-                workflowStatus={workflowStatus}
-              />
-            </CardContent>
-          </Card>
+          </div>
         </div>
       </div>
 
-      <div className={`transition-all duration-300 ${showDetails ? 'w-1/3' : 'w-0'} overflow-hidden`}>
+      {/* Details Panel */}
+      <div className={`transition-all duration-300 ${showDetails ? 'w-1/3' : 'w-0'} overflow-hidden border-l bg-background/50`}>
         {showDetails && (
-          <div className="bg-background border-l h-full">
+          <div className="h-full">
             <ExceptionDetails
               exceptionId={selectedException || ""}
               onClose={handleCloseDetails}

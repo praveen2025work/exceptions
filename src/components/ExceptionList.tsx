@@ -320,529 +320,501 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   }
 
   return (
-    <div className="bg-card rounded-lg border w-full">
+    <div className="h-full flex flex-col bg-background">
       {/* Classification Tabs */}
-      <div className="mb-3 px-3 pt-3">
+      <div className="px-4 py-3 border-b bg-background/50">
         <Tabs value={classificationFilter} onValueChange={setClassificationFilter}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="BankingBook">BankingBook</TabsTrigger>
-            <TabsTrigger value="Uncertain">Uncertain</TabsTrigger>
-            <TabsTrigger value="CentraliseAndWritedown">CentraliseAndWritedown</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-muted/30">
+            <TabsTrigger value="all" className="text-xs data-[state=active]:bg-background">All</TabsTrigger>
+            <TabsTrigger value="BankingBook" className="text-xs data-[state=active]:bg-background">BankingBook</TabsTrigger>
+            <TabsTrigger value="Uncertain" className="text-xs data-[state=active]:bg-background">Uncertain</TabsTrigger>
+            <TabsTrigger value="CentraliseAndWritedown" className="text-xs data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
       {/* Filters Section */}
-      <Card className="mb-3">
-        <CardHeader className="pb-2">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-sm">Filters</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => {
-                setSearchTerm("");
-                setClassificationFilter("all");
-                setFilters({
-                  ads_book_code: "",
-                  system: "",
-                  legal_entity: "",
-                  regulator: "",
-                  status: "",
-                  l04_business_area_name: "",
-                  l06_name: "",
-                  instrument_id: "",
-                });
-              }}
+      <div className="px-4 py-3 border-b bg-background/30">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-sm font-medium">Filters</h3>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => {
+              setSearchTerm("");
+              setClassificationFilter("all");
+              setFilters({
+                ads_book_code: "",
+                system: "",
+                legal_entity: "",
+                regulator: "",
+                status: "",
+                l04_business_area_name: "",
+                l06_name: "",
+                instrument_id: "",
+              });
+            }}
+          >
+            <Filter className="h-3 w-3 mr-1" />
+            Clear
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+          <div className="lg:col-span-2">
+            <p className="text-xs mb-1 text-muted-foreground font-medium">Book Code & Instrument ID</p>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Book code..."
+                value={filters.ads_book_code}
+                onChange={(e) => setFilters({ ...filters, ads_book_code: e.target.value })}
+                className="h-7 text-xs"
+              />
+              <Select value={textFilterOperator} onValueChange={(value: "AND" | "OR") => setTextFilterOperator(value)}>
+                <SelectTrigger className="h-7 w-[60px] flex-shrink-0 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="OR">OR</SelectItem>
+                  <SelectItem value="AND">AND</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
+                placeholder="Instrument ID..."
+                value={(filters as any).instrument_id}
+                onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
+                className="h-7 text-xs"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <p className="text-xs mb-1 text-muted-foreground font-medium">System</p>
+            <Select
+              value={filters.system || "all"}
+              onValueChange={(value) => setFilters({...filters, system: value === "all" ? "" : value})}
             >
-              <Filter className="h-4 w-4 mr-2" />
-              Clear Filters
-            </Button>
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="System" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Systems</SelectItem>
+                {uniqueSystems.map(system => (
+                  <SelectItem key={system} value={system}>{system}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardHeader>
-        <CardContent className="p-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-            <div className="lg:col-span-2">
-              <p className="text-xs mb-1 text-muted-foreground">Book Code & Instrument ID</p>
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Filter by book code..."
-                  value={filters.ads_book_code}
-                  onChange={(e) => setFilters({ ...filters, ads_book_code: e.target.value })}
-                  className="h-8"
-                />
-                <Select value={textFilterOperator} onValueChange={(value: "AND" | "OR") => setTextFilterOperator(value)}>
-                  <SelectTrigger className="h-8 w-[80px] flex-shrink-0">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="OR">OR</SelectItem>
-                    <SelectItem value="AND">AND</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input
-                  placeholder="Filter by instrument ID..."
-                  value={(filters as any).instrument_id}
-                  onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
-                  className="h-8"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <p className="text-xs mb-1 text-muted-foreground">System</p>
-              <Select
-                value={filters.system || "all"}
-                onValueChange={(value) => setFilters({...filters, system: value === "all" ? "" : value})}
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select system" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Systems</SelectItem>
-                  {uniqueSystems.map(system => (
-                    <SelectItem key={system} value={system}>{system}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
-            <div>
-              <p className="text-xs mb-1 text-muted-foreground">Legal Entity</p>
-              <Select
-                value={filters.legal_entity || "all"}
-                onValueChange={(value) => setFilters({...filters, legal_entity: value === "all" ? "" : value})}
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select entity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Entities</SelectItem>
-                  {uniqueLegalEntities.map(entity => (
-                    <SelectItem key={entity} value={entity}>{entity}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <p className="text-xs mb-1 text-muted-foreground">Regulator</p>
-              <Select
-                value={filters.regulator || "all"}
-                onValueChange={(value) => setFilters({...filters, regulator: value === "all" ? "" : value})}
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select regulator" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Regulators</SelectItem>
-                  {uniqueRegulators.map(regulator => (
-                    <SelectItem key={regulator} value={regulator}>{regulator}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <p className="text-xs mb-1 text-muted-foreground">Status</p>
-              <Select
-                value={filters.status || "all"}
-                onValueChange={(value) => setFilters({...filters, status: value === "all" ? "" : value})}
-              >
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {uniqueStatuses.map(status => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <p className="text-xs mb-1 text-muted-foreground font-medium">Legal Entity</p>
+            <Select
+              value={filters.legal_entity || "all"}
+              onValueChange={(value) => setFilters({...filters, legal_entity: value === "all" ? "" : value})}
+            >
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="Entity" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Entities</SelectItem>
+                {uniqueLegalEntities.map(entity => (
+                  <SelectItem key={entity} value={entity}>{entity}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
 
-      <div className="flex justify-between items-center mb-3 px-3">
-        <h2 className="text-lg font-semibold">
-          Exceptions ({filteredExceptions.length})
-        </h2>
-        <div className="flex space-x-2">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search exceptions..." 
-              className="pl-8 w-64 h-8"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div>
+            <p className="text-xs mb-1 text-muted-foreground font-medium">Status</p>
+            <Select
+              value={filters.status || "all"}
+              onValueChange={(value) => setFilters({...filters, status: value === "all" ? "" : value})}
+            >
+              <SelectTrigger className="h-7 text-xs">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {uniqueStatuses.map(status => (
+                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
 
-      {selectedExceptions.length > 0 && (
-        <div className="bg-muted/50 p-2 rounded-md mb-3 mx-3 flex justify-between items-center">
-          <span className="text-sm font-medium">
-            {selectedExceptions.length} exceptions selected
-          </span>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onBulkAction("assign", selectedExceptions)}
-            >
-              Assign
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onBulkAction("update-status", selectedExceptions)}
-            >
-              Update Status
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                onBulkAction("trigger-workflow", selectedExceptions)
-              }
-            >
-              Trigger Workflow
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setSelectedExceptions([])}
-            >
-              Clear Selection
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <ScrollArea className="w-full whitespace-nowrap">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="sticky left-0 bg-card z-20 w-10">
-                <Checkbox
-                  checked={
-                    paginatedExceptions.length > 0 &&
-                    selectedExceptions.length === paginatedExceptions.length
-                  }
-                  onCheckedChange={handleSelectAll}
-                />
-              </TableHead>
-              <TableHead
-                className="sticky left-10 bg-card z-20 cursor-pointer"
-                onClick={() => handleSort("id")}
-              >
-                <div className="flex items-center">
-                  Exception ID
-                  {sortField === "id" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("ads_book_code")}
-              >
-                <div className="flex items-center">
-                  SDS Book Code
-                  {sortField === "ads_book_code" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("system")}
-              >
-                <div className="flex items-center">
-                  System
-                  {sortField === "system" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("legal_entity")}
-              >
-                <div className="flex items-center">
-                  Legal Entity
-                  {sortField === "legal_entity" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("instrument_id")}
-              >
-                <div className="flex items-center">
-                  Instrument ID
-                  {sortField === "instrument_id" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("position_tbbb_classification")}
-              >
-                <div className="flex items-center">
-                  Position TBBB Class
-                  {sortField === "position_tbbb_classification" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("position_qty")}
-              >
-                <div className="flex items-center">
-                  Position Qty
-                  {sortField === "position_qty" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("tetb_qty")}
-              >
-                <div className="flex items-center">
-                  Original Qty
-                  {sortField === "tetb_qty" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("status")}
-              >
-                <div className="flex items-center">
-                  Status
-                  {sortField === "status" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead
-                className="cursor-pointer"
-                onClick={() => handleSort("aging_days")}
-              >
-                <div className="flex items-center">
-                  Aging
-                  {sortField === "aging_days" &&
-                    (sortDirection === "asc" ? (
-                      <ChevronUp className="ml-1 h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    ))}
-                </div>
-              </TableHead>
-              <TableHead className="w-10">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedExceptions.map((exception) => (
-              <React.Fragment key={exception.id}>
-                <TableRow
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onExceptionSelect(exception)}
+      {/* Search and Count Bar */}
+      <div className="flex justify-between items-center px-4 py-3 border-b bg-background/30">
+        <div className="flex items-center gap-4">
+          <h2 className="text-sm font-semibold">
+            {filteredExceptions.length} exceptions
+          </h2>
+          {selectedExceptions.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {selectedExceptions.length} selected
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 text-xs px-2"
+                  onClick={() => onBulkAction("assign", selectedExceptions)}
                 >
-                  <TableCell
-                    className="sticky left-0 bg-card z-10 p-2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Checkbox
-                      checked={selectedExceptions.includes(exception.id)}
-                      onCheckedChange={(checked) =>
-                        handleSelectException(exception.id, !!checked)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell className="sticky left-10 bg-card z-10 font-mono text-sm">{exception.id}</TableCell>
-                  <TableCell>{exception.ads_book_code}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="text-xs">
-                      {exception.system}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{exception.legal_entity}</TableCell>
-                  <TableCell className="font-mono text-sm">{exception.instrument_id}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="text-xs">
-                      {exception.position_tbbb_classification}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{formatNumber(exception.position_qty)}</TableCell>
-                  <TableCell className="text-right">{formatNumber(exception.tetb_qty)}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(exception.status)}>
-                      {exception.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-center">{exception.aging_days}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleRowExpand(exception.id);
-                        }}
-                      >
-                        {expandedRows.includes(exception.id) ? (
-                          <ChevronUp className="h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onExceptionSelect(exception);
-                            }}
-                          >
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onBulkAction("assign", [exception.id]);
-                            }}
-                          >
-                            Assign
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onBulkAction("update-status", [exception.id]);
-                            }}
-                          >
-                            Update Status
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onBulkAction("trigger-workflow", [exception.id]);
-                            }}
-                          >
-                            Start Exception Workflow
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </TableCell>
+                  Assign
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 text-xs px-2"
+                  onClick={() => onBulkAction("trigger-workflow", selectedExceptions)}
+                >
+                  Workflow
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 text-xs px-2"
+                  onClick={() => setSelectedExceptions([])}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="relative">
+          <Search className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
+          <Input 
+            placeholder="Search exceptions..." 
+            className="pl-7 w-48 h-6 text-xs"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
 
-                </TableRow>
-                {expandedRows.includes(exception.id) && (
-                  <TableRow>
-                    <TableCell colSpan={12} className="bg-muted/30 p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                          <h4 className="font-medium mb-2 text-sm">Business Information</h4>
-                          <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Book Code:</span> {exception.ads_book_code}</p>
-                            <p><span className="font-medium">Book Path:</span> {exception.ads_book_path}</p>
-                            <p><span className="font-medium">L04 Area:</span> {exception.l04_business_area_name}</p>
-                            <p><span className="font-medium">L06 Category:</span> {exception.l06_name}</p>
-                            <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2 text-sm">Instrument Details</h4>
-                          <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
-                            <p><span className="font-medium">Equity Class:</span> {exception.equity_class_path}</p>
-                            <p><span className="font-medium">Classification:</span> {exception.position_tbbb_classification}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2 text-sm">Position & Valuation</h4>
-                          <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
-                            <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
-                            <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2 text-sm">Exception Details</h4>
-                          <div className="space-y-1 text-xs">
-                            <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
-                            <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
-                            <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
-                            <p><span className="font-medium">Due Date:</span> {new Date(exception.due_date).toLocaleDateString()}</p>
-                          </div>
-                        </div>
+      {/* Table Container with Sticky Header */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-auto">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-background border-b">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-10 bg-background">
+                  <Checkbox
+                    checked={
+                      paginatedExceptions.length > 0 &&
+                      selectedExceptions.length === paginatedExceptions.length
+                    }
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[120px]"
+                  onClick={() => handleSort("id")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    Exception ID
+                    {sortField === "id" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[100px]"
+                  onClick={() => handleSort("ads_book_code")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    SDS Book Code
+                    {sortField === "ads_book_code" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[80px]"
+                  onClick={() => handleSort("system")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    System
+                    {sortField === "system" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[100px]"
+                  onClick={() => handleSort("legal_entity")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    Legal Entity
+                    {sortField === "legal_entity" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[120px]"
+                  onClick={() => handleSort("instrument_id")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    Instrument ID
+                    {sortField === "instrument_id" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[140px]"
+                  onClick={() => handleSort("position_tbbb_classification")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    Position TBBB Class
+                    {sortField === "position_tbbb_classification" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[100px] text-right"
+                  onClick={() => handleSort("position_qty")}
+                >
+                  <div className="flex items-center justify-end text-xs font-semibold">
+                    Position Qty
+                    {sortField === "position_qty" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[100px] text-right"
+                  onClick={() => handleSort("tetb_qty")}
+                >
+                  <div className="flex items-center justify-end text-xs font-semibold">
+                    Original Qty
+                    {sortField === "tetb_qty" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[100px]"
+                  onClick={() => handleSort("status")}
+                >
+                  <div className="flex items-center text-xs font-semibold">
+                    Status
+                    {sortField === "status" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer bg-background min-w-[80px] text-center"
+                  onClick={() => handleSort("aging_days")}
+                >
+                  <div className="flex items-center justify-center text-xs font-semibold">
+                    Aging
+                    {sortField === "aging_days" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp className="ml-1 h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="ml-1 h-3 w-3" />
+                      ))}
+                  </div>
+                </TableHead>
+                <TableHead className="w-16 bg-background text-center text-xs font-semibold">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedExceptions.map((exception) => (
+                <React.Fragment key={exception.id}>
+                  <TableRow
+                    className="cursor-pointer hover:bg-muted/30 border-b"
+                    onClick={() => onExceptionSelect(exception)}
+                  >
+                    <TableCell
+                      className="p-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={selectedExceptions.includes(exception.id)}
+                        onCheckedChange={(checked) =>
+                          handleSelectException(exception.id, !!checked)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">{exception.id}</TableCell>
+                    <TableCell className="text-xs">{exception.ads_book_code}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                        {exception.system}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs">{exception.legal_entity}</TableCell>
+                    <TableCell className="font-mono text-xs">{exception.instrument_id}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                        {exception.position_tbbb_classification}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-xs font-mono">{formatNumber(exception.position_qty)}</TableCell>
+                    <TableCell className="text-right text-xs font-mono">{formatNumber(exception.tetb_qty)}</TableCell>
+                    <TableCell>
+                      <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>
+                        {exception.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center text-xs font-mono">{exception.aging_days}</TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleRowExpand(exception.id);
+                          }}
+                        >
+                          {expandedRows.includes(exception.id) ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                            >
+                              <MoreHorizontal className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onExceptionSelect(exception);
+                              }}
+                            >
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onBulkAction("assign", [exception.id]);
+                              }}
+                            >
+                              Assign
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onBulkAction("trigger-workflow", [exception.id]);
+                              }}
+                            >
+                              Start Workflow
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
-                )}
-              </React.Fragment>
-            ))}
-            {paginatedExceptions.length === 0 && !isLoading && (
-              <TableRow>
-                <TableCell colSpan={12} className="text-center py-8">
-                  No exceptions found that match your criteria.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+                  {expandedRows.includes(exception.id) && (
+                    <TableRow>
+                      <TableCell colSpan={12} className="bg-muted/20 p-4 border-b">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Business Information</h4>
+                            <div className="space-y-1 text-xs">
+                              <p><span className="font-medium">Book Code:</span> {exception.ads_book_code}</p>
+                              <p><span className="font-medium">Book Path:</span> {exception.ads_book_path}</p>
+                              <p><span className="font-medium">L04 Area:</span> {exception.l04_business_area_name}</p>
+                              <p><span className="font-medium">L06 Category:</span> {exception.l06_name}</p>
+                              <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Instrument Details</h4>
+                            <div className="space-y-1 text-xs">
+                              <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
+                              <p><span className="font-medium">Equity Class:</span> {exception.equity_class_path}</p>
+                              <p><span className="font-medium">Classification:</span> {exception.position_tbbb_classification}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Position & Valuation</h4>
+                            <div className="space-y-1 text-xs">
+                              <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
+                              <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
+                              <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Exception Details</h4>
+                            <div className="space-y-1 text-xs">
+                              <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
+                              <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
+                              <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
+                              <p><span className="font-medium">Due Date:</span> {new Date(exception.due_date).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))}
+              {paginatedExceptions.length === 0 && !isLoading && (
+                <TableRow>
+                  <TableCell colSpan={12} className="text-center py-12">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                        <Search className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">No exceptions found that match your criteria.</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
 
-      <div className="mt-4 flex justify-between items-center px-3">
-        <div className="text-sm text-muted-foreground">
+      {/* Pagination Footer */}
+      <div className="border-t bg-background/50 px-4 py-3 flex justify-between items-center">
+        <div className="text-xs text-muted-foreground">
           Showing {startIndex + 1} to{" "}
           {Math.min(startIndex + itemsPerPage, filteredExceptions.length)} of{" "}
           {filteredExceptions.length} exceptions
