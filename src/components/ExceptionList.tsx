@@ -144,7 +144,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       
       if (response.success) {
         // Create and trigger download
-        const blob = new Blob([response.data], { type: 'text/csv' });
+        const csvData = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+        const blob = new Blob([csvData], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
