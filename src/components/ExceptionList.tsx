@@ -321,17 +321,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Classification Tabs */}
-      <div className="px-4 py-3 border-b bg-background/50">
-        <Tabs value={classificationFilter} onValueChange={setClassificationFilter}>
-          <TabsList className="grid w-full grid-cols-4 bg-muted/30">
-            <TabsTrigger value="all" className="text-xs data-[state=active]:bg-background">All</TabsTrigger>
-            <TabsTrigger value="BankingBook" className="text-xs data-[state=active]:bg-background">BankingBook</TabsTrigger>
-            <TabsTrigger value="Uncertain" className="text-xs data-[state=active]:bg-background">Uncertain</TabsTrigger>
-            <TabsTrigger value="CentraliseAndWritedown" className="text-xs data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+
 
       {/* Filters Section */}
       <div className="px-4 py-3 border-b bg-background/30">
@@ -484,14 +474,24 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             </div>
           )}
         </div>
-        <div className="relative">
-          <Search className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
-          <Input 
-            placeholder="Search exceptions..." 
-            className="pl-7 w-48 h-6 text-xs"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="h-7 text-xs">
+            <RefreshCw className="h-3.5 w-3.5 mr-1" />
+            Refresh
+          </Button>
+          <Button variant="ghost" size="sm" className="h-7 text-xs">
+            <Download className="h-3.5 w-3.5 mr-1" />
+            Download
+          </Button>
+          <div className="relative">
+            <Search className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
+            <Input 
+              placeholder="Search exceptions..." 
+              className="pl-7 w-48 h-6 text-xs"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 

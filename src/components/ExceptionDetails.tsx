@@ -367,7 +367,7 @@ const ExceptionDetails = ({
   };
 
   return (
-    <Card className="w-full h-full overflow-hidden flex flex-col bg-white">
+    <Card className="w-full h-full overflow-hidden flex flex-col bg-background">
       <CardHeader className="border-b pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg font-medium">
@@ -394,7 +394,7 @@ const ExceptionDetails = ({
               {/* Status and Workflow Section */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Status</Label>
+                  <Label className="text-sm font-medium text-foreground">Status</Label>
                   <Select value={status} onValueChange={setStatus}>
                     <SelectTrigger className="w-full mt-1">
                       <SelectValue placeholder="Select status" />
@@ -408,7 +408,7 @@ const ExceptionDetails = ({
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Select Workflow</Label>
+                  <Label className="text-sm font-medium text-foreground">Select Workflow</Label>
                   <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
                     <SelectTrigger className="w-full mt-1">
                       <SelectValue placeholder="Select workflow" />
@@ -425,39 +425,39 @@ const ExceptionDetails = ({
               </div>
 
               {/* Exception Information */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Exception Information</h3>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h3 className="text-sm font-medium text-foreground mb-3">Exception Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">Exception ID:</span>
-                    <span className="ml-2 font-medium">{exceptionData.id}</span>
+                    <span className="text-muted-foreground">Exception ID:</span>
+                    <span className="ml-2 font-medium text-foreground">{exceptionData.id}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Instrument ID:</span>
-                    <span className="ml-2 font-medium">{exceptionData.instrumentId}</span>
+                    <span className="text-muted-foreground">Instrument ID:</span>
+                    <span className="ml-2 font-medium text-foreground">{exceptionData.instrumentId}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Book Code:</span>
-                    <span className="ml-2 font-medium">{exceptionData.bookCode}</span>
+                    <span className="text-muted-foreground">Book Code:</span>
+                    <span className="ml-2 font-medium text-foreground">{exceptionData.bookCode}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">System:</span>
-                    <span className="ml-2 font-medium">{exceptionData.system}</span>
+                    <span className="text-muted-foreground">System:</span>
+                    <span className="ml-2 font-medium text-foreground">{exceptionData.system}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Legal Entity:</span>
-                    <span className="ml-2 font-medium">{exceptionData.legalEntity}</span>
+                    <span className="text-muted-foreground">Legal Entity:</span>
+                    <span className="ml-2 font-medium text-foreground">{exceptionData.legalEntity}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Aging:</span>
-                    <span className="ml-2 font-medium">{exceptionData.aging} days</span>
+                    <span className="text-muted-foreground">Aging:</span>
+                    <span className="ml-2 font-medium text-foreground">{exceptionData.aging} days</span>
                   </div>
                 </div>
               </div>
 
               {/* Commentary Section */}
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Commentary</h3>
+                <h3 className="text-sm font-medium text-foreground mb-3">Commentary</h3>
                 
                 {/* Add new comment */}
                 <div className="mb-4">
@@ -489,7 +489,7 @@ const ExceptionDetails = ({
                             </AvatarFallback>
                           </Avatar>
                           <span className="text-sm font-medium">{comment.commentBy}</span>
-                          <span className="text-xs text-gray-500 ml-2">
+                          <span className="text-xs text-muted-foreground ml-2">
                             {new Date(comment.commentDate).toLocaleString()}
                           </span>
                         </div>
@@ -539,7 +539,7 @@ const ExceptionDetails = ({
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-700">{comment.comments}</p>
+                        <p className="text-sm text-foreground">{comment.comments}</p>
                       )}
                     </div>
                   ))}
@@ -550,7 +550,7 @@ const ExceptionDetails = ({
 
           <TabsContent value="audit" className="p-6 pt-4">
             <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-700">Audit History</h3>
+              <h3 className="text-sm font-medium text-foreground">Audit History</h3>
               {auditTrail.map((entry, index) => {
                 const previousEntry = index < auditTrail.length - 1 ? auditTrail[index + 1] : undefined;
                 const changes = formatAuditChanges(entry, previousEntry);
@@ -564,20 +564,20 @@ const ExceptionDetails = ({
                         </Badge>
                         <span className="text-sm font-medium">Rev {entry.rev}</span>
                       </div>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {entry.asOfTime ? new Date(entry.asOfTime).toLocaleString() : 'N/A'}
                       </span>
                     </div>
                     
                     <div className="mb-2">
                       {entry.actions.map((action, actionIndex) => (
-                        <p key={actionIndex} className="text-sm text-gray-700">{action}</p>
+                        <p key={actionIndex} className="text-sm text-foreground">{action}</p>
                       ))}
                     </div>
 
                     {changes && changes.length > 0 && (
-                      <div className="bg-gray-50 p-3 rounded-md">
-                        <p className="text-xs font-medium text-gray-600 mb-2">Changes:</p>
+                      <div className="bg-muted/50 p-3 rounded-md">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Changes:</p>
                         {changes.map((change, changeIndex) => (
                           <div key={changeIndex} className="text-xs mb-1">
                             <span className="font-medium">{change.field}:</span>
@@ -593,7 +593,7 @@ const ExceptionDetails = ({
                     )}
 
                     {/* Show key data for the revision */}
-                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-600">
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                       {entry.status && (
                         <div>Status: <span className="font-medium">{entry.status}</span></div>
                       )}
@@ -616,7 +616,7 @@ const ExceptionDetails = ({
           <TabsContent value="documents" className="p-6 pt-4">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-sm font-medium text-gray-700">Documents</h3>
+                <h3 className="text-sm font-medium text-foreground">Documents</h3>
                 <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm">
@@ -655,7 +655,7 @@ const ExceptionDetails = ({
 
               {files.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-500">No documents attached to this exception</p>
+                  <p className="text-muted-foreground">No documents attached to this exception</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -671,7 +671,7 @@ const ExceptionDetails = ({
                         </div>
                         <div>
                           <p className="text-sm font-medium">{file.filename}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-muted-foreground">
                             Uploaded by {file.uploadedBy} on{' '}
                             {file.uploadedDate ? new Date(file.uploadedDate).toLocaleDateString() : 'N/A'}
                           </p>
@@ -698,7 +698,7 @@ const ExceptionDetails = ({
         </Tabs>
       </div>
 
-      <CardFooter className="border-t p-4 flex justify-end space-x-2 bg-gray-50">
+      <CardFooter className="border-t p-4 flex justify-end space-x-2 bg-muted/50">
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>

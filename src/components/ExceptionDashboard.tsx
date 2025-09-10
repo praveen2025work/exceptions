@@ -172,15 +172,9 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
         {/* Action Bar */}
         <div className="flex justify-between items-center p-6 pb-4 border-b bg-background/50">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <span>Live Data</span>
+            <div className="text-sm font-medium">
+              Exception Management Dashboard
             </div>
-            {!showMetricsAndAging && (
-              <div className="text-sm font-medium">
-                {filteredExceptions.length} exceptions
-              </div>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <Button 
@@ -192,12 +186,6 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
             >
               {showMetricsAndAging ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
               {showMetricsAndAging ? 'Hide Summary' : 'Show Summary'}
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8">
-              <RefreshCw className="h-3.5 w-3.5" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8">
-              <Download className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
