@@ -1,6 +1,6 @@
 import React from "react";
-import WorkflowTab from "../src/components/WorkflowTab";
+import ExceptionDashboard from "../src/components/ExceptionDashboard";
 
 export default function ExceptionsPage() {
-  return <WorkflowTab />;
+  return <ExceptionDashboard />;
 }
