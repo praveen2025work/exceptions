@@ -108,14 +108,15 @@ export const uploadTrackingService = {
     if (MOCK_MODE) {
       await delay(800);
       const now = new Date().toISOString();
+      // Simulate backend auto-population of fields
       const newRecord: UploadTracking = {
         id: mockIdCounter++,
         uploadType: data.uploadType,
-        updatedBy: data.updatedBy,
-        createdBy: data.createdBy,
+        updatedBy: undefined, // Auto-populated by backend
+        createdBy: 'mockuser01', // Auto-populated by backend based on logged-in user
         fileName: data.fileName,
-        status: data.status,
-        count: data.count,
+        status: 'pending', // Auto-populated by backend
+        count: Math.floor(Math.random() * 1000) + 1, // Auto-populated by backend after processing file
         createdAt: now,
         updatedAt: now
       };
@@ -126,14 +127,7 @@ export const uploadTrackingService = {
     // Create FormData for file upload
     const formData = new FormData();
     formData.append('uploadType', data.uploadType);
-    formData.append('createdBy', data.createdBy);
     formData.append('fileName', data.fileName);
-    formData.append('status', data.status);
-    formData.append('count', data.count.toString());
-    
-    if (data.updatedBy) {
-      formData.append('updatedBy', data.updatedBy);
-    }
     
     if (data.file) {
       formData.append('file', data.file);
