@@ -72,26 +72,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
     loadData();
   }, [propMetrics, propAgingMetrics]);
 
-  // Handle click outside to close details panel
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        showDetails &&
-        detailsPanelRef.current &&
-        !detailsPanelRef.current.contains(event.target as Node)
-      ) {
-        handleCloseDetails();
-      }
-    };
 
-    if (showDetails) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showDetails]);
 
   const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
     const totalExceptions = exceptions.length;
