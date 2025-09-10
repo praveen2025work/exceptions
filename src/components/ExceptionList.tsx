@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChevronDown,
   ChevronUp,
@@ -83,6 +84,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState(propFilters);
   const [textFilterOperator, setTextFilterOperator] = useState<"AND" | "OR">("OR");
+  const [classificationFilter, setClassificationFilter] = useState<string>("all");
 
   const itemsPerPage = 15;
 
@@ -177,6 +179,15 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           return false;
         }
       }
+    }
+
+    // Apply classification filter
+    if (
+      classificationFilter &&
+      classificationFilter !== "all" &&
+      exception.position_tbbb_classification !== classificationFilter
+    ) {
+      return false;
     }
 
     // Apply dropdown filters
@@ -310,6 +321,18 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   return (
     <div className="bg-card rounded-lg border w-full">
+      {/* Classification Tabs */}
+      <div className="mb-3 px-3 pt-3">
+        <Tabs value={classificationFilter} onValueChange={setClassificationFilter}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="BankingBook">BankingBook</TabsTrigger>
+            <TabsTrigger value="Uncertain">Uncertain</TabsTrigger>
+            <TabsTrigger value="CentraliseAndWritedown">CentraliseAndWritedown</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
       {/* Filters Section */}
       <Card className="mb-3">
         <CardHeader className="pb-2">
@@ -320,6 +343,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               size="sm"
               onClick={() => {
                 setSearchTerm("");
+                setClassificationFilter("all");
                 setFilters({
                   ads_book_code: "",
                   system: "",
