@@ -33,21 +33,21 @@ function calculatePriority(positionAV: number, tetbMatch: boolean): 'Low' | 'Med
 }
 
 // Function to calculate status based on various factors
-function calculateStatus(tetbMatch: boolean, reason: string): 'Unwind' | 'Centralise' | 'Writedown' | 'Insufficient Data' | 'Challenge' | 'Reassignment' {
+function calculateStatus(tetbMatch: boolean, reason: string): 'Open' | 'In Progress' | 'Resolved' | 'Rejected' {
   // Randomly assign status based on business logic
-  const statuses: ('Unwind' | 'Centralise' | 'Writedown' | 'Insufficient Data' | 'Challenge' | 'Reassignment')[] = [
-    'Unwind', 'Centralise', 'Writedown', 'Insufficient Data', 'Challenge', 'Reassignment'
+  const statuses: ('Open' | 'In Progress' | 'Resolved' | 'Rejected')[] = [
+    'Open', 'In Progress', 'Resolved', 'Rejected'
   ];
   
   // Use some business logic to determine status
   if (!tetbMatch && reason.includes('result=No')) {
     // For mismatches with negative results, more likely to need investigation
-    return Math.random() < 0.4 ? 'Challenge' : 'Insufficient Data';
+    return Math.random() < 0.4 ? 'In Progress' : 'Open';
   }
   
   if (tetbMatch && !reason.includes('result=Yes')) {
     // For matches, more likely to be actionable
-    return Math.random() < 0.5 ? 'Unwind' : 'Centralise';
+    return Math.random() < 0.5 ? 'Resolved' : 'In Progress';
   }
   
   // Default random assignment for other cases
@@ -204,7 +204,7 @@ export function transformCoreToFunctional(coreData: CoreException[]): Exception[
         position_qty: 0,
         tetb_qty: 0,
         tetb_match: false,
-        status: 'Challenge',
+        status: 'Open',
         priority: 'Low',
         sla_status: 'Within SLA',
         assigned_to: 'Unassigned',
