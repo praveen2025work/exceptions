@@ -1,5 +1,4 @@
 import React, { useMemo, useCallback, useState, useEffect } from 'react';
-import { FixedSizeList as List } from 'react-window';
 import {
   Table,
   TableBody,
@@ -27,6 +26,7 @@ interface VirtualizedTableProps {
   sortDirection?: 'asc' | 'desc';
 }
 
+// Simple virtualization implementation without external dependencies
 const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   data,
   height,
@@ -38,18 +38,8 @@ const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
   sortField,
   sortDirection
 }) => {
-  const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
-
-  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const item = data[index];
-    if (!item) return null;
-
-    return (
-      <div style={style}>
-        {renderRow(item, index, style)}
-      </div>
-    );
-  }, [data, renderRow]);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(height - 50);
 
   const handleSort = useCallback((field: string) => {
     if (!onSort) return;
@@ -57,6 +47,28 @@ const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
     const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
     onSort(field, newDirection);
   }, [onSort, sortField, sortDirection]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  }, []);
+
+  // Calculate visible range for virtualization
+  const visibleRange = useMemo(() => {
+    const overscan = 5;
+    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+    const endIndex = Math.min(
+      data.length - 1,
+      Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+    );
+    return { startIndex, endIndex };
+  }, [scrollTop, containerHeight, itemHeight, data.length]);
+
+  const visibleItems = useMemo(() => {
+    return data.slice(visibleRange.startIndex, visibleRange.endIndex + 1);
+  }, [data, visibleRange]);
+
+  const totalHeight = data.length * itemHeight;
+  const offsetY = visibleRange.startIndex * itemHeight;
 
   return (
     <div className="h-full flex flex-col">
@@ -90,21 +102,27 @@ const VirtualizedTable: React.FC<VirtualizedTableProps> = ({
 
       {/* Virtualized Table Body */}
       <div 
-        ref={setContainerRef}
-        className="flex-1 overflow-hidden"
-        style={{ height: height - 50 }} // Subtract header height
+        className="flex-1 overflow-auto"
+        style={{ height: containerHeight }}
+        onScroll={handleScroll}
       >
-        {containerRef && (
-          <List
-            height={height - 50}
-            itemCount={data.length}
-            itemSize={itemHeight}
-            width="100%"
-            overscanCount={5}
-          >
-            {Row}
-          </List>
-        )}
+        <div style={{ height: totalHeight, position: 'relative' }}>
+          <div style={{ transform: `translateY(${offsetY}px)` }}>
+            {visibleItems.map((item, index) => {
+              const actualIndex = visibleRange.startIndex + index;
+              const style: React.CSSProperties = {
+                height: itemHeight,
+                display: 'flex',
+                alignItems: 'center'
+              };
+              return (
+                <div key={item.id || actualIndex}>
+                  {renderRow(item, actualIndex, style)}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
