@@ -131,3 +131,73 @@ export interface ExceptionWorkflow {
   createdAt: string;
   updatedAt: string;
 }
+
+// New interfaces for API responses
+export interface ExceptionCategory {
+  id: number;
+  categoryName: string;
+  classification: string;
+}
+
+export interface FileResponse {
+  id?: number;
+  filename?: string;
+  filePath?: string;
+  uploadedBy?: string;
+  uploadedDate?: string;
+  message?: string;
+  timestamp?: string;
+}
+
+export interface AuditTrailEntry {
+  rev: number;
+  exceptionId: string;
+  revType: string;
+  actions: string[];
+  equityClassType?: string;
+  regulator?: string;
+  aging?: number;
+  asOfTime?: string;
+  bbUnderlyings?: string;
+  esmSecurityType?: string;
+  instrumentId?: number;
+  instrumentName?: string;
+  instrumentType?: string;
+  legalEntity?: string;
+  lookThrough?: string;
+  positionAv?: number;
+  positionQty?: number;
+  positionBbbClassification?: string;
+  processed_exceptions?: string;
+  sdsBookCode?: number;
+  sdsBookPath?: string;
+  sodDeltaOnBbUnderlying?: number;
+  status?: string | null;
+  system?: string;
+  originalQty?: number;
+  categoryId?: string | null;
+  commentsId?: string | null;
+  brid?: string | null;
+  comments?: string | null;
+  commentBy?: string | null;
+  commentDate?: string | null;
+  fileId?: string | null;
+  filename?: string | null;
+  filePath?: string | null;
+  uploadedBy?: string | null;
+  uploadedDate?: string | null;
+}
+
+export interface CommentEntry {
+  id: number;
+  brid: string;
+  comments: string;
+  commentBy: string;
+  commentDate: string;
+}
+
+export interface UpdateCommentRequest {
+  commentBy: string;
+  brid: string;
+  comments: string;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Save,
@@ -8,6 +8,12 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronUp,
+  Upload,
+  Download,
+  Trash2,
+  Edit,
+  Plus,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -31,111 +37,333 @@ import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Separator } from "./ui/separator";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "./ui/accordion";
-
-interface AuditEntry {
-  id: string;
-  timestamp: Date;
-  user: string;
-  action: string;
-  previousValue?: string;
-  newValue?: string;
-}
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Label } from "./ui/label";
+import { useToast } from "./ui/use-toast";
+import {
+  ExceptionCategory,
+  FileResponse,
+  AuditTrailEntry,
+  CommentEntry,
+  UpdateCommentRequest,
+} from "../types/exception";
 
 interface ExceptionDetailsProps {
   exceptionId?: string;
+  positionTbbbClassification?: string;
   onClose?: () => void;
   onSave?: (data: any) => void;
 }
 
 const ExceptionDetails = ({
-  exceptionId = "1234",
+  exceptionId = "1020129_131907931_SICOVAM",
+  positionTbbbClassification = "BankingBook",
   onClose = () => {},
   onSave = () => {},
 }: ExceptionDetailsProps) => {
   const [activeTab, setActiveTab] = useState("details");
-  const [status, setStatus] = useState("open");
-  const [assignee, setAssignee] = useState("unassigned");
+  const [status, setStatus] = useState("OPEN");
+  const [selectedWorkflow, setSelectedWorkflow] = useState("");
+  const [categories, setCategories] = useState<ExceptionCategory[]>([]);
+  const [files, setFiles] = useState<FileResponse[]>([]);
+  const [auditTrail, setAuditTrail] = useState<AuditTrailEntry[]>([]);
+  const [comments, setComments] = useState<CommentEntry[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editCommentText, setEditCommentText] = useState("");
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [currentUser] = useState("Pratik"); // Mock current user
+  const { toast } = useToast();
 
-  // Mock data for the exception
+  // Mock exception data
   const exceptionData = {
     id: exceptionId,
-    title: "Position Limit Breach",
-    description: "The position exceeds the regulatory limit by 15%",
-    instrumentId: "INST-789",
-    bookCode: "BC-456",
-    classification: "Regulatory",
-    createdDate: new Date("2023-05-15T10:30:00"),
-    daysOpen: 3,
-    slaStatus: "Within SLA",
-    priority: "High",
-    system: "COMPASS",
-    legalEntity: "BBPLC",
-    regulator: "FRB",
+    instrumentId: "131907931",
+    bookCode: "1020129",
+    system: "Atlas",
+    legalEntity: "BCSL",
+    regulator: "PRA",
+    aging: 1,
+    positionQty: 1680000,
+    originalQty: 1680000,
   };
 
-  // Mock audit history
-  const auditHistory: AuditEntry[] = [
-    {
-      id: "1",
-      timestamp: new Date("2023-05-15T10:30:00"),
-      user: "system",
-      action: "Exception created",
-    },
-    {
-      id: "2",
-      timestamp: new Date("2023-05-15T14:45:00"),
-      user: "john.doe",
-      action: "Status changed",
-      previousValue: "New",
-      newValue: "In Progress",
-    },
-    {
-      id: "3",
-      timestamp: new Date("2023-05-16T09:15:00"),
-      user: "jane.smith",
-      action: "Comment added",
-      newValue: "Investigating the root cause",
-    },
-    {
-      id: "4",
-      timestamp: new Date("2023-05-17T11:20:00"),
-      user: "john.doe",
-      action: "Status changed",
-      previousValue: "In Progress",
-      newValue: "Open",
-    },
-  ];
+  // Load exception categories
+  useEffect(() => {
+    loadExceptionCategories();
+    loadFiles();
+    loadAuditTrail();
+    loadComments();
+  }, [positionTbbbClassification, exceptionId]);
+
+  const loadExceptionCategories = async () => {
+    try {
+      // Mock API call - replace with actual API call
+      const mockCategories: ExceptionCategory[] = [
+        { id: 2, categoryName: "FO Unwind", classification: "BankingBook" },
+        { id: 3, categoryName: "FO Challenge", classification: "BankingBook" },
+        { id: 4, categoryName: "FO Request Reassignment", classification: "BankingBook" },
+      ];
+      setCategories(mockCategories);
+    } catch (error) {
+      console.error("Error loading categories:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load exception categories",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadFiles = async () => {
+    try {
+      // Mock API call - replace with actual API call
+      const mockFiles: FileResponse[] = [];
+      setFiles(mockFiles);
+    } catch (error) {
+      console.error("Error loading files:", error);
+    }
+  };
+
+  const loadAuditTrail = async () => {
+    try {
+      // Mock API call - replace with actual API call
+      const mockAuditTrail: AuditTrailEntry[] = [
+        {
+          rev: 0,
+          exceptionId: "1020129_131907931_SICOVAM",
+          revType: "INSERT",
+          actions: ["New Exception created"],
+          equityClassType: "Fund (Ex)",
+          regulator: "PRA",
+          aging: 1,
+          asOfTime: "2025-09-09 13:40:48",
+          bbUnderlyings: "Sophis/131907931/006878.TWO",
+          esmSecurityType: "ETF",
+          instrumentId: 131907931,
+          instrumentName: "00687B.TWO",
+          instrumentType: "SICOVAM",
+          legalEntity: "BCSL",
+          lookThrough: "Y",
+          positionAv: 1090157.604272446,
+          positionQty: 1680000,
+          positionBbbClassification: "BankingBook",
+          processed_exceptions: "2025-09-10 14:54:01",
+          sdsBookCode: 1020129,
+          sdsBookPath: "Barclays Group:Markets:Equities:Prime:Prime Delta 1:APAC:Delta One Synthetics:Index/Sector/CIB:Delta 1 - Non Index PLIS-Taiwan:Conversion - BCSL(15170)",
+          sodDeltaOnBbUnderlying: 1090157.60427244,
+          status: null,
+          system: "Atlas",
+          originalQty: 1680000,
+        }
+      ];
+      setAuditTrail(mockAuditTrail);
+    } catch (error) {
+      console.error("Error loading audit trail:", error);
+    }
+  };
+
+  const loadComments = async () => {
+    try {
+      // Mock API call - replace with actual API call
+      const mockComments: CommentEntry[] = [
+        {
+          id: 105,
+          brid: "B001",
+          comments: "test",
+          commentBy: "Pratik",
+          commentDate: "2025-09-10T21:19:02.830881300",
+        }
+      ];
+      setComments(mockComments);
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    }
+  };
 
   const handleSave = () => {
-    // Prepare data to save
     const updatedData = {
       ...exceptionData,
       status,
-      assignee,
+      selectedWorkflow,
     };
     onSave(updatedData);
-    // In a real app, we might close the panel after saving
-    // onClose();
+    toast({
+      title: "Success",
+      description: "Exception details updated successfully",
+    });
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    try {
+      // Mock API call - replace with actual API call
+      const newCommentEntry: CommentEntry = {
+        id: Date.now(),
+        brid: "B001",
+        comments: newComment,
+        commentBy: currentUser,
+        commentDate: new Date().toISOString(),
+      };
+      setComments([...comments, newCommentEntry]);
+      setNewComment("");
+      toast({
+        title: "Success",
+        description: "Comment added successfully",
+      });
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateComment = async (commentId: number) => {
+    if (!editCommentText.trim()) return;
+
+    try {
+      // Mock API call - replace with actual API call
+      const updatedComments = comments.map(comment =>
+        comment.id === commentId
+          ? { ...comment, comments: editCommentText }
+          : comment
+      );
+      setComments(updatedComments);
+      setEditingComment(null);
+      setEditCommentText("");
+      toast({
+        title: "Success",
+        description: "Comment updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update comment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      // Mock API call - replace with actual API call
+      const updatedComments = comments.filter(comment => comment.id !== commentId);
+      setComments(updatedComments);
+      toast({
+        title: "Success",
+        description: "Comment deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete comment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+
+    try {
+      // Mock API call - replace with actual API call
+      const newFile: FileResponse = {
+        id: Date.now(),
+        filename: selectedFile.name,
+        filePath: `C:\\Users\\x01590370\\Desktop\\ws\\data\\upload\\${exceptionId}_${selectedFile.name}`,
+        uploadedBy: currentUser,
+        uploadedDate: new Date().toISOString(),
+      };
+      setFiles([...files, newFile]);
+      setSelectedFile(null);
+      setIsUploadDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "File uploaded successfully",
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteFile = async (fileId: number) => {
+    try {
+      // Mock API call - replace with actual API call
+      const updatedFiles = files.filter(file => file.id !== fileId);
+      setFiles(updatedFiles);
+      toast({
+        title: "Success",
+        description: "File deleted successfully",
+      });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete file",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusBadgeColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "open":
+    switch (status) {
+      case "OPEN":
         return "bg-yellow-500 hover:bg-yellow-600";
-      case "in progress":
+      case "IN PROGRESS":
         return "bg-blue-500 hover:bg-blue-600";
-      case "resolved":
+      case "RESOLVED":
         return "bg-green-500 hover:bg-green-600";
-      case "closed":
-        return "bg-gray-500 hover:bg-gray-600";
+      case "REJECTED":
+        return "bg-red-500 hover:bg-red-600";
       default:
         return "bg-gray-500 hover:bg-gray-600";
     }
+  };
+
+  const formatAuditChanges = (current: AuditTrailEntry, previous?: AuditTrailEntry) => {
+    if (!previous) return null;
+
+    const changes: { field: string; oldValue: any; newValue: any }[] = [];
+    
+    // Compare key fields
+    const fieldsToCompare = [
+      'status', 'aging', 'positionQty', 'positionAv', 'legalEntity', 
+      'regulator', 'system', 'positionBbbClassification'
+    ];
+
+    fieldsToCompare.forEach(field => {
+      const currentValue = (current as any)[field];
+      const previousValue = (previous as any)[field];
+      
+      if (currentValue !== previousValue) {
+        changes.push({
+          field,
+          oldValue: previousValue,
+          newValue: currentValue
+        });
+      }
+    });
+
+    return changes;
   };
 
   return (
@@ -156,200 +384,315 @@ const ExceptionDetails = ({
           <div className="px-6 pt-4">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="history">Audit History</TabsTrigger>
+              <TabsTrigger value="audit">Audit History</TabsTrigger>
               <TabsTrigger value="documents">Documents</TabsTrigger>
             </TabsList>
           </div>
 
           <TabsContent value="details" className="p-6 pt-4">
-            <div className="space-y-4">
-              {/* Status and Priority Section */}
-              <div className="flex justify-between items-center">
+            <div className="space-y-6">
+              {/* Status and Workflow Section */}
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Status</p>
+                  <Label className="text-sm font-medium text-gray-700">Status</Label>
                   <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger className="w-[140px]">
+                    <SelectTrigger className="w-full mt-1">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="open">Open</SelectItem>
-                      <SelectItem value="in progress">In Progress</SelectItem>
-                      <SelectItem value="resolved">Resolved</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
+                      <SelectItem value="OPEN">Open</SelectItem>
+                      <SelectItem value="IN PROGRESS">In Progress</SelectItem>
+                      <SelectItem value="RESOLVED">Resolved</SelectItem>
+                      <SelectItem value="REJECTED">Rejected</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Priority</p>
-                  <Badge className="bg-red-500 hover:bg-red-600">
-                    {exceptionData.priority}
-                  </Badge>
+                  <Label className="text-sm font-medium text-gray-700">Select Workflow</Label>
+                  <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue placeholder="Select workflow" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.categoryName}>
+                          {category.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {/* Title and Description */}
-              <div className="space-y-2">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Title</p>
-                  <Input defaultValue={exceptionData.title} className="mt-1" />
+              {/* Exception Information */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Exception Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Exception ID:</span>
+                    <span className="ml-2 font-medium">{exceptionData.id}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Instrument ID:</span>
+                    <span className="ml-2 font-medium">{exceptionData.instrumentId}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Book Code:</span>
+                    <span className="ml-2 font-medium">{exceptionData.bookCode}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">System:</span>
+                    <span className="ml-2 font-medium">{exceptionData.system}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Legal Entity:</span>
+                    <span className="ml-2 font-medium">{exceptionData.legalEntity}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Aging:</span>
+                    <span className="ml-2 font-medium">{exceptionData.aging} days</span>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Description
-                  </p>
+              </div>
+
+              {/* Commentary Section */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Commentary</h3>
+                
+                {/* Add new comment */}
+                <div className="mb-4">
                   <Textarea
-                    defaultValue={exceptionData.description}
-                    className="mt-1"
+                    placeholder="Add a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="mb-2"
                     rows={3}
                   />
+                  <Button onClick={handleAddComment} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Comment
+                  </Button>
                 </div>
-              </div>
 
-              {/* Key Details */}
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="details">
-                  <AccordionTrigger className="py-2">
-                    Key Details
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">
-                          Instrument ID
-                        </p>
-                        <p className="text-sm">{exceptionData.instrumentId}</p>
+                {/* Comments list */}
+                <div className="space-y-3">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="border rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center">
+                          <Avatar className="h-6 w-6 mr-2">
+                            <AvatarImage
+                              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.commentBy}`}
+                            />
+                            <AvatarFallback>
+                              {comment.commentBy.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm font-medium">{comment.commentBy}</span>
+                          <span className="text-xs text-gray-500 ml-2">
+                            {new Date(comment.commentDate).toLocaleString()}
+                          </span>
+                        </div>
+                        {comment.commentBy === currentUser && (
+                          <div className="flex space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingComment(comment.id);
+                                setEditCommentText(comment.comments);
+                              }}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">
-                          Book Code
-                        </p>
-                        <p className="text-sm">{exceptionData.bookCode}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">
-                          Classification
-                        </p>
-                        <p className="text-sm">
-                          {exceptionData.classification}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">
-                          System
-                        </p>
-                        <p className="text-sm">{exceptionData.system}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">
-                          Legal Entity
-                        </p>
-                        <p className="text-sm">{exceptionData.legalEntity}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">
-                          Regulator
-                        </p>
-                        <p className="text-sm">{exceptionData.regulator}</p>
-                      </div>
+                      {editingComment === comment.id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editCommentText}
+                            onChange={(e) => setEditCommentText(e.target.value)}
+                            rows={2}
+                          />
+                          <div className="flex space-x-2">
+                            <Button size="sm" onClick={() => handleUpdateComment(comment.id)}>
+                              Save
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingComment(null);
+                                setEditCommentText("");
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-700">{comment.comments}</p>
+                      )}
                     </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-
-              {/* SLA Information */}
-              <div className="bg-gray-50 p-3 rounded-md">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 text-gray-500 mr-2" />
-                    <span className="text-sm font-medium">SLA Status</span>
-                  </div>
-                  <Badge className="bg-green-500 hover:bg-green-600">
-                    {exceptionData.slaStatus}
-                  </Badge>
+                  ))}
                 </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-sm text-gray-500">Days Open</span>
-                  <span className="text-sm font-medium">
-                    {exceptionData.daysOpen} days
-                  </span>
-                </div>
-              </div>
-
-              {/* Assignment Section */}
-              <div>
-                <p className="text-sm font-medium text-gray-500">Assigned To</p>
-                <Select value={assignee} onValueChange={setAssignee}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Assign to..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    <SelectItem value="john.doe">John Doe</SelectItem>
-                    <SelectItem value="jane.smith">Jane Smith</SelectItem>
-                    <SelectItem value="alex.johnson">Alex Johnson</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Comments Section */}
-              <div>
-                <p className="text-sm font-medium text-gray-500">Add Comment</p>
-                <Textarea
-                  placeholder="Enter your comment here..."
-                  className="mt-1"
-                  rows={2}
-                />
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="history" className="p-6 pt-4">
+          <TabsContent value="audit" className="p-6 pt-4">
             <div className="space-y-4">
-              {auditHistory.map((entry) => (
-                <div key={entry.id} className="border-b pb-3 last:border-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Avatar className="h-6 w-6 mr-2">
-                        <AvatarImage
-                          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.user}`}
-                        />
-                        <AvatarFallback>
-                          {entry.user.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">{entry.user}</span>
-                    </div>
-                    <span className="text-xs text-gray-500">
-                      {entry.timestamp.toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="text-sm mt-1">{entry.action}</p>
-                  {entry.previousValue && entry.newValue && (
-                    <div className="mt-1 text-xs">
-                      <span className="text-red-500 line-through mr-2">
-                        {entry.previousValue}
+              <h3 className="text-sm font-medium text-gray-700">Audit History</h3>
+              {auditTrail.map((entry, index) => {
+                const previousEntry = index < auditTrail.length - 1 ? auditTrail[index + 1] : undefined;
+                const changes = formatAuditChanges(entry, previousEntry);
+                
+                return (
+                  <div key={`${entry.rev}-${index}`} className="border-b pb-4 last:border-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="mr-2">
+                          {entry.revType}
+                        </Badge>
+                        <span className="text-sm font-medium">Rev {entry.rev}</span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {entry.asOfTime ? new Date(entry.asOfTime).toLocaleString() : 'N/A'}
                       </span>
-                      <span className="text-green-500">{entry.newValue}</span>
                     </div>
-                  )}
-                  {!entry.previousValue && entry.newValue && (
-                    <p className="mt-1 text-xs text-gray-600">
-                      {entry.newValue}
-                    </p>
-                  )}
-                </div>
-              ))}
+                    
+                    <div className="mb-2">
+                      {entry.actions.map((action, actionIndex) => (
+                        <p key={actionIndex} className="text-sm text-gray-700">{action}</p>
+                      ))}
+                    </div>
+
+                    {changes && changes.length > 0 && (
+                      <div className="bg-gray-50 p-3 rounded-md">
+                        <p className="text-xs font-medium text-gray-600 mb-2">Changes:</p>
+                        {changes.map((change, changeIndex) => (
+                          <div key={changeIndex} className="text-xs mb-1">
+                            <span className="font-medium">{change.field}:</span>
+                            <span className="text-red-500 line-through ml-2">
+                              {change.oldValue || 'null'}
+                            </span>
+                            <span className="text-green-500 ml-2">
+                              {change.newValue || 'null'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Show key data for the revision */}
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-600">
+                      {entry.status && (
+                        <div>Status: <span className="font-medium">{entry.status}</span></div>
+                      )}
+                      {entry.aging && (
+                        <div>Aging: <span className="font-medium">{entry.aging} days</span></div>
+                      )}
+                      {entry.positionQty && (
+                        <div>Position Qty: <span className="font-medium">{entry.positionQty.toLocaleString()}</span></div>
+                      )}
+                      {entry.system && (
+                        <div>System: <span className="font-medium">{entry.system}</span></div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </TabsContent>
 
           <TabsContent value="documents" className="p-6 pt-4">
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                No documents attached to this exception
-              </p>
-              <Button variant="outline" className="mt-4">
-                Upload Document
-              </Button>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-medium text-gray-700">Documents</h3>
+                <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload File
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Upload Document</DialogTitle>
+                      <DialogDescription>
+                        Select a file to upload for this exception.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="file">File</Label>
+                        <Input
+                          id="file"
+                          type="file"
+                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleFileUpload} disabled={!selectedFile}>
+                        Upload
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {files.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No documents attached to this exception</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {files.map((file) => (
+                    <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center">
+                        <div className="mr-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
+                            <span className="text-xs font-medium text-blue-600">
+                              {file.filename?.split('.').pop()?.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{file.filename}</p>
+                          <p className="text-xs text-gray-500">
+                            Uploaded by {file.uploadedBy} on{' '}
+                            {file.uploadedDate ? new Date(file.uploadedDate).toLocaleDateString() : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-1">
+                        <Button variant="ghost" size="sm">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => file.id && handleDeleteFile(file.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
