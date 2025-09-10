@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Plus, Search, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, RefreshCw, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -109,6 +109,7 @@ export const UploadTracking: React.FC = React.memo(() => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<UploadTrackingType | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
 
@@ -202,18 +203,28 @@ export const UploadTracking: React.FC = React.memo(() => {
       return;
     }
 
-    const requestData = {
+    const requestData: CreateUploadTrackingRequest = {
       uploadType: formData.uploadType as any,
       updatedBy: formData.updatedBy || undefined,
       createdBy: formData.createdBy,
       fileName: formData.fileName,
       status: formData.status as any,
-      count: Number(formData.count)
+      count: Number(formData.count),
+      file: selectedFile || undefined
     };
 
     try {
       if (isEditing && selectedRecord) {
-        await withLoading(uploadTrackingService.update(selectedRecord.id, requestData));
+        // For updates, we don't include the file
+        const updateData: UpdateUploadTrackingRequest = {
+          uploadType: formData.uploadType as any,
+          updatedBy: formData.updatedBy || undefined,
+          createdBy: formData.createdBy,
+          fileName: formData.fileName,
+          status: formData.status as any,
+          count: Number(formData.count)
+        };
+        await withLoading(uploadTrackingService.update(selectedRecord.id, updateData));
         toast({
           title: 'Success',
           description: 'Upload tracking record updated successfully',
@@ -228,6 +239,7 @@ export const UploadTracking: React.FC = React.memo(() => {
       
       setIsFormOpen(false);
       setFormData(initialFormData);
+      setSelectedFile(null);
       setFormErrors({});
       setIsEditing(false);
       setSelectedRecord(null);
@@ -239,7 +251,7 @@ export const UploadTracking: React.FC = React.memo(() => {
         variant: 'destructive',
       });
     }
-  }, [formData, isEditing, selectedRecord, withLoading, toast, loadData]);
+  }, [formData, selectedFile, isEditing, selectedRecord, withLoading, toast, loadData]);
 
   // Handle delete
   const handleDelete = useCallback(async () => {
@@ -263,6 +275,18 @@ export const UploadTracking: React.FC = React.memo(() => {
     }
   }, [selectedRecord, withLoading, toast, loadData]);
 
+  // Handle file selection
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      // Auto-populate filename if it's empty
+      if (!formData.fileName) {
+        setFormData(prev => ({ ...prev, fileName: file.name }));
+      }
+    }
+  }, [formData.fileName]);
+
   // Open create form
   const openCreateForm = useCallback(() => {
     setFormData({
@@ -270,6 +294,7 @@ export const UploadTracking: React.FC = React.memo(() => {
       createdBy: user?.userName || '',
       updatedBy: user?.userName || ''
     });
+    setSelectedFile(null);
     setFormErrors({});
     setIsEditing(false);
     setSelectedRecord(null);
@@ -286,6 +311,7 @@ export const UploadTracking: React.FC = React.memo(() => {
       status: record.status,
       count: record.count.toString()
     });
+    setSelectedFile(null); // Reset file selection for editing
     setFormErrors({});
     setIsEditing(true);
     setSelectedRecord(record);
@@ -501,6 +527,27 @@ export const UploadTracking: React.FC = React.memo(() => {
                 <p className="text-sm text-red-500">{formErrors.uploadType}</p>
               )}
             </div>
+
+            {!isEditing && (
+              <div className="grid gap-2">
+                <Label htmlFor="fileUpload">Upload File</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="fileUpload"
+                    type="file"
+                    onChange={handleFileSelect}
+                    className="flex-1"
+                    accept=".csv,.xlsx,.xls,.json,.txt"
+                  />
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                </div>
+                {selectedFile && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="fileName">File Name *</Label>

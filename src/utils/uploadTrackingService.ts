@@ -110,7 +110,12 @@ export const uploadTrackingService = {
       const now = new Date().toISOString();
       const newRecord: UploadTracking = {
         id: mockIdCounter++,
-        ...data,
+        uploadType: data.uploadType,
+        updatedBy: data.updatedBy,
+        createdBy: data.createdBy,
+        fileName: data.fileName,
+        status: data.status,
+        count: data.count,
         createdAt: now,
         updatedAt: now
       };
@@ -118,12 +123,25 @@ export const uploadTrackingService = {
       return { ...newRecord };
     }
 
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('uploadType', data.uploadType);
+    formData.append('createdBy', data.createdBy);
+    formData.append('fileName', data.fileName);
+    formData.append('status', data.status);
+    formData.append('count', data.count.toString());
+    
+    if (data.updatedBy) {
+      formData.append('updatedBy', data.updatedBy);
+    }
+    
+    if (data.file) {
+      formData.append('file', data.file);
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/uploads`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+      body: formData, // Don't set Content-Type header, let browser set it with boundary
     });
 
     if (!response.ok) {

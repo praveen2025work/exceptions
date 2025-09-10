@@ -17,6 +17,7 @@ export interface CreateUploadTrackingRequest {
   fileName: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   count: number;
+  file?: File;
 }
 
 export interface UpdateUploadTrackingRequest {
