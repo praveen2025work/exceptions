@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,13 +30,33 @@ const navItems = [
 const Sidebar = () => {
   const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const sidebarRef = useRef<HTMLElement>(null);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  // Close sidebar when clicking outside of it (only if expanded)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        !isCollapsed &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setIsCollapsed(true);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCollapsed]);
+
   return (
     <aside
+      ref={sidebarRef}
       className={`flex-shrink-0 border-r bg-background transition-all duration-300 ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
