@@ -298,114 +298,17 @@ const AdhocReports: React.FC = () => {
   };
 
   const renderExceptionsReport = () => (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters & Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Search</Label>
-              <Input
-                placeholder="Search all fields..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+    <div className="h-full flex flex-col">
+      {/* Filters Section - Collapsible */}
+      <div className="flex-shrink-0 px-6 py-4 border-b bg-muted/30">
+        <div className="space-y-4">
+          {/* Filter Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <h3 className="font-medium">Filters & Search</h3>
             </div>
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Status</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Unwind">Unwind</SelectItem>
-                  <SelectItem value="Centralise">Centralise</SelectItem>
-                  <SelectItem value="Writedown">Writedown</SelectItem>
-                  <SelectItem value="Insufficient Data">Insufficient Data</SelectItem>
-                  <SelectItem value="Challenge">Challenge</SelectItem>
-                  <SelectItem value="Reassignment">Reassignment</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Priority</Label>
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Priorities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="Critical">Critical</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Business Area</Label>
-              <Input
-                placeholder="Filter by business area"
-                value={businessAreaFilter}
-                onChange={(e) => setBusinessAreaFilter(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">L06 Name</Label>
-              <Input
-                placeholder="Filter by L06 name"
-                value={l06Filter}
-                onChange={(e) => setL06Filter(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium mb-2 block">System</Label>
-              <Input
-                placeholder="Filter by system"
-                value={systemFilter}
-                onChange={(e) => setSystemFilter(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Assigned To</Label>
-              <Input
-                placeholder="Filter by assignee"
-                value={assignedToFilter}
-                onChange={(e) => setAssignedToFilter(e.target.value)}
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Date From</Label>
-              <Input
-                type="date"
-                value={dateFromFilter}
-                onChange={(e) => setDateFromFilter(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Date To</Label>
-              <Input
-                type="date"
-                value={dateToFilter}
-                onChange={(e) => setDateToFilter(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center pt-2">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -413,7 +316,7 @@ const AdhocReports: React.FC = () => {
                     Columns ({visibleColumnKeys.length})
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80" align="start">
+                <PopoverContent className="w-80" align="end">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium">Select Columns</h4>
@@ -447,96 +350,216 @@ const AdhocReports: React.FC = () => {
                   </div>
                 </PopoverContent>
               </Popover>
-              
               <Button variant="outline" size="sm" onClick={clearFilters}>
                 Clear Filters
               </Button>
+              <Button onClick={downloadCSV} size="sm" className="flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                Export ({filteredData.length})
+              </Button>
             </div>
-            
-            <Button onClick={downloadCSV} className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              Download CSV ({filteredData.length} records)
-            </Button>
           </div>
 
-          <div className="mt-4 text-sm text-muted-foreground">
-            {isLoading ? (
-              <Skeleton className="h-5 w-48" />
-            ) : (
-              `Showing ${filteredData.length} of ${exceptions.length} records`
+          {/* Compact Filter Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+            <div>
+              <Input
+                placeholder="Search all fields..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="Unwind">Unwind</SelectItem>
+                  <SelectItem value="Centralise">Centralise</SelectItem>
+                  <SelectItem value="Writedown">Writedown</SelectItem>
+                  <SelectItem value="Insufficient Data">Insufficient Data</SelectItem>
+                  <SelectItem value="Challenge">Challenge</SelectItem>
+                  <SelectItem value="Reassignment">Reassignment</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Priority" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="Critical">Critical</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Input
+                placeholder="Business area..."
+                value={businessAreaFilter}
+                onChange={(e) => setBusinessAreaFilter(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Input
+                placeholder="L06 name..."
+                value={l06Filter}
+                onChange={(e) => setL06Filter(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Input
+                placeholder="System..."
+                value={systemFilter}
+                onChange={(e) => setSystemFilter(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Input
+                placeholder="Assigned to..."
+                value={assignedToFilter}
+                onChange={(e) => setAssignedToFilter(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div>
+              <Input
+                type="date"
+                placeholder="Date from"
+                value={dateFromFilter}
+                onChange={(e) => setDateFromFilter(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Status Bar */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div>
+              {isLoading ? (
+                <Skeleton className="h-4 w-32" />
+              ) : (
+                `Showing ${filteredData.length} of ${exceptions.length} records`
+              )}
+            </div>
+            {dateToFilter && (
+              <div>
+                <Input
+                  type="date"
+                  placeholder="Date to"
+                  value={dateToFilter}
+                  onChange={(e) => setDateToFilter(e.target.value)}
+                  className="h-6 w-32 text-xs"
+                />
+              </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>Exception Data</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="border rounded-md">
-            <ScrollArea className="h-[600px] w-full">
-              <div className="min-w-full">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-background z-10">
-                    <TableRow>
+      {/* Data Grid Section */}
+      <div className="flex-1 overflow-hidden px-6 py-4">
+        <div className="h-full border rounded-lg bg-background shadow-sm">
+          <div className="h-full overflow-auto">
+            <Table>
+              <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b">
+                <TableRow>
+                  {visibleColumnKeys.map((key) => (
+                    <TableHead 
+                      key={key} 
+                      className="whitespace-nowrap px-3 py-2 text-xs font-medium border-r last:border-r-0 bg-muted/50"
+                    >
+                      {columnDefinitions[key as keyof typeof columnDefinitions]}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 15 }).map((_, i) => (
+                    <TableRow key={i}>
                       {visibleColumnKeys.map((key) => (
-                        <TableHead key={key} className="whitespace-nowrap px-4 py-3 border-r last:border-r-0 bg-muted/50">
-                          {columnDefinitions[key as keyof typeof columnDefinitions]}
-                        </TableHead>
+                        <TableCell key={key} className="whitespace-nowrap px-3 py-2 border-r last:border-r-0">
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
                       ))}
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      Array.from({ length: 10 }).map((_, i) => (
-                        <TableRow key={i}>
-                          {visibleColumnKeys.map((key) => (
-                            <TableCell key={key} className="whitespace-nowrap px-4 py-2 border-r last:border-r-0">
-                              <Skeleton className="h-5 w-full" />
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    ) : filteredData.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={visibleColumnKeys.length} className="text-center py-8 text-muted-foreground">
-                          No data matches the current filters
+                  ))
+                ) : filteredData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumnKeys.length} className="text-center py-12">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                          <Filter className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">No data matches the current filters</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredData.map((item, index) => (
+                    <TableRow 
+                      key={item.id} 
+                      className={`hover:bg-muted/50 ${index % 2 === 0 ? 'bg-muted/20' : ''}`}
+                    >
+                      {visibleColumnKeys.map((key) => (
+                        <TableCell key={key} className="whitespace-nowrap px-3 py-2 text-xs border-r last:border-r-0">
+                          {key === 'status' || key === 'priority' ? (
+                            <Badge 
+                              variant={
+                                (item[key as keyof Exception] === 'Challenge' || 
+                                 item[key as keyof Exception] === 'Insufficient Data' || 
+                                 item[key as keyof Exception] === 'Critical' || 
+                                 item[key as keyof Exception] === 'High')
+                                  ? 'destructive' 
+                                  : 'secondary'
+                              }
+                              className="text-xs px-1.5 py-0.5"
+                            >
+                              {String(item[key as keyof Exception])}
+                            </Badge>
+                          ) : key === 'tetb_match' ? (
+                            <span className={item[key as keyof Exception] ? 'text-green-600' : 'text-red-600'}>
+                              {item[key as keyof Exception] ? 'Yes' : 'No'}
+                            </span>
+                          ) : key === 'position_av' || key === 'tetb_av' ? (
+                            <span className="font-mono">
+                              {new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              }).format(Number(item[key as keyof Exception]) || 0)}
+                            </span>
+                          ) : key === 'created_date' || key === 'due_date' ? (
+                            <span className="text-muted-foreground">
+                              {item[key as keyof Exception] ? new Date(item[key as keyof Exception] as string).toLocaleDateString() : ''}
+                            </span>
+                          ) : (
+                            <span className="truncate max-w-[200px] block" title={String(item[key as keyof Exception] || '')}>
+                              {String(item[key as keyof Exception] || '')}
+                            </span>
+                          )}
                         </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredData.map((item, index) => (
-                        <TableRow key={item.id} className={index % 2 === 0 ? 'bg-muted/20' : ''}>
-                          {visibleColumnKeys.map((key) => (
-                            <TableCell key={key} className="whitespace-nowrap px-4 py-2 border-r last:border-r-0">
-                              {key === 'status' || key === 'priority' ? (
-                                <Badge variant={
-                                  (item[key as keyof Exception] === 'Challenge' || 
-                                   item[key as keyof Exception] === 'Insufficient Data' || 
-                                   item[key as keyof Exception] === 'Critical' || 
-                                   item[key as keyof Exception] === 'High')
-                                    ? 'destructive' 
-                                    : 'secondary'
-                                }>
-                                  {String(item[key as keyof Exception])}
-                                </Badge>
-                              ) : key === 'tetb_match' ? (
-                                item[key as keyof Exception] ? 'Yes' : 'No'
-                              ) : (
-                                String(item[key as keyof Exception] || '')
-                              )}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </ScrollArea>
+                      ))}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 
@@ -581,46 +604,56 @@ const AdhocReports: React.FC = () => {
   );
 
   return (
-    <div className="bg-background h-full w-full">
-      <div className="flex justify-end items-center mb-4">
-        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
+    <div className="h-full flex flex-col bg-background">
+      {/* Header */}
+      <div className="flex-shrink-0 px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Ad-hoc Reports</h1>
+            <p className="text-muted-foreground">Generate and export custom reports</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="p-4">
-          <Tabs value={selectedReport} onValueChange={setSelectedReport} defaultValue="exceptions">
-            <TabsList className="grid w-full grid-cols-3">
+      {/* Content */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs value={selectedReport} onValueChange={setSelectedReport} defaultValue="exceptions" className="h-full flex flex-col">
+          <div className="flex-shrink-0 px-6 py-4 border-b">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
               <TabsTrigger value="exceptions" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                Exceptions Report
+                Exceptions
               </TabsTrigger>
               <TabsTrigger value="reassignment" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Reassignment Report
+                Reassignment
               </TabsTrigger>
               <TabsTrigger value="tprt" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
-                TPRT Report
+                TPRT
               </TabsTrigger>
             </TabsList>
+          </div>
 
-            <TabsContent value="exceptions" className="mt-4">
+          <div className="flex-1 overflow-hidden">
+            <TabsContent value="exceptions" className="h-full m-0 p-0">
               {renderExceptionsReport()}
             </TabsContent>
 
-            <TabsContent value="reassignment" className="mt-4">
+            <TabsContent value="reassignment" className="h-full m-0 p-6">
               {renderReassignmentReport()}
             </TabsContent>
 
-            <TabsContent value="tprt" className="mt-4">
+            <TabsContent value="tprt" className="h-full m-0 p-6">
               {renderTPRTReport()}
             </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 };
