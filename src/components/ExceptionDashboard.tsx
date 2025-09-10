@@ -249,12 +249,13 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
 
   return (
     <div className="h-full flex bg-background">
-      <div className={`transition-all duration-300 ${showDetails ? 'w-2/3' : 'w-full'} flex flex-col min-w-0`}>
+      {/* Main Content Area - Uses flex-1 to take remaining space */}
+      <div className={`transition-all duration-300 flex-1 flex flex-col min-w-0 ${showDetails ? 'mr-0' : ''}`}>
         {/* Content Area */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {showMetricsAndAging && (
             <div className="p-6 pb-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className={`grid gap-6 ${showDetails ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
                 <MetricCard metrics={metrics} />
                 <AgingCard agingMetrics={agingMetrics} />
               </div>
@@ -283,10 +284,10 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
         </div>
       </div>
 
-      {/* Details Panel */}
+      {/* Details Panel - Fixed width when open */}
       <div 
         ref={detailsPanelRef}
-        className={`transition-all duration-300 ${showDetails ? 'w-1/3' : 'w-0'} overflow-hidden border-l bg-background/50`}
+        className={`transition-all duration-300 ${showDetails ? 'w-96 flex-shrink-0' : 'w-0'} overflow-hidden border-l bg-background/50`}
       >
         {showDetails && selectedException && (
           <div className="h-full">

@@ -708,8 +708,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             Clear
           </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3 items-end">
+          <div className="xl:col-span-2">
             <p className="text-xs mb-1 text-muted-foreground font-medium">Book Code & Instrument ID</p>
             <div className="flex items-center gap-2">
               <Input
