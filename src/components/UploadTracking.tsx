@@ -280,12 +280,10 @@ export const UploadTracking: React.FC = React.memo(() => {
     const file = event.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      // Auto-populate filename if it's empty
-      if (!formData.fileName) {
-        setFormData(prev => ({ ...prev, fileName: file.name }));
-      }
+      // Auto-populate filename from the uploaded file
+      setFormData(prev => ({ ...prev, fileName: file.name }));
     }
-  }, [formData.fileName]);
+  }, []);
 
   // Open create form
   const openCreateForm = useCallback(() => {
@@ -341,9 +339,6 @@ export const UploadTracking: React.FC = React.memo(() => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold">Upload Tracking</h2>
-          <p className="text-muted-foreground">
-            Manage and monitor file upload operations
-          </p>
         </div>
         <div className="flex gap-2">
           <Button onClick={handleRefresh} variant="outline" size="sm">
@@ -537,7 +532,7 @@ export const UploadTracking: React.FC = React.memo(() => {
                     type="file"
                     onChange={handleFileSelect}
                     className="flex-1"
-                    accept=".csv,.xlsx,.xls,.json,.txt"
+                    accept=".csv,.xlsx,.xls,.txt,.dat"
                   />
                   <Upload className="h-4 w-4 text-muted-foreground" />
                 </div>

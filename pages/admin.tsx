@@ -8,10 +8,7 @@ export default function AdminPage() {
     <div className="h-full flex flex-col">
       <div className="flex-1 p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground">
-            System configuration and administrative tools
-          </p>
+          <h1 className="text-3xl font-bold">Admin</h1>
         </div>
         
         <Tabs defaultValue="settings" className="h-full flex flex-col">
