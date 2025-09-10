@@ -133,7 +133,7 @@ export const UploadTracking: React.FC = React.memo(() => {
   }, [toast]);
 
   useEffect(() => {
-    withLoading(loadData);
+    withLoading(loadData());
   }, [withLoading, loadData]);
 
   // Filter and sort records
@@ -213,13 +213,13 @@ export const UploadTracking: React.FC = React.memo(() => {
 
     try {
       if (isEditing && selectedRecord) {
-        await withLoading(() => uploadTrackingService.update(selectedRecord.id, requestData));
+        await withLoading(uploadTrackingService.update(selectedRecord.id, requestData));
         toast({
           title: 'Success',
           description: 'Upload tracking record updated successfully',
         });
       } else {
-        await withLoading(() => uploadTrackingService.create(requestData));
+        await withLoading(uploadTrackingService.create(requestData));
         toast({
           title: 'Success',
           description: 'Upload tracking record created successfully',
@@ -246,7 +246,7 @@ export const UploadTracking: React.FC = React.memo(() => {
     if (!selectedRecord) return;
 
     try {
-      await withLoading(() => uploadTrackingService.delete(selectedRecord.id));
+      await withLoading(uploadTrackingService.delete(selectedRecord.id));
       toast({
         title: 'Success',
         description: 'Upload tracking record deleted successfully',
@@ -306,7 +306,7 @@ export const UploadTracking: React.FC = React.memo(() => {
 
   // Handle refresh
   const handleRefresh = useCallback(() => {
-    withLoading(loadData);
+    withLoading(loadData());
   }, [withLoading, loadData]);
 
   return (
