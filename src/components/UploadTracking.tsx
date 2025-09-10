@@ -98,6 +98,16 @@ const initialFormData: FormData = {
   count: '0'
 };
 
+interface CreateFormData {
+  uploadType: string;
+  fileName: string;
+}
+
+const initialCreateFormData: CreateFormData = {
+  uploadType: '',
+  fileName: ''
+};
+
 export const UploadTracking: React.FC = React.memo(() => {
   const [records, setRecords] = useState<UploadTrackingType[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,9 +119,11 @@ export const UploadTracking: React.FC = React.memo(() => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<UploadTrackingType | null>(null);
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [createFormData, setCreateFormData] = useState<CreateFormData>(initialCreateFormData);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<FormData>>({});
+  const [createFormErrors, setCreateFormErrors] = useState<Partial<CreateFormData>>({});
 
   const { toast } = useToast();
   const { withLoading } = useLoading();
@@ -179,7 +191,7 @@ export const UploadTracking: React.FC = React.memo(() => {
     }
   }, [sortField]);
 
-  // Form validation
+  // Form validation for edit
   const validateForm = (data: FormData): Partial<FormData> => {
     const errors: Partial<FormData> = {};
     
@@ -194,64 +206,91 @@ export const UploadTracking: React.FC = React.memo(() => {
     return errors;
   };
 
+  // Form validation for create
+  const validateCreateForm = (data: CreateFormData): Partial<CreateFormData> => {
+    const errors: Partial<CreateFormData> = {};
+    
+    if (!data.uploadType) errors.uploadType = 'Upload type is required';
+    if (!data.fileName) errors.fileName = 'File name is required';
+    
+    return errors;
+  };
+
   // Handle form submission
   const handleSubmit = useCallback(async () => {
-    const errors = validateForm(formData);
-    setFormErrors(errors);
-    
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
+    if (isEditing && selectedRecord) {
+      // For updates
+      const errors = validateForm(formData);
+      setFormErrors(errors);
+      
+      if (Object.keys(errors).length > 0) {
+        return;
+      }
 
-    const requestData: CreateUploadTrackingRequest = {
-      uploadType: formData.uploadType as any,
-      updatedBy: formData.updatedBy || undefined,
-      createdBy: formData.createdBy,
-      fileName: formData.fileName,
-      status: formData.status as any,
-      count: Number(formData.count),
-      file: selectedFile || undefined
-    };
+      const updateData: UpdateUploadTrackingRequest = {
+        uploadType: formData.uploadType as any,
+        updatedBy: formData.updatedBy || undefined,
+        createdBy: formData.createdBy,
+        fileName: formData.fileName,
+        status: formData.status as any,
+        count: Number(formData.count)
+      };
 
-    try {
-      if (isEditing && selectedRecord) {
-        // For updates, we don't include the file
-        const updateData: UpdateUploadTrackingRequest = {
-          uploadType: formData.uploadType as any,
-          updatedBy: formData.updatedBy || undefined,
-          createdBy: formData.createdBy,
-          fileName: formData.fileName,
-          status: formData.status as any,
-          count: Number(formData.count)
-        };
+      try {
         await withLoading(uploadTrackingService.update(selectedRecord.id, updateData));
         toast({
           title: 'Success',
           description: 'Upload tracking record updated successfully',
         });
-      } else {
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to update upload tracking record',
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else {
+      // For creates
+      const errors = validateCreateForm(createFormData);
+      setCreateFormErrors(errors);
+      
+      if (Object.keys(errors).length > 0) {
+        return;
+      }
+
+      const requestData: CreateUploadTrackingRequest = {
+        uploadType: createFormData.uploadType as any,
+        fileName: createFormData.fileName,
+        file: selectedFile || undefined
+      };
+
+      try {
         await withLoading(uploadTrackingService.create(requestData));
         toast({
           title: 'Success',
           description: 'Upload tracking record created successfully',
         });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to create upload tracking record',
+          variant: 'destructive',
+        });
+        return;
       }
-      
-      setIsFormOpen(false);
-      setFormData(initialFormData);
-      setSelectedFile(null);
-      setFormErrors({});
-      setIsEditing(false);
-      setSelectedRecord(null);
-      await loadData();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: `Failed to ${isEditing ? 'update' : 'create'} upload tracking record`,
-        variant: 'destructive',
-      });
     }
-  }, [formData, selectedFile, isEditing, selectedRecord, withLoading, toast, loadData]);
+    
+    setIsFormOpen(false);
+    setFormData(initialFormData);
+    setCreateFormData(initialCreateFormData);
+    setSelectedFile(null);
+    setFormErrors({});
+    setCreateFormErrors({});
+    setIsEditing(false);
+    setSelectedRecord(null);
+    await loadData();
+  }, [formData, createFormData, selectedFile, isEditing, selectedRecord, withLoading, toast, loadData]);
 
   // Handle delete
   const handleDelete = useCallback(async () => {
@@ -281,23 +320,19 @@ export const UploadTracking: React.FC = React.memo(() => {
     if (file) {
       setSelectedFile(file);
       // Auto-populate filename from the uploaded file
-      setFormData(prev => ({ ...prev, fileName: file.name }));
+      setCreateFormData(prev => ({ ...prev, fileName: file.name }));
     }
   }, []);
 
   // Open create form
   const openCreateForm = useCallback(() => {
-    setFormData({
-      ...initialFormData,
-      createdBy: user?.userName || '',
-      updatedBy: user?.userName || ''
-    });
+    setCreateFormData(initialCreateFormData);
     setSelectedFile(null);
-    setFormErrors({});
+    setCreateFormErrors({});
     setIsEditing(false);
     setSelectedRecord(null);
     setIsFormOpen(true);
-  }, [user]);
+  }, []);
 
   // Open edit form
   const openEditForm = useCallback((record: UploadTrackingType) => {
@@ -504,8 +539,14 @@ export const UploadTracking: React.FC = React.memo(() => {
             <div className="grid gap-2">
               <Label htmlFor="uploadType">Upload Type *</Label>
               <Select
-                value={formData.uploadType}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, uploadType: value }))}
+                value={isEditing ? formData.uploadType : createFormData.uploadType}
+                onValueChange={(value) => {
+                  if (isEditing) {
+                    setFormData(prev => ({ ...prev, uploadType: value }));
+                  } else {
+                    setCreateFormData(prev => ({ ...prev, uploadType: value }));
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select upload type" />
@@ -518,8 +559,10 @@ export const UploadTracking: React.FC = React.memo(() => {
                   ))}
                 </SelectContent>
               </Select>
-              {formErrors.uploadType && (
-                <p className="text-sm text-red-500">{formErrors.uploadType}</p>
+              {(isEditing ? formErrors.uploadType : createFormErrors.uploadType) && (
+                <p className="text-sm text-red-500">
+                  {isEditing ? formErrors.uploadType : createFormErrors.uploadType}
+                </p>
               )}
             </div>
 
@@ -548,74 +591,86 @@ export const UploadTracking: React.FC = React.memo(() => {
               <Label htmlFor="fileName">File Name *</Label>
               <Input
                 id="fileName"
-                value={formData.fileName}
-                onChange={(e) => setFormData(prev => ({ ...prev, fileName: e.target.value }))}
+                value={isEditing ? formData.fileName : createFormData.fileName}
+                onChange={(e) => {
+                  if (isEditing) {
+                    setFormData(prev => ({ ...prev, fileName: e.target.value }));
+                  } else {
+                    setCreateFormData(prev => ({ ...prev, fileName: e.target.value }));
+                  }
+                }}
                 placeholder="Enter file name"
               />
-              {formErrors.fileName && (
-                <p className="text-sm text-red-500">{formErrors.fileName}</p>
+              {(isEditing ? formErrors.fileName : createFormErrors.fileName) && (
+                <p className="text-sm text-red-500">
+                  {isEditing ? formErrors.fileName : createFormErrors.fileName}
+                </p>
               )}
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="status">Status *</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {formErrors.status && (
-                <p className="text-sm text-red-500">{formErrors.status}</p>
-              )}
-            </div>
+            {isEditing && (
+              <>
+                <div className="grid gap-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {formErrors.status && (
+                    <p className="text-sm text-red-500">{formErrors.status}</p>
+                  )}
+                </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="count">Count *</Label>
-              <Input
-                id="count"
-                type="number"
-                min="0"
-                value={formData.count}
-                onChange={(e) => setFormData(prev => ({ ...prev, count: e.target.value }))}
-                placeholder="Enter count"
-              />
-              {formErrors.count && (
-                <p className="text-sm text-red-500">{formErrors.count}</p>
-              )}
-            </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="count">Count *</Label>
+                  <Input
+                    id="count"
+                    type="number"
+                    min="0"
+                    value={formData.count}
+                    onChange={(e) => setFormData(prev => ({ ...prev, count: e.target.value }))}
+                    placeholder="Enter count"
+                  />
+                  {formErrors.count && (
+                    <p className="text-sm text-red-500">{formErrors.count}</p>
+                  )}
+                </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="createdBy">Created By *</Label>
-              <Input
-                id="createdBy"
-                value={formData.createdBy}
-                onChange={(e) => setFormData(prev => ({ ...prev, createdBy: e.target.value }))}
-                placeholder="Enter created by"
-              />
-              {formErrors.createdBy && (
-                <p className="text-sm text-red-500">{formErrors.createdBy}</p>
-              )}
-            </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="createdBy">Created By *</Label>
+                  <Input
+                    id="createdBy"
+                    value={formData.createdBy}
+                    onChange={(e) => setFormData(prev => ({ ...prev, createdBy: e.target.value }))}
+                    placeholder="Enter created by"
+                  />
+                  {formErrors.createdBy && (
+                    <p className="text-sm text-red-500">{formErrors.createdBy}</p>
+                  )}
+                </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="updatedBy">Updated By</Label>
-              <Input
-                id="updatedBy"
-                value={formData.updatedBy}
-                onChange={(e) => setFormData(prev => ({ ...prev, updatedBy: e.target.value }))}
-                placeholder="Enter updated by (optional)"
-              />
-            </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="updatedBy">Updated By</Label>
+                  <Input
+                    id="updatedBy"
+                    value={formData.updatedBy}
+                    onChange={(e) => setFormData(prev => ({ ...prev, updatedBy: e.target.value }))}
+                    placeholder="Enter updated by (optional)"
+                  />
+                </div>
+              </>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsFormOpen(false)}>
