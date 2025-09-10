@@ -452,12 +452,40 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         </div>
       </div>
 
-      {/* Search and Count Bar */}
+      {/* Exception List Header with Buttons */}
       <div className="flex justify-between items-center px-4 py-3 border-b bg-background/30">
         <div className="flex items-center gap-4">
           <h2 className="text-sm font-semibold">
-            {filteredExceptions.length} exceptions
+            Exception List - {filteredExceptions.length} exceptions
           </h2>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={onToggleMetricsAndAging}
+            >
+              {showMetricsAndAging ? (
+                <>
+                  <EyeOff className="h-3.5 w-3.5 mr-1" />
+                  Hide Summary
+                </>
+              ) : (
+                <>
+                  <Eye className="h-3.5 w-3.5 mr-1" />
+                  Show Summary
+                </>
+              )}
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 text-xs">
+              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+              Refresh
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 text-xs">
+              <Download className="h-3.5 w-3.5 mr-1" />
+              Download
+            </Button>
+          </div>
           {selectedExceptions.length > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
@@ -493,32 +521,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-7 text-xs"
-            onClick={onToggleMetricsAndAging}
-          >
-            {showMetricsAndAging ? (
-              <>
-                <EyeOff className="h-3.5 w-3.5 mr-1" />
-                Hide Summary
-              </>
-            ) : (
-              <>
-                <Eye className="h-3.5 w-3.5 mr-1" />
-                Show Summary
-              </>
-            )}
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs">
-            <RefreshCw className="h-3.5 w-3.5 mr-1" />
-            Refresh
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 text-xs">
-            <Download className="h-3.5 w-3.5 mr-1" />
-            Download
-          </Button>
           <div className="relative">
             <Search className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
             <Input 
