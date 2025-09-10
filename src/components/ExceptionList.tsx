@@ -35,6 +35,7 @@ import {
   MoreHorizontal,
   Search,
   Eye,
+  EyeOff,
   Edit,
   Trash2,
   Download,
@@ -57,6 +58,8 @@ interface ExceptionListProps {
   onBulkAction?: (action: string, exceptionIds: string[]) => void;
   filters?: ExceptionFilters;
   workflowStatus?: Record<string, string>;
+  showMetricsAndAging?: boolean;
+  onToggleMetricsAndAging?: () => void;
 }
 
 const ExceptionList: React.FC<ExceptionListProps> = ({
@@ -75,6 +78,8 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     instrument_id: "",
   },
   workflowStatus = {},
+  showMetricsAndAging = true,
+  onToggleMetricsAndAging = () => {},
 }) => {
   const [selectedExceptions, setSelectedExceptions] = useState<string[]>([]);
   const [sortField, setSortField] = useState<keyof Exception>("created_date");
@@ -488,9 +493,23 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-7 text-xs">
-            <Eye className="h-3.5 w-3.5 mr-1" />
-            Show Summary
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 text-xs"
+            onClick={onToggleMetricsAndAging}
+          >
+            {showMetricsAndAging ? (
+              <>
+                <EyeOff className="h-3.5 w-3.5 mr-1" />
+                Hide Summary
+              </>
+            ) : (
+              <>
+                <Eye className="h-3.5 w-3.5 mr-1" />
+                Show Summary
+              </>
+            )}
           </Button>
           <Button variant="ghost" size="sm" className="h-7 text-xs">
             <RefreshCw className="h-3.5 w-3.5 mr-1" />

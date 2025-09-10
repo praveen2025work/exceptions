@@ -128,6 +128,10 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
     }
   };
 
+  const handleToggleMetricsAndAging = () => {
+    setShowMetricsAndAging(!showMetricsAndAging);
+  };
+
   const handleBulkAction = (action: string, exceptionIds: string[]) => {
     if (action === "assign") {
       console.log("Assigning exceptions:", exceptionIds);
@@ -241,6 +245,8 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
                     onBulkAction={handleBulkAction}
                     filters={filters}
                     workflowStatus={workflowStatus}
+                    showMetricsAndAging={showMetricsAndAging}
+                    onToggleMetricsAndAging={handleToggleMetricsAndAging}
                   />
                 </div>
               </CardContent>
