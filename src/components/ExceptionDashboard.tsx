@@ -31,14 +31,12 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   metrics: propMetrics,
   agingMetrics: propAgingMetrics,
 }) => {
-  const [selectedTab, setSelectedTab] = useState("bankingbook");
   const [selectedException, setSelectedException] = useState<string | null>(
     null,
   );
   const [showDetails, setShowDetails] = useState(false);
   const [showMetricsAndAging, setShowMetricsAndAging] = useState(true);
   const [exceptions, setExceptions] = useState<Exception[]>([]);
-  const [filteredExceptions, setFilteredExceptions] = useState<Exception[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState<ExceptionMetric[]>([]);
   const [agingMetrics, setAgingMetrics] = useState<AgingMetric[]>([]);
@@ -72,20 +70,6 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
 
     loadData();
   }, [propMetrics, propAgingMetrics]);
-
-  useEffect(() => {
-    let filtered = exceptions;
-    if (selectedTab === 'bankingbook') {
-      // This is a placeholder. Replace with actual logic for "BankingBook"
-      filtered = exceptions.filter(e => e.position_tbbb_classification === 'BankingBook');
-    } else if (selectedTab === 'uncertain') {
-      // This is a placeholder. Replace with actual logic for "Uncertain"
-      filtered = exceptions.filter(e => e.position_tbbb_classification === 'Uncertain');
-    } else if (selectedTab === 'centraliseAndWritedown') {
-      filtered = exceptions.filter(e => e.status === 'Centralise' || e.status === 'Writedown');
-    }
-    setFilteredExceptions(filtered);
-  }, [selectedTab, exceptions]);
 
   const calculateMetrics = (exceptions: Exception[]): ExceptionMetric[] => {
     const totalExceptions = exceptions.length;
@@ -169,27 +153,6 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   return (
     <div className="h-full flex bg-background">
       <div className={`transition-all duration-300 ${showDetails ? 'w-2/3' : 'w-full'} flex flex-col min-w-0`}>
-        {/* Action Bar */}
-        <div className="flex justify-between items-center p-6 pb-4 border-b bg-background/50">
-          <div className="flex items-center gap-4">
-            <div className="text-sm font-medium">
-              Exception Management Dashboard
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-8 text-xs" 
-              onClick={() => setShowMetricsAndAging(prev => !prev)} 
-              title={showMetricsAndAging ? 'Hide Summary' : 'Show Summary'}
-            >
-              {showMetricsAndAging ? <EyeOff className="h-3.5 w-3.5 mr-1" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-              {showMetricsAndAging ? 'Hide Summary' : 'Show Summary'}
-            </Button>
-          </div>
-        </div>
-
         {/* Content Area */}
         <div className="flex-1 overflow-hidden flex flex-col">
           {showMetricsAndAging && (
@@ -267,19 +230,12 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
               <CardHeader className="pb-3 pt-4 px-4 border-b">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-base font-semibold">Exception List</CardTitle>
-                  <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-auto">
-                    <TabsList className="h-8 bg-muted/50">
-                      <TabsTrigger value="bankingbook" className="text-xs px-3 data-[state=active]:bg-background">BankingBook</TabsTrigger>
-                      <TabsTrigger value="uncertain" className="text-xs px-3 data-[state=active]:bg-background">Uncertain</TabsTrigger>
-                      <TabsTrigger value="centraliseAndWritedown" className="text-xs px-3 data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
                 </div>
               </CardHeader>
               <CardContent className="p-0 h-full">
                 <div className="h-full">
                   <ExceptionList
-                    exceptions={filteredExceptions}
+                    exceptions={exceptions}
                     isLoading={isLoading}
                     onExceptionSelect={handleExceptionSelect}
                     onBulkAction={handleBulkAction}
