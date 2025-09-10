@@ -115,7 +115,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
   const handleCloseDetails = () => {
     setShowDetails(false);
     setSelectedException(null);
-    setShowMetricsAndAging(true);
+    // Don't automatically show metrics and aging - preserve current state
   };
 
   const handleSaveExceptionDetails = (updatedData: any) => {
