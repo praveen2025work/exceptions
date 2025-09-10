@@ -385,8 +385,8 @@ const ExceptionDetails = ({
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="info">Info</TabsTrigger>
-              <TabsTrigger value="audit">Audit History</TabsTrigger>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
+              <TabsTrigger value="audit">Audit</TabsTrigger>
+              <TabsTrigger value="documents">Files</TabsTrigger>
             </TabsList>
           </div>
 
@@ -603,37 +603,6 @@ const ExceptionDetails = ({
                 </div>
               </div>
 
-              {/* Exception Information */}
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-foreground mb-3">Exception Information</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Exception ID:</span>
-                    <span className="ml-2 font-medium text-foreground">{exceptionData.id}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Instrument ID:</span>
-                    <span className="ml-2 font-medium text-foreground">{exceptionData.instrumentId}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Book Code:</span>
-                    <span className="ml-2 font-medium text-foreground">{exceptionData.bookCode}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">System:</span>
-                    <span className="ml-2 font-medium text-foreground">{exceptionData.system}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Legal Entity:</span>
-                    <span className="ml-2 font-medium text-foreground">{exceptionData.legalEntity}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Aging:</span>
-                    <span className="ml-2 font-medium text-foreground">{exceptionData.aging} days</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Commentary Section */}
               <div>
                 <h3 className="text-sm font-medium text-foreground mb-3">Commentary</h3>
@@ -712,8 +681,6 @@ const ExceptionDetails = ({
                                 setEditingComment(null);
                                 setEditCommentText("");
                               }}
-                            >
-                              Cancel
                             </Button>
                           </div>
                         </div>

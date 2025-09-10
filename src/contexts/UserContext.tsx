@@ -46,6 +46,28 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
       
+      // Check if we're in mock environment
+      const isMockEnv = process.env.NEXT_PUBLIC_CO_DEV_ENV === 'mock' || process.env.NODE_ENV === 'development';
+      
+      if (isMockEnv) {
+        // Use mock user data in mock environment
+        setUser({
+          samAccountName: 'user123',
+          description: 'Kumar, Praveen: IT Department (New York)',
+          displayName: 'Kumar, Praveen : Senior Developer (New York)',
+          distinguishedName: 'CN=Kumar\\, Praveen: IT Department (New York),OU=Users,OU=NYC,OU=AMERICAS,OU=COMPANY,DC=DOMAIN,DC=COMPANY,DC=com',
+          emailAddress: 'praveen.kumar@company.com',
+          employeeId: '1234567',
+          name: 'Kumar, Praveen: IT Department (New York)',
+          givenName: 'Praveen',
+          middleName: null,
+          surname: 'Kumar',
+          domain: null,
+          userName: 'user123'
+        });
+        return;
+      }
+      
       // Get the API URL from environment variables or use a default
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
       const response = await fetch(`${apiUrl}/api/getADUsers`, {
@@ -66,23 +88,21 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       console.error('Error fetching user data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch user data');
       
-      // Fallback to mock user data in development
-      if (process.env.NODE_ENV === 'development') {
-        setUser({
-          samAccountName: 'user123',
-          description: 'Kumar, Praveen: IT Department (New York)',
-          displayName: 'Kumar, Praveen : Senior Developer (New York)',
-          distinguishedName: 'CN=Kumar\\, Praveen: IT Department (New York),OU=Users,OU=NYC,OU=AMERICAS,OU=COMPANY,DC=DOMAIN,DC=COMPANY,DC=com',
-          emailAddress: 'praveen.kumar@company.com',
-          employeeId: '1234567',
-          name: 'Kumar, Praveen: IT Department (New York)',
-          givenName: 'Praveen',
-          middleName: null,
-          surname: 'Kumar',
-          domain: null,
-          userName: 'user123'
-        });
-      }
+      // Fallback to mock user data on error
+      setUser({
+        samAccountName: 'user123',
+        description: 'Kumar, Praveen: IT Department (New York)',
+        displayName: 'Kumar, Praveen : Senior Developer (New York)',
+        distinguishedName: 'CN=Kumar\\, Praveen: IT Department (New York),OU=Users,OU=NYC,OU=AMERICAS,OU=COMPANY,DC=DOMAIN,DC=COMPANY,DC=com',
+        emailAddress: 'praveen.kumar@company.com',
+        employeeId: '1234567',
+        name: 'Kumar, Praveen: IT Department (New York)',
+        givenName: 'Praveen',
+        middleName: null,
+        surname: 'Kumar',
+        domain: null,
+        userName: 'user123'
+      });
     } finally {
       setLoading(false);
     }
