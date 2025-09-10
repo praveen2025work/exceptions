@@ -326,46 +326,50 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Exception List Header and Classification Tabs */}
+      {/* Single Row Header with All Elements */}
       <div className="px-4 py-3 border-b bg-background/30">
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex items-center justify-between gap-4">
+          {/* Left side - Title and Count */}
           <div className="flex items-center gap-4">
-            <h2 className="text-sm font-semibold">
-              Exception List - {filteredExceptions.length} exceptions
-            </h2>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 text-xs"
-                onClick={onToggleMetricsAndAging}
-              >
-                {showMetricsAndAging ? (
-                  <>
-                    <EyeOff className="h-3.5 w-3.5 mr-1" />
-                    Hide Summary
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-3.5 w-3.5 mr-1" />
-                    Show Summary
-                  </>
-                )}
-              </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <RefreshCw className="h-3.5 w-3.5 mr-1" />
-                Refresh
-              </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <Download className="h-3.5 w-3.5 mr-1" />
-                Download
-              </Button>
-            </div>
+            <h2 className="text-sm font-semibold whitespace-nowrap">Exception List</h2>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
+              {filteredExceptions.length} exceptions
+            </span>
           </div>
-        </div>
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-sm font-medium mb-2">Position TBBB Classification</h3>
+          
+          {/* Center - Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs whitespace-nowrap"
+              onClick={onToggleMetricsAndAging}
+            >
+              {showMetricsAndAging ? (
+                <>
+                  <EyeOff className="h-3.5 w-3.5 mr-1" />
+                  Hide Summary
+                </>
+              ) : (
+                <>
+                  <Eye className="h-3.5 w-3.5 mr-1" />
+                  Show Summary
+                </>
+              )}
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 text-xs whitespace-nowrap">
+              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+              Refresh
+            </Button>
+            <Button variant="ghost" size="sm" className="h-7 text-xs whitespace-nowrap">
+              <Download className="h-3.5 w-3.5 mr-1" />
+              Download
+            </Button>
+          </div>
+          
+          {/* Right side - Classification Label and Tabs */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium whitespace-nowrap">Position TBBB Classification</span>
             <Tabs value={classificationFilter} onValueChange={setClassificationFilter} className="w-auto">
               <TabsList className="h-8 bg-muted/50">
                 <TabsTrigger value="all" className="text-xs px-3 data-[state=active]:bg-background">All</TabsTrigger>
