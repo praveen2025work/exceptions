@@ -326,19 +326,56 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Classification Tabs */}
+      {/* Exception List Header and Classification Tabs */}
       <div className="px-4 py-3 border-b bg-background/30">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-medium">Position TBBB Classification</h3>
+          <div className="flex items-center gap-4">
+            <h2 className="text-sm font-semibold">
+              Exception List - {filteredExceptions.length} exceptions
+            </h2>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={onToggleMetricsAndAging}
+              >
+                {showMetricsAndAging ? (
+                  <>
+                    <EyeOff className="h-3.5 w-3.5 mr-1" />
+                    Hide Summary
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-3.5 w-3.5 mr-1" />
+                    Show Summary
+                  </>
+                )}
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 text-xs">
+                <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                Refresh
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 text-xs">
+                <Download className="h-3.5 w-3.5 mr-1" />
+                Download
+              </Button>
+            </div>
+          </div>
         </div>
-        <Tabs value={classificationFilter} onValueChange={setClassificationFilter} className="w-auto">
-          <TabsList className="h-8 bg-muted/50">
-            <TabsTrigger value="all" className="text-xs px-3 data-[state=active]:bg-background">All</TabsTrigger>
-            <TabsTrigger value="BankingBook" className="text-xs px-3 data-[state=active]:bg-background">BankingBook</TabsTrigger>
-            <TabsTrigger value="Uncertain" className="text-xs px-3 data-[state=active]:bg-background">Uncertain</TabsTrigger>
-            <TabsTrigger value="CentraliseAndWritedown" className="text-xs px-3 data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-sm font-medium mb-2">Position TBBB Classification</h3>
+            <Tabs value={classificationFilter} onValueChange={setClassificationFilter} className="w-auto">
+              <TabsList className="h-8 bg-muted/50">
+                <TabsTrigger value="all" className="text-xs px-3 data-[state=active]:bg-background">All</TabsTrigger>
+                <TabsTrigger value="BankingBook" className="text-xs px-3 data-[state=active]:bg-background">BankingBook</TabsTrigger>
+                <TabsTrigger value="Uncertain" className="text-xs px-3 data-[state=active]:bg-background">Uncertain</TabsTrigger>
+                <TabsTrigger value="CentraliseAndWritedown" className="text-xs px-3 data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </div>
       </div>
 
       {/* Filters Section */}
@@ -452,40 +489,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         </div>
       </div>
 
-      {/* Exception List Header with Buttons */}
+      {/* Search Bar */}
       <div className="flex justify-between items-center px-4 py-3 border-b bg-background/30">
         <div className="flex items-center gap-4">
-          <h2 className="text-sm font-semibold">
-            Exception List - {filteredExceptions.length} exceptions
-          </h2>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs"
-              onClick={onToggleMetricsAndAging}
-            >
-              {showMetricsAndAging ? (
-                <>
-                  <EyeOff className="h-3.5 w-3.5 mr-1" />
-                  Hide Summary
-                </>
-              ) : (
-                <>
-                  <Eye className="h-3.5 w-3.5 mr-1" />
-                  Show Summary
-                </>
-              )}
-            </Button>
-            <Button variant="ghost" size="sm" className="h-7 text-xs">
-              <RefreshCw className="h-3.5 w-3.5 mr-1" />
-              Refresh
-            </Button>
-            <Button variant="ghost" size="sm" className="h-7 text-xs">
-              <Download className="h-3.5 w-3.5 mr-1" />
-              Download
-            </Button>
-          </div>
           {selectedExceptions.length > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
