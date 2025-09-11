@@ -553,6 +553,45 @@ const ExceptionDetails = ({
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
                 <CardContent className="p-3">
                   <div className="space-y-3">
+                    {/* Add Comment Section - Progressive disclosure */}
+                    {!showCommentSection ? (
+                      <Button 
+                        onClick={() => setShowCommentSection(true)} 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                      >
+                        <Plus className="h-3 w-3 mr-2" />
+                        Add Comment
+                      </Button>
+                    ) : (
+                      <div className="space-y-2">
+                        <Textarea
+                          placeholder="Add your insights, observations, or next steps..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="bg-background/50 border-border/50 resize-none min-h-[80px] text-sm"
+                          rows={3}
+                        />
+                        <div className="flex gap-2">
+                          <Button onClick={handleAddComment} size="sm" className="flex-1">
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Comment
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              setShowCommentSection(false);
+                              setNewComment("");
+                            }} 
+                            variant="outline" 
+                            size="sm"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Comments list - Always visible if comments exist */}
                     {comments.length > 0 && (
                       <div className="space-y-3">
@@ -631,45 +670,6 @@ const ExceptionDetails = ({
                             )}
                           </div>
                         ))}
-                      </div>
-                    )}
-
-                    {/* Add Comment Section - Progressive disclosure */}
-                    {!showCommentSection ? (
-                      <Button 
-                        onClick={() => setShowCommentSection(true)} 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full"
-                      >
-                        <Plus className="h-3 w-3 mr-2" />
-                        Add Comment
-                      </Button>
-                    ) : (
-                      <div className="space-y-2">
-                        <Textarea
-                          placeholder="Add your insights, observations, or next steps..."
-                          value={newComment}
-                          onChange={(e) => setNewComment(e.target.value)}
-                          className="bg-background/50 border-border/50 resize-none min-h-[80px] text-sm"
-                          rows={3}
-                        />
-                        <div className="flex gap-2">
-                          <Button onClick={handleAddComment} size="sm" className="flex-1">
-                            <Plus className="h-3 w-3 mr-1" />
-                            Add Comment
-                          </Button>
-                          <Button 
-                            onClick={() => {
-                              setShowCommentSection(false);
-                              setNewComment("");
-                            }} 
-                            variant="outline" 
-                            size="sm"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
                       </div>
                     )}
                   </div>
