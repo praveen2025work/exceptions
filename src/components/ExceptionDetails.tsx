@@ -501,8 +501,7 @@ const ExceptionDetails = ({
                 <CardContent className="pt-4 space-y-2">
                   <div className="flex gap-2">
                     <div className="flex-1 min-w-0">
-                      <Label className="text-xs font-medium text-foreground flex items-center gap-1 mb-1">
-                        <Zap className="h-2.5 w-2.5" />
+                      <Label className="text-xs font-medium text-foreground mb-1">
                         Status
                       </Label>
                       <Select value={status} onValueChange={setStatus}>
@@ -518,8 +517,7 @@ const ExceptionDetails = ({
                       </Select>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Label className="text-xs font-medium text-foreground flex items-center gap-1 mb-1">
-                        <Settings className="h-2.5 w-2.5" />
+                      <Label className="text-xs font-medium text-foreground mb-1">
                         Workflow
                       </Label>
                       <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>

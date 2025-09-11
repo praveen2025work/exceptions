@@ -217,7 +217,7 @@ export const fetchAndTransformExceptions = async (forceRefresh = false): Promise
       
       // Fallback to mock data in case of API error
       const mockExceptions = (mockData as any).exceptions || mockData;
-      const mockTransformed = Array.isArray(mockExceptions) ? mockExceptions : transformCoreToFunctional(mockData as CoreException[]);
+      const mockTransformed = Array.isArray(mockExceptions) ? mockExceptions : transformCoreToFunctional(mockData as any);
       
       // Cache mock data with shorter duration
       dataCache = {
@@ -245,7 +245,7 @@ export const fetchAndTransformExceptions = async (forceRefresh = false): Promise
       return mockExceptions;
     } else {
       // Fallback to transformation if needed
-      const mockTransformed = transformCoreToFunctional(mockData as CoreException[]);
+      const mockTransformed = transformCoreToFunctional(mockData as any);
       
       // Cache mock data
       dataCache = {
