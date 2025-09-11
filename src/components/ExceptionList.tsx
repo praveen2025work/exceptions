@@ -306,7 +306,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState(propFilters);
-  const [textFilterOperator, setTextFilterOperator] = useState<"AND" | "OR">("OR");
+
   const [classificationFilter, setClassificationFilter] = useState<string>("all");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -387,19 +387,14 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         const bookCodeMatch = bookCodeFilter ? evaluateFilter(bookCodeFilter, exception.ads_book_code || '') : true;
         const instrumentIdMatch = instrumentIdFilter ? evaluateFilter(instrumentIdFilter, exception.instrument_id || '') : true;
 
-        if (textFilterOperator === "AND") {
-          if ((bookCodeFilter && !bookCodeMatch) || (instrumentIdFilter && !instrumentIdMatch)) {
-            return false;
-          }
-        } else { // OR logic
-          if (bookCodeFilter && instrumentIdFilter) {
-            if (!bookCodeMatch && !instrumentIdMatch) return false;
-          } else if (bookCodeFilter && !bookCodeMatch) {
-            return false;
-          } else if (instrumentIdFilter && !instrumentIdMatch) {
-            return false;
-          }
+        // Apply filters independently - both must pass if they have values
+        if (bookCodeFilter && !bookCodeMatch) {
+          return false;
         }
+        if (instrumentIdFilter && !instrumentIdMatch) {
+          return false;
+        }
+=======
       }
 
       // Apply classification filter
@@ -459,7 +454,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
     });
 
     return sorted;
-  }, [exceptions, searchTerm, filters, textFilterOperator, classificationFilter, sortField, sortDirection]);
+  }, [exceptions, searchTerm, filters, classificationFilter, sortField, sortDirection]);
 
   // Memoized pagination
   const paginationData = useMemo(() => {
@@ -713,22 +708,13 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
             <p className="text-xs mb-1 text-muted-foreground font-medium">Book Code & Instrument ID</p>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Book code..."
+                placeholder="Book code (use && for AND, || for OR)..."
                 value={filters.ads_book_code}
                 onChange={(e) => setFilters({ ...filters, ads_book_code: e.target.value })}
                 className="h-7 text-xs"
               />
-              <Select value={textFilterOperator} onValueChange={(value: "AND" | "OR") => setTextFilterOperator(value)}>
-                <SelectTrigger className="h-7 w-[60px] flex-shrink-0 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="OR">OR</SelectItem>
-                  <SelectItem value="AND">AND</SelectItem>
-                </SelectContent>
-              </Select>
               <Input
-                placeholder="Instrument ID..."
+                placeholder="Instrument ID (use && for AND, || for OR)..."
                 value={(filters as any).instrument_id}
                 onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
                 className="h-7 text-xs"
