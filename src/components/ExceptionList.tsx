@@ -874,7 +874,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
 
       {/* Table Container with Sticky Header */}
       <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-auto">
+        <div className="h-full overflow-y-auto overflow-x-auto">
           <Table>
             <TableHeader className="sticky top-0 z-30 bg-background border-b-2 border-border shadow-md">
               <TableRow className="hover:bg-transparent">

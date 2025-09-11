@@ -398,7 +398,7 @@ export const UploadTracking: React.FC = React.memo(() => {
       {/* Table */}
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-auto">
+          <div className="overflow-y-auto overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>

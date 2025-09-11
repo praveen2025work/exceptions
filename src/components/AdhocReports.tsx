@@ -575,7 +575,7 @@ const AdhocReports: React.FC = () => {
       {/* Data Grid Section */}
       <div className="flex-1 overflow-hidden px-6 py-4">
         <div className="h-full border rounded-lg bg-background shadow-sm">
-          <div className="h-full overflow-auto">
+          <div className="h-full overflow-y-auto overflow-x-auto">
             <Table>
               <TableHeader className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 border-b">
                 <TableRow>
