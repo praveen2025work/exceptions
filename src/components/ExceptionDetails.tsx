@@ -471,11 +471,11 @@ const ExceptionDetails = ({
                 <span className="font-medium">Details</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="info" 
+                value="documents" 
                 className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all"
               >
-                {getTabIcon('info')}
-                <span className="font-medium">Info</span>
+                {getTabIcon('documents')}
+                <span className="font-medium">Files</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="audit" 
@@ -485,11 +485,11 @@ const ExceptionDetails = ({
                 <span className="font-medium">Audit</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="documents" 
+                value="info" 
                 className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all"
               >
-                {getTabIcon('documents')}
-                <span className="font-medium">Files</span>
+                {getTabIcon('info')}
+                <span className="font-medium">Info</span>
               </TabsTrigger>
             </TabsList>
           </div>
