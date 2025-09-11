@@ -145,7 +145,6 @@ const ExceptionRow = React.memo<{
           onCheckedChange={(checked) => onSelect(exception.id, !!checked)}
         />
       </TableCell>
-      <TableCell className="font-mono text-xs">{exception.id}</TableCell>
       <TableCell className="text-xs">{exception.ads_book_code}</TableCell>
       <TableCell>
         <Badge variant="outline" className="text-xs px-1.5 py-0.5">
@@ -217,7 +216,7 @@ const ExceptionRow = React.memo<{
     </TableRow>
     {isExpanded && (
       <TableRow>
-        <TableCell colSpan={13} className="bg-muted/20 p-4 border-b">
+        <TableCell colSpan={12} className="bg-muted/20 p-4 border-b">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Business Information</h4>
@@ -898,20 +897,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   />
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer sticky top-0 bg-background border-b-2 border-border min-w-[120px]"
-                  onClick={() => handleSort("id")}
-                >
-                  <div className="flex items-center text-xs font-semibold">
-                    Exception ID
-                    {sortField === "id" &&
-                      (sortDirection === "asc" ? (
-                        <ChevronUp className="ml-1 h-3 w-3" />
-                      ) : (
-                        <ChevronDown className="ml-1 h-3 w-3" />
-                      ))}
-                  </div>
-                </TableHead>
-                <TableHead
                   className="cursor-pointer sticky top-0 bg-background border-b-2 border-border min-w-[100px]"
                   onClick={() => handleSort("ads_book_code")}
                 >
@@ -1069,7 +1054,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
               ))}
               {paginationData.paginatedExceptions.length === 0 && !isLoading && (
                 <TableRow>
-                  <TableCell colSpan={13} className="text-center py-12">
+                  <TableCell colSpan={12} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
                       <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
                         <Search className="h-4 w-4 text-muted-foreground" />
