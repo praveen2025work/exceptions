@@ -902,9 +902,9 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-auto">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-background border-b">
+            <TableHeader className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b shadow-sm">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-10 bg-background">
+                <TableHead className="w-10 bg-background/95 backdrop-blur-sm">
                   <Checkbox
                     checked={
                       paginationData.paginatedExceptions.length > 0 &&
@@ -914,7 +914,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   />
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[120px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[120px]"
                   onClick={() => handleSort("id")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -928,7 +928,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[100px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[100px]"
                   onClick={() => handleSort("ads_book_code")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -942,7 +942,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[80px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[80px]"
                   onClick={() => handleSort("system")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -956,7 +956,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[100px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[100px]"
                   onClick={() => handleSort("legal_entity")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -970,7 +970,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[120px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[120px]"
                   onClick={() => handleSort("instrument_id")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -984,7 +984,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[140px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[140px]"
                   onClick={() => handleSort("position_tbbb_classification")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -998,7 +998,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[100px] text-right"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[100px] text-right"
                   onClick={() => handleSort("position_qty")}
                 >
                   <div className="flex items-center justify-end text-xs font-semibold">
@@ -1012,7 +1012,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[100px] text-right"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[100px] text-right"
                   onClick={() => handleSort("tetb_qty")}
                 >
                   <div className="flex items-center justify-end text-xs font-semibold">
@@ -1026,7 +1026,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[100px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[100px]"
                   onClick={() => handleSort("status")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -1040,7 +1040,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[80px] text-center"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[80px] text-center"
                   onClick={() => handleSort("aging_days")}
                 >
                   <div className="flex items-center justify-center text-xs font-semibold">
@@ -1054,7 +1054,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer bg-background min-w-[120px]"
+                  className="cursor-pointer bg-background/95 backdrop-blur-sm min-w-[120px]"
                   onClick={() => handleSort("categoryName")}
                 >
                   <div className="flex items-center text-xs font-semibold">
@@ -1067,7 +1067,7 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="w-16 bg-background text-center text-xs font-semibold">Actions</TableHead>
+                <TableHead className="w-16 bg-background/95 backdrop-blur-sm text-center text-xs font-semibold">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
