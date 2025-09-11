@@ -132,6 +132,19 @@ export const transformApiExceptions = async (apiData: ApiException[]): Promise<E
   // Pre-calculate common values to avoid repeated calculations
   const currentTime = Date.now();
   
+  // Debug logging for the first item to understand the API structure
+  if (apiData.length > 0) {
+    console.log('API Data Sample (first item):', JSON.stringify(apiData[0], null, 2));
+    console.log('Position classification fields:', {
+      positionTbbbClassification: apiData[0].positionTbbbClassification,
+      positionBbbClassification: apiData[0].positionBbbClassification,
+      // Check for other possible field names
+      positionTBBBClassification: (apiData[0] as any).positionTBBBClassification,
+      position_tbbb_classification: (apiData[0] as any).position_tbbb_classification,
+      position_bbb_classification: (apiData[0] as any).position_bbb_classification,
+    });
+  }
+  
   return apiData.map((item) => {
     const { l04, l06 } = parseBookPath(item.sdsBookPath);
     const createdDate = new Date(item.asOfTime);
@@ -141,7 +154,16 @@ export const transformApiExceptions = async (apiData: ApiException[]): Promise<E
     const slaStatus = getSlaStatus(item.aging);
     const categoryName = getCategoryName(item.categoryId, categories);
 
-    return {
+    // Try multiple possible field names for position classification
+    const positionClassification = 
+      item.positionTbbbClassification || 
+      item.positionBbbClassification || 
+      (item as any).positionTBBBClassification ||
+      (item as any).position_tbbb_classification ||
+      (item as any).position_bbb_classification ||
+      'N/A';
+
+    const transformedItem = {
       id: item.exceptionId,
       l04_business_area_name: l04,
       l06_name: l06,
@@ -155,7 +177,7 @@ export const transformApiExceptions = async (apiData: ApiException[]): Promise<E
       equity_class_path: item.equityClassType, // Mapping equityClassType to equity_class_path
       instrument_type: item.instrumentType,
       instrument_name: item.instrumentName,
-      position_tbbb_classification: item.positionBbbClassification,
+      position_tbbb_classification: positionClassification,
       as_of_time: item.asOfTime,
       bb_underlying: item.bbUnderlyings,
       reason: 'N/A', // Field not present in new API
@@ -178,6 +200,17 @@ export const transformApiExceptions = async (apiData: ApiException[]): Promise<E
       due_date: dueDate.toISOString(),
       aging_days: item.aging,
     };
+
+    // Debug log for the first transformed item
+    if (item === apiData[0]) {
+      console.log('Transformed item (first):', {
+        id: transformedItem.id,
+        position_tbbb_classification: transformedItem.position_tbbb_classification,
+        originalClassification: positionClassification
+      });
+    }
+
+    return transformedItem;
   });
 };
 

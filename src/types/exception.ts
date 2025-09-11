@@ -39,7 +39,8 @@ export interface ApiException {
   equityClassType: string;
   instrumentType: string;
   instrumentName: string;
-  positionBbbClassification: string;
+  positionBbbClassification?: string;
+  positionTbbbClassification?: string;
   asOfTime: string;
   bbUnderlyings: string;
   sodDeltaOnBbUnderlying: number;
