@@ -496,24 +496,25 @@ const ExceptionDetails = ({
 
           <ScrollArea className="flex-1 px-4 pb-4">
             <TabsContent value="details" className="mt-4 space-y-4">
-              {/* Status and Workflow Section - Removed label */}
+              {/* Status and Workflow Section - Optimized width usage */}
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-primary/10">
                       <Activity className="h-3 w-3 text-primary" />
                     </div>
+                    <span className="text-xs text-muted-foreground">Status & Workflow</span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
-                        <Zap className="h-3 w-3" />
+                <CardContent className="space-y-2">
+                  <div className="flex gap-2">
+                    <div className="flex-1 min-w-0">
+                      <Label className="text-xs font-medium text-foreground flex items-center gap-1 mb-1">
+                        <Zap className="h-2.5 w-2.5" />
                         Status
                       </Label>
                       <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger className="bg-background/50 border-border/50 h-8">
+                        <SelectTrigger className="bg-background/50 border-border/50 h-7 text-xs">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -524,13 +525,13 @@ const ExceptionDetails = ({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
-                        <Settings className="h-3 w-3" />
-                        Select Workflow
+                    <div className="flex-1 min-w-0">
+                      <Label className="text-xs font-medium text-foreground flex items-center gap-1 mb-1">
+                        <Settings className="h-2.5 w-2.5" />
+                        Workflow
                       </Label>
                       <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
-                        <SelectTrigger className="bg-background/50 border-border/50 h-8">
+                        <SelectTrigger className="bg-background/50 border-border/50 h-7 text-xs">
                           <SelectValue placeholder="Select workflow" />
                         </SelectTrigger>
                         <SelectContent>
