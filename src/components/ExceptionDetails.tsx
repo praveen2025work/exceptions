@@ -419,43 +419,40 @@ const ExceptionDetails = ({
 
   return (
     <div className="w-full h-full overflow-hidden flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-0 shadow-2xl">
-      {/* Modern Header with Gradient - Reduced padding */}
+      {/* Compact Header */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5"></div>
-        <div className="relative p-4 border-b border-border/50">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <Settings className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground">Exception Details</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {exceptionData.instrumentId} • {exceptionData.legalEntity}
-                  </p>
-                </div>
+        <div className="relative px-4 py-3 border-b border-border/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="p-1 rounded bg-primary/10 flex-shrink-0">
+                <Settings className="h-3 w-3 text-primary" />
               </div>
-              
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs font-mono px-2 py-0.5">
-                  #{exceptionId}
-                </Badge>
-                <Badge variant={getStatusBadgeColor(status)} className="flex items-center gap-1 px-2 py-0.5">
-                  {getStatusIcon(status)}
-                  <span className="font-medium text-xs">
-                    {status === "OPEN" ? "Open" : status === "IN PROGRESS" ? "In Progress" : status === "RESOLVED" ? "Resolved" : "Rejected"}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-sm font-semibold text-foreground">Exception Details</h2>
+                  <span className="text-xs text-muted-foreground">
+                    {exceptionData.instrumentId} • {exceptionData.legalEntity}
                   </span>
-                </Badge>
+                  <Badge variant="outline" className="text-xs font-mono px-1.5 py-0.5 h-5">
+                    #{exceptionId.split('_')[0]}...
+                  </Badge>
+                  <Badge variant={getStatusBadgeColor(status)} className="flex items-center gap-1 px-1.5 py-0.5 h-5">
+                    {getStatusIcon(status)}
+                    <span className="font-medium text-xs">
+                      {status === "OPEN" ? "Open" : status === "IN PROGRESS" ? "In Progress" : status === "RESOLVED" ? "Resolved" : "Rejected"}
+                    </span>
+                  </Badge>
+                </div>
               </div>
             </div>
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={onClose} 
-              className="hover:bg-destructive/10 hover:text-destructive transition-colors"
+              className="hover:bg-destructive/10 hover:text-destructive transition-colors flex-shrink-0 h-7 w-7 p-0"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
