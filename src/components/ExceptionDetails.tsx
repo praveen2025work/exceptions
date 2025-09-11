@@ -14,6 +14,16 @@ import {
   Edit,
   Plus,
   MessageSquare,
+  Activity,
+  Info,
+  History,
+  Paperclip,
+  FileText,
+  Zap,
+  Target,
+  Calendar,
+  Building,
+  Settings,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -36,6 +46,7 @@ import {
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Separator } from "./ui/separator";
+import { ScrollArea } from "./ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -327,15 +338,43 @@ const ExceptionDetails = ({
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "OPEN":
-        return "bg-yellow-500 hover:bg-yellow-600";
+        return "destructive";
       case "IN PROGRESS":
-        return "bg-blue-500 hover:bg-blue-600";
+        return "secondary";
       case "RESOLVED":
-        return "bg-green-500 hover:bg-green-600";
+        return "default";
       case "REJECTED":
-        return "bg-red-500 hover:bg-red-600";
+        return "outline";
       default:
-        return "bg-gray-500 hover:bg-gray-600";
+        return "outline";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "OPEN":
+        return <AlertCircle className="h-4 w-4" />;
+      case "IN PROGRESS":
+        return <Clock className="h-4 w-4" />;
+      case "RESOLVED":
+        return <CheckCircle className="h-4 w-4" />;
+      case "REJECTED":
+        return <X className="h-4 w-4" />;
+      default:
+        return <AlertCircle className="h-4 w-4" />;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "High":
+        return "bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800";
+      case "Medium":
+        return "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-800";
+      case "Low":
+        return "bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800";
+      default:
+        return "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-800";
     }
   };
 
@@ -366,493 +405,671 @@ const ExceptionDetails = ({
     return changes;
   };
 
-  return (
-    <Card className="w-full h-full overflow-hidden flex flex-col bg-background">
-      <CardHeader className="border-b pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg font-medium">
-            Exception Details
-          </CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
+  const getTabIcon = (tab: string) => {
+    switch (tab) {
+      case 'details': return <Activity className="h-4 w-4" />;
+      case 'info': return <Info className="h-4 w-4" />;
+      case 'audit': return <History className="h-4 w-4" />;
+      case 'documents': return <Paperclip className="h-4 w-4" />;
+      default: return null;
+    }
+  };
 
-      <div className="flex-1 overflow-auto">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+  return (
+    <div className="w-full h-full overflow-hidden flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-0 shadow-2xl">
+      {/* Modern Header with Gradient */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5"></div>
+        <div className="relative p-6 border-b border-border/50">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Settings className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">Exception Details</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {exceptionData.instrumentId} • {exceptionData.legalEntity}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="text-xs font-mono px-3 py-1">
+                  #{exceptionId}
+                </Badge>
+                <Badge variant={getStatusBadgeColor(status)} className="flex items-center gap-1.5 px-3 py-1">
+                  {getStatusIcon(status)}
+                  <span className="font-medium">
+                    {status === "OPEN" ? "Open" : status === "IN PROGRESS" ? "In Progress" : status === "RESOLVED" ? "Resolved" : "Rejected"}
+                  </span>
+                </Badge>
+                <Badge variant="outline" className={`px-3 py-1 ${getPriorityColor("High")}`}>
+                  <Target className="h-3 w-3 mr-1" />
+                  High Priority
+                </Badge>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onClose} 
+              className="hover:bg-destructive/10 hover:text-destructive transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Modern Tabs */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
           <div className="px-6 pt-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="info">Info</TabsTrigger>
-              <TabsTrigger value="audit">Audit</TabsTrigger>
-              <TabsTrigger value="documents">Files</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 bg-muted/30 p-1 rounded-xl border border-border/50">
+              <TabsTrigger 
+                value="details" 
+                className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all"
+              >
+                {getTabIcon('details')}
+                <span className="font-medium">Details</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="info" 
+                className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all"
+              >
+                {getTabIcon('info')}
+                <span className="font-medium">Info</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="audit" 
+                className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all"
+              >
+                {getTabIcon('audit')}
+                <span className="font-medium">Audit</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg transition-all"
+              >
+                {getTabIcon('documents')}
+                <span className="font-medium">Files</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="info" className="p-6 pt-4">
-            <div className="space-y-6">
-              <h3 className="text-sm font-medium text-foreground mb-4">Complete Exception Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Business Information */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Business Information</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Exception ID</Label>
-                      <Input value={exceptionData.id} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Book Code</Label>
-                      <Input value={exceptionData.bookCode} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Book Path</Label>
-                      <Input value="Barclays Group:Markets:Equities:Prime:Prime Delta 1:APAC:Delta One Synthetics:Index/Sector/CIB:Delta 1 - Non Index PnL:IS-Taiwan:Conversion - BCSL[15170]" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">L04 Business Area</Label>
-                      <Input value="Markets" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">L06 Category</Label>
-                      <Input value="Equities" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Named PnL</Label>
-                      <Input value="Prime Delta 1" readOnly className="mt-1" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* System Information */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">System Information</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">System</Label>
-                      <Input value={exceptionData.system} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Legal Entity</Label>
-                      <Input value={exceptionData.legalEntity} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Regulator</Label>
-                      <Input value={exceptionData.regulator} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">As of Time</Label>
-                      <Input value="2025-09-09 13:40:48" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Processed Exceptions</Label>
-                      <Input value="2025-09-10 14:54:00" readOnly className="mt-1" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Instrument Information */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Instrument Information</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Instrument ID</Label>
-                      <Input value={exceptionData.instrumentId} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Instrument Name</Label>
-                      <Input value="00687B.TWO" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Instrument Type</Label>
-                      <Input value="SICOVAM" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Equity Class Type</Label>
-                      <Input value="Fund (Ex)" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">ESM Security Type</Label>
-                      <Input value="ETF" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Position TBBB Classification</Label>
-                      <Input value={positionTbbbClassification} readOnly className="mt-1" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Position Information */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Position Information</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Position AV</Label>
-                      <Input value="1,090,157.60" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Position Qty</Label>
-                      <Input value={exceptionData.positionQty.toLocaleString()} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Original Qty</Label>
-                      <Input value={exceptionData.originalQty.toLocaleString()} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">BB Underlyings</Label>
-                      <Input value="Sophis/131907931/00687B.TWO" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">SOD Delta on BB Underlying</Label>
-                      <Input value="1,090,157.60" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Look Through</Label>
-                      <Input value="Y" readOnly className="mt-1" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Exception Management */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Exception Management</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Status</Label>
-                      <Input value={status === "OPEN" ? "Open" : status === "IN PROGRESS" ? "In Progress" : status === "RESOLVED" ? "Resolved" : "Rejected"} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Priority</Label>
-                      <Input value="High" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">SLA Status</Label>
-                      <Input value="Within SLA" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Aging (Days)</Label>
-                      <Input value={exceptionData.aging.toString()} readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Assigned To</Label>
-                      <Input value="John Smith" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Category ID</Label>
-                      <Input value="null" readOnly className="mt-1" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Additional Information */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-foreground border-b pb-2">Additional Information</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Created Date</Label>
-                      <Input value="2025-09-09" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Due Date</Label>
-                      <Input value="2025-09-12" readOnly className="mt-1" />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Reason</Label>
-                      <Textarea value="Position classification mismatch" readOnly className="mt-1" rows={2} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="details" className="p-6 pt-4">
-            <div className="space-y-6">
+          <ScrollArea className="flex-1 px-6 pb-6">
+            <TabsContent value="details" className="mt-6 space-y-6">
               {/* Status and Workflow Section */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-foreground">Status</Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger className="w-full mt-1">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="OPEN">Open</SelectItem>
-                      <SelectItem value="IN PROGRESS">In Progress</SelectItem>
-                      <SelectItem value="RESOLVED">Resolved</SelectItem>
-                      <SelectItem value="REJECTED">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-foreground">Select Workflow</Label>
-                  <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
-                    <SelectTrigger className="w-full mt-1">
-                      <SelectValue placeholder="Select workflow" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.categoryName}>
-                          {category.categoryName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Activity className="h-4 w-4 text-primary" />
+                    </div>
+                    Status & Workflow Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+                        <Zap className="h-3 w-3" />
+                        Status
+                      </Label>
+                      <Select value={status} onValueChange={setStatus}>
+                        <SelectTrigger className="bg-background/50 border-border/50">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="OPEN">Open</SelectItem>
+                          <SelectItem value="IN PROGRESS">In Progress</SelectItem>
+                          <SelectItem value="RESOLVED">Resolved</SelectItem>
+                          <SelectItem value="REJECTED">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+                        <Settings className="h-3 w-3" />
+                        Select Workflow
+                      </Label>
+                      <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
+                        <SelectTrigger className="bg-background/50 border-border/50">
+                          <SelectValue placeholder="Select workflow" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.categoryName}>
+                              {category.categoryName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Commentary Section */}
-              <div>
-                <h3 className="text-sm font-medium text-foreground mb-3">Commentary</h3>
-                
-                {/* Add new comment */}
-                <div className="mb-4">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="mb-2"
-                    rows={3}
-                  />
-                  <Button onClick={handleAddComment} size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Comment
-                  </Button>
-                </div>
+              <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <MessageSquare className="h-4 w-4 text-primary" />
+                    </div>
+                    Commentary & Discussion
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Add new comment */}
+                  <div className="space-y-3">
+                    <Textarea
+                      placeholder="Add your insights, observations, or next steps..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="bg-background/50 border-border/50 resize-none min-h-[100px]"
+                      rows={3}
+                    />
+                    <Button onClick={handleAddComment} size="sm" className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Comment
+                    </Button>
+                  </div>
 
-                {/* Comments list */}
-                <div className="space-y-3">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="border rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center">
-                          <Avatar className="h-6 w-6 mr-2">
-                            <AvatarImage
-                              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.commentBy}`}
-                            />
-                            <AvatarFallback>
-                              {comment.commentBy.substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-sm font-medium">{comment.commentBy}</span>
-                          <span className="text-xs text-muted-foreground ml-2">
-                            {new Date(comment.commentDate).toLocaleString()}
-                          </span>
-                        </div>
-                        {comment.commentBy === currentUser && (
-                          <div className="flex space-x-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setEditingComment(comment.id);
-                                setEditCommentText(comment.comments);
-                              }}
-                            >
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteComment(comment.id)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                  {/* Comments list */}
+                  <div className="space-y-4">
+                    {comments.map((comment) => (
+                      <div key={comment.id} className="bg-muted/30 border border-border/30 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage
+                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.commentBy}`}
+                              />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {comment.commentBy.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <span className="text-sm font-medium text-foreground">{comment.commentBy}</span>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(comment.commentDate).toLocaleString()}
+                              </p>
+                            </div>
                           </div>
+                          {comment.commentBy === currentUser && (
+                            <div className="flex space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingComment(comment.id);
+                                  setEditCommentText(comment.comments);
+                                }}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        {editingComment === comment.id ? (
+                          <div className="space-y-3">
+                            <Textarea
+                              value={editCommentText}
+                              onChange={(e) => setEditCommentText(e.target.value)}
+                              className="bg-background/50"
+                              rows={2}
+                            />
+                            <div className="flex space-x-2">
+                              <Button size="sm" onClick={() => handleUpdateComment(comment.id)}>
+                                Save
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingComment(null);
+                                  setEditCommentText("");
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-foreground bg-background/30 p-3 rounded border border-border/20">
+                            {comment.comments}
+                          </p>
                         )}
                       </div>
-                      {editingComment === comment.id ? (
-                        <div className="space-y-2">
-                          <Textarea
-                            value={editCommentText}
-                            onChange={(e) => setEditCommentText(e.target.value)}
-                            rows={2}
-                          />
-                          <div className="flex space-x-2">
-                            <Button size="sm" onClick={() => handleUpdateComment(comment.id)}>
-                              Save
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setEditingComment(null);
-                                setEditCommentText("");
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-foreground">{comment.comments}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="audit" className="p-6 pt-4">
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-foreground">Audit History</h3>
-              {auditTrail.map((entry, index) => {
-                const previousEntry = index < auditTrail.length - 1 ? auditTrail[index + 1] : undefined;
-                const changes = formatAuditChanges(entry, previousEntry);
-                
-                return (
-                  <div key={`${entry.rev}-${index}`} className="border-b pb-4 last:border-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <Badge variant="outline" className="mr-2">
-                          {entry.revType}
-                        </Badge>
-                        <span className="text-sm font-medium">Rev {entry.rev}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {entry.asOfTime ? new Date(entry.asOfTime).toLocaleString() : 'N/A'}
-                      </span>
-                    </div>
-                    
-                    <div className="mb-2">
-                      {entry.actions.map((action, actionIndex) => (
-                        <p key={actionIndex} className="text-sm text-foreground">{action}</p>
-                      ))}
-                    </div>
-
-                    {changes && changes.length > 0 && (
-                      <div className="bg-muted/50 p-3 rounded-md">
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Changes:</p>
-                        {changes.map((change, changeIndex) => (
-                          <div key={changeIndex} className="text-xs mb-1">
-                            <span className="font-medium">{change.field}:</span>
-                            <span className="text-red-500 line-through ml-2">
-                              {change.oldValue || 'null'}
-                            </span>
-                            <span className="text-green-500 ml-2">
-                              {change.newValue || 'null'}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Show key data for the revision */}
-                    <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                      {entry.status && (
-                        <div>Status: <span className="font-medium">{entry.status}</span></div>
-                      )}
-                      {entry.aging && (
-                        <div>Aging: <span className="font-medium">{entry.aging} days</span></div>
-                      )}
-                      {entry.positionQty && (
-                        <div>Position Qty: <span className="font-medium">{entry.positionQty.toLocaleString()}</span></div>
-                      )}
-                      {entry.system && (
-                        <div>System: <span className="font-medium">{entry.system}</span></div>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                );
-              })}
-            </div>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-          <TabsContent value="documents" className="p-6 pt-4">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-sm font-medium text-foreground">Documents</h3>
-                <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="sm">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload File
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Upload Document</DialogTitle>
-                      <DialogDescription>
-                        Select a file to upload for this exception.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="file">File</Label>
-                        <Input
-                          id="file"
-                          type="file"
-                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                        />
-                      </div>
+            <TabsContent value="info" className="mt-6">
+              <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Info className="h-4 w-4 text-primary" />
                     </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button onClick={handleFileUpload} disabled={!selectedFile}>
-                        Upload
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {files.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No documents attached to this exception</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {files.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center">
-                        <div className="mr-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
-                            <span className="text-xs font-medium text-blue-600">
-                              {file.filename?.split('.').pop()?.toUpperCase()}
-                            </span>
-                          </div>
+                    Complete Exception Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Business Information */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/30">
+                        <Building className="h-4 w-4 text-primary" />
+                        <h4 className="text-sm font-semibold text-foreground">Business Information</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Exception ID</Label>
+                          <Input value={exceptionData.id} readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium">{file.filename}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Uploaded by {file.uploadedBy} on{' '}
-                            {file.uploadedDate ? new Date(file.uploadedDate).toLocaleDateString() : 'N/A'}
-                          </p>
+                          <Label className="text-xs text-muted-foreground">Book Code</Label>
+                          <Input value={exceptionData.bookCode} readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Book Path</Label>
+                          <Input value="Barclays Group:Markets:Equities:Prime:Prime Delta 1:APAC:Delta One Synthetics:Index/Sector/CIB:Delta 1 - Non Index PnL:IS-Taiwan:Conversion - BCSL[15170]" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">L04 Business Area</Label>
+                          <Input value="Markets" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">L06 Category</Label>
+                          <Input value="Equities" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Named PnL</Label>
+                          <Input value="Prime Delta 1" readOnly className="mt-1 bg-muted/20 text-xs" />
                         </div>
                       </div>
-                      <div className="flex space-x-1">
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => file.id && handleDeleteFile(file.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                    </div>
+
+                    {/* System Information */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/30">
+                        <Settings className="h-4 w-4 text-primary" />
+                        <h4 className="text-sm font-semibold text-foreground">System Information</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">System</Label>
+                          <Input value={exceptionData.system} readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Legal Entity</Label>
+                          <Input value={exceptionData.legalEntity} readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Regulator</Label>
+                          <Input value={exceptionData.regulator} readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">As of Time</Label>
+                          <Input value="2025-09-09 13:40:48" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Processed Exceptions</Label>
+                          <Input value="2025-09-10 14:54:00" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
+
+                    {/* Instrument Information */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/30">
+                        <FileText className="h-4 w-4 text-primary" />
+                        <h4 className="text-sm font-semibold text-foreground">Instrument Information</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Instrument ID</Label>
+                          <Input value={exceptionData.instrumentId} readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Instrument Name</Label>
+                          <Input value="00687B.TWO" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Instrument Type</Label>
+                          <Input value="SICOVAM" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Equity Class Type</Label>
+                          <Input value="Fund (Ex)" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">ESM Security Type</Label>
+                          <Input value="ETF" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Position TBBB Classification</Label>
+                          <Input value={positionTbbbClassification} readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Position Information */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/30">
+                        <Target className="h-4 w-4 text-primary" />
+                        <h4 className="text-sm font-semibold text-foreground">Position Information</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Position AV</Label>
+                          <Input value="1,090,157.60" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Position Qty</Label>
+                          <Input value={exceptionData.positionQty.toLocaleString()} readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Original Qty</Label>
+                          <Input value={exceptionData.originalQty.toLocaleString()} readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">BB Underlyings</Label>
+                          <Input value="Sophis/131907931/00687B.TWO" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">SOD Delta on BB Underlying</Label>
+                          <Input value="1,090,157.60" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Look Through</Label>
+                          <Input value="Y" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Exception Management */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/30">
+                        <Activity className="h-4 w-4 text-primary" />
+                        <h4 className="text-sm font-semibold text-foreground">Exception Management</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Status</Label>
+                          <Input value={status === "OPEN" ? "Open" : status === "IN PROGRESS" ? "In Progress" : status === "RESOLVED" ? "Resolved" : "Rejected"} readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Priority</Label>
+                          <Input value="High" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">SLA Status</Label>
+                          <Input value="Within SLA" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Aging (Days)</Label>
+                          <Input value={exceptionData.aging.toString()} readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Assigned To</Label>
+                          <Input value="John Smith" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Category ID</Label>
+                          <Input value="null" readOnly className="mt-1 bg-muted/20 text-xs" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Information */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-border/30">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <h4 className="text-sm font-semibold text-foreground">Additional Information</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Created Date</Label>
+                          <Input value="2025-09-09" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Due Date</Label>
+                          <Input value="2025-09-12" readOnly className="mt-1 bg-muted/20 font-mono text-xs" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Reason</Label>
+                          <Textarea value="Position classification mismatch" readOnly className="mt-1 bg-muted/20 text-xs" rows={2} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="audit" className="mt-6">
+              <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <History className="h-4 w-4 text-primary" />
+                    </div>
+                    Audit History & Timeline
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {auditTrail.map((entry, index) => {
+                      const previousEntry = index < auditTrail.length - 1 ? auditTrail[index + 1] : undefined;
+                      const changes = formatAuditChanges(entry, previousEntry);
+                      
+                      return (
+                        <div key={`${entry.rev}-${index}`} className="relative">
+                          {index !== auditTrail.length - 1 && (
+                            <div className="absolute left-6 top-12 bottom-0 w-px bg-border/50"></div>
+                          )}
+                          <div className="flex gap-4">
+                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 border-2 border-primary/20">
+                              <Activity className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {entry.revType}
+                                </Badge>
+                                <span className="text-sm font-medium text-foreground">Rev {entry.rev}</span>
+                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {entry.asOfTime ? new Date(entry.asOfTime).toLocaleString() : 'N/A'}
+                                </span>
+                              </div>
+                              
+                              <div className="mb-3">
+                                {entry.actions.map((action, actionIndex) => (
+                                  <p key={actionIndex} className="text-sm text-foreground bg-muted/20 p-2 rounded border border-border/20">
+                                    {action}
+                                  </p>
+                                ))}
+                              </div>
+
+                              {changes && changes.length > 0 && (
+                                <div className="bg-muted/30 p-3 rounded-lg border border-border/30">
+                                  <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                                    <Zap className="h-3 w-3" />
+                                    Changes:
+                                  </p>
+                                  {changes.map((change, changeIndex) => (
+                                    <div key={changeIndex} className="text-xs mb-1 font-mono">
+                                      <span className="font-medium text-foreground">{change.field}:</span>
+                                      <span className="text-red-500 line-through ml-2">
+                                        {change.oldValue || 'null'}
+                                      </span>
+                                      <span className="text-green-500 ml-2">
+                                        {change.newValue || 'null'}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Show key data for the revision */}
+                              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground bg-muted/20 p-2 rounded">
+                                {entry.status && (
+                                  <div>Status: <span className="font-medium text-foreground">{entry.status}</span></div>
+                                )}
+                                {entry.aging && (
+                                  <div>Aging: <span className="font-medium text-foreground">{entry.aging} days</span></div>
+                                )}
+                                {entry.positionQty && (
+                                  <div>Position Qty: <span className="font-medium text-foreground">{entry.positionQty.toLocaleString()}</span></div>
+                                )}
+                                {entry.system && (
+                                  <div>System: <span className="font-medium text-foreground">{entry.system}</span></div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="documents" className="mt-6">
+              <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
+                <CardHeader className="pb-4">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Paperclip className="h-4 w-4 text-primary" />
+                      </div>
+                      Document Management
+                    </CardTitle>
+                    <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" className="shadow-sm">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload File
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
+                            <Upload className="h-5 w-5" />
+                            Upload Document
+                          </DialogTitle>
+                          <DialogDescription>
+                            Select a file to upload for this exception. Supported formats: PDF, DOC, XLS, TXT, PNG, JPG.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="file" className="text-sm font-medium">File</Label>
+                            <Input
+                              id="file"
+                              type="file"
+                              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={handleFileUpload} disabled={!selectedFile}>
+                            Upload
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {files.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted/30 flex items-center justify-center">
+                        <FileText className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-muted-foreground text-sm">No documents attached to this exception</p>
+                      <p className="text-muted-foreground text-xs mt-1">Upload files to keep track of supporting documents</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {files.map((file) => (
+                        <div key={file.id} className="flex items-center justify-between p-4 bg-muted/20 border border-border/30 rounded-lg hover:bg-muted/30 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <span className="text-xs font-medium text-primary">
+                                {file.filename?.split('.').pop()?.toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{file.filename}</p>
+                              <p className="text-xs text-muted-foreground flex items-center gap-2">
+                                <User className="h-3 w-3" />
+                                Uploaded by {file.uploadedBy}
+                                <Calendar className="h-3 w-3 ml-2" />
+                                {file.uploadedDate ? new Date(file.uploadedDate).toLocaleDateString() : 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex space-x-1">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => file.id && handleDeleteFile(file.id)}
+                              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </ScrollArea>
         </Tabs>
       </div>
 
-      <CardFooter className="border-t p-4 flex justify-end space-x-2 bg-muted/50">
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave}>Save Changes</Button>
-      </CardFooter>
-    </Card>
+      {/* Modern Footer */}
+      <div className="p-6 border-t border-border/50 bg-gradient-to-r from-muted/20 to-muted/10">
+        <div className="flex gap-3">
+          <Button onClick={handleSave} className="flex-1 shadow-sm">
+            <Save className="h-4 w-4 mr-2" />
+            Save Changes
+          </Button>
+          <Button variant="outline" onClick={onClose} className="bg-background/50">
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 
