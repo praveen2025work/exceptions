@@ -11,15 +11,13 @@ export class ApiService {
   private userInfoApiUrl: string;
   private exceptionApiUrl: string;
   private bamAuthApiUrl: string;
-  private legacyApiUrl: string;
   private setLoading?: (loading: boolean, message?: string) => void;
   private userName?: string;
 
   constructor() {
-    this.userInfoApiUrl = process.env.NEXT_PUBLIC_USER_INFO_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    this.exceptionApiUrl = process.env.NEXT_PUBLIC_EXCEPTION_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    this.bamAuthApiUrl = process.env.NEXT_PUBLIC_BAM_AUTH_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    this.legacyApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    this.userInfoApiUrl = process.env.NEXT_PUBLIC_USER_INFO_API_URL || process.env.NEXT_PUBLIC_EXCEPTION_API_URL || 'http://localhost:3000';
+    this.exceptionApiUrl = process.env.NEXT_PUBLIC_EXCEPTION_API_URL || 'http://localhost:3000';
+    this.bamAuthApiUrl = process.env.NEXT_PUBLIC_BAM_AUTH_API_URL || process.env.NEXT_PUBLIC_EXCEPTION_API_URL || 'http://localhost:3000';
   }
 
   setLoadingHandler(setLoading: (loading: boolean, message?: string) => void) {
@@ -42,15 +40,8 @@ export class ApiService {
     }
     
     // Exception data endpoints (exceptions, categories, files, commentary, etc.)
-    if (endpoint.includes('/api/exception') || 
-        endpoint.includes('/api/upload') || 
-        endpoint.includes('/api/file') ||
-        endpoint.includes('/api/comment')) {
-      return this.exceptionApiUrl;
-    }
-    
-    // Default to legacy API URL for backward compatibility
-    return this.legacyApiUrl;
+    // This is now the default for all other endpoints
+    return this.exceptionApiUrl;
   }
 
   private async makeRequest<T>(

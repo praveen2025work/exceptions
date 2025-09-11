@@ -1,6 +1,6 @@
 import { UploadTracking, CreateUploadTrackingRequest, UpdateUploadTrackingRequest } from '../types/uploadTracking';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_EXCEPTION_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://sqppavdi049806:8089';
+const API_BASE_URL = process.env.NEXT_PUBLIC_EXCEPTION_API_URL || 'http://sqppavdi049806:8089';
 const MOCK_MODE = process.env.NEXT_PUBLIC_CO_DEV_ENV === 'mock';
 
 // Mock data for development

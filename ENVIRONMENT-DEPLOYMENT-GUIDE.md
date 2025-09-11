@@ -128,7 +128,6 @@ NEXT_PUBLIC_CO_DEV_ENV=development
 NEXT_PUBLIC_USER_INFO_API_URL=http://dev-server:8080/api
 NEXT_PUBLIC_EXCEPTION_API_URL=http://dev-server:8081/api
 NEXT_PUBLIC_BAM_AUTH_API_URL=http://dev-server:8082/api
-NEXT_PUBLIC_API_URL=http://dev-server:8080
 NEXT_PUBLIC_AVATAR_URL=https://api.dicebear.com/7.x/initials/svg
 ```
 
@@ -138,7 +137,6 @@ NEXT_PUBLIC_CO_DEV_ENV=uat
 NEXT_PUBLIC_USER_INFO_API_URL=http://uat-server:8080/api
 NEXT_PUBLIC_EXCEPTION_API_URL=http://uat-server:8081/api
 NEXT_PUBLIC_BAM_AUTH_API_URL=http://uat-server:8082/api
-NEXT_PUBLIC_API_URL=http://uat-server:8080
 NEXT_PUBLIC_AVATAR_URL=https://api.dicebear.com/7.x/initials/svg
 ```
 
@@ -148,7 +146,6 @@ NEXT_PUBLIC_CO_DEV_ENV=production
 NEXT_PUBLIC_USER_INFO_API_URL=http://prod-server:8080/api
 NEXT_PUBLIC_EXCEPTION_API_URL=http://prod-server:8081/api
 NEXT_PUBLIC_BAM_AUTH_API_URL=http://prod-server:8082/api
-NEXT_PUBLIC_API_URL=http://prod-server:8080
 NEXT_PUBLIC_AVATAR_URL=https://api.dicebear.com/7.x/initials/svg
 ```
 
@@ -158,7 +155,6 @@ NEXT_PUBLIC_CO_DEV_ENV=dr
 NEXT_PUBLIC_USER_INFO_API_URL=http://dr-server:8080/api
 NEXT_PUBLIC_EXCEPTION_API_URL=http://dr-server:8081/api
 NEXT_PUBLIC_BAM_AUTH_API_URL=http://dr-server:8082/api
-NEXT_PUBLIC_API_URL=http://dr-server:8080
 NEXT_PUBLIC_AVATAR_URL=https://api.dicebear.com/7.x/initials/svg
 ```
 
@@ -187,17 +183,16 @@ The application automatically routes API calls to the appropriate server based o
   - `/api/getADUsers`
   - `/api/user/*`
 
-- **Exception Data endpoints** → `NEXT_PUBLIC_EXCEPTION_API_URL`
-  - `/api/exception*`
-  - `/api/upload*`
-  - `/api/file*`
-  - `/api/comment*`
-
 - **BAM Authentication endpoints** → `NEXT_PUBLIC_BAM_AUTH_API_URL`
   - `/api/auth*`
   - `/api/bam*`
 
-- **Legacy endpoints** → `NEXT_PUBLIC_API_URL` (fallback)
+- **Exception Data endpoints** → `NEXT_PUBLIC_EXCEPTION_API_URL` (default for all other endpoints)
+  - `/api/exception*`
+  - `/api/upload*`
+  - `/api/file*`
+  - `/api/comment*`
+  - All other API endpoints
 
 ## Troubleshooting
 
