@@ -228,6 +228,7 @@ const ExceptionDetails = ({
       };
       setComments([...comments, newCommentEntry]);
       setNewComment("");
+      setShowCommentSection(false); // Hide comment input section after adding
       toast({
         title: "Success",
         description: "Comment added successfully",
@@ -505,7 +506,6 @@ const ExceptionDetails = ({
                     <div className="p-1.5 rounded-lg bg-primary/10">
                       <Activity className="h-3 w-3 text-primary" />
                     </div>
-                    Workflow Management
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -549,22 +549,103 @@ const ExceptionDetails = ({
                 </CardContent>
               </Card>
 
-              {/* Commentary Section - Progressive disclosure */}
+              {/* Commentary Section - Show existing comments by default, hide input box */}
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
                 <CardContent className="p-3">
-                  {!showCommentSection ? (
-                    <Button 
-                      onClick={() => setShowCommentSection(true)} 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                    >
-                      <Plus className="h-3 w-3 mr-2" />
-                      Add Comment
-                    </Button>
-                  ) : (
-                    <div className="space-y-3">
-                      {/* Add new comment */}
+                  <div className="space-y-3">
+                    {/* Comments list - Always visible if comments exist */}
+                    {comments.length > 0 && (
+                      <div className="space-y-3">
+                        {comments.map((comment) => (
+                          <div key={comment.id} className="bg-muted/30 border border-border/30 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage
+                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.commentBy}`}
+                                  />
+                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                    {comment.commentBy.substring(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <span className="text-xs font-medium text-foreground">{comment.commentBy}</span>
+                                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                    <Calendar className="h-2 w-2" />
+                                    {new Date(comment.commentDate).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                              {comment.commentBy === currentUser && (
+                                <div className="flex space-x-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingComment(comment.id);
+                                      setEditCommentText(comment.comments);
+                                    }}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    <Edit className="h-2.5 w-2.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteComment(comment.id)}
+                                    className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                            {editingComment === comment.id ? (
+                              <div className="space-y-2">
+                                <Textarea
+                                  value={editCommentText}
+                                  onChange={(e) => setEditCommentText(e.target.value)}
+                                  className="bg-background/50 text-sm"
+                                  rows={2}
+                                />
+                                <div className="flex space-x-2">
+                                  <Button size="sm" onClick={() => handleUpdateComment(comment.id)}>
+                                    Save
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setEditingComment(null);
+                                      setEditCommentText("");
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-foreground bg-background/30 p-2 rounded border border-border/20">
+                                {comment.comments}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add Comment Section - Progressive disclosure */}
+                    {!showCommentSection ? (
+                      <Button 
+                        onClick={() => setShowCommentSection(true)} 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                      >
+                        <Plus className="h-3 w-3 mr-2" />
+                        Add Comment
+                      </Button>
+                    ) : (
                       <div className="space-y-2">
                         <Textarea
                           placeholder="Add your insights, observations, or next steps..."
@@ -590,89 +671,8 @@ const ExceptionDetails = ({
                           </Button>
                         </div>
                       </div>
-
-                      {/* Comments list */}
-                      {comments.length > 0 && (
-                        <div className="space-y-3 pt-2 border-t border-border/30">
-                          {comments.map((comment) => (
-                            <div key={comment.id} className="bg-muted/30 border border-border/30 rounded-lg p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-6 w-6">
-                                    <AvatarImage
-                                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.commentBy}`}
-                                    />
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                      {comment.commentBy.substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <span className="text-xs font-medium text-foreground">{comment.commentBy}</span>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <Calendar className="h-2 w-2" />
-                                      {new Date(comment.commentDate).toLocaleString()}
-                                    </p>
-                                  </div>
-                                </div>
-                                {comment.commentBy === currentUser && (
-                                  <div className="flex space-x-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        setEditingComment(comment.id);
-                                        setEditCommentText(comment.comments);
-                                      }}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      <Edit className="h-2.5 w-2.5" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeleteComment(comment.id)}
-                                      className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-2.5 w-2.5" />
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                              {editingComment === comment.id ? (
-                                <div className="space-y-2">
-                                  <Textarea
-                                    value={editCommentText}
-                                    onChange={(e) => setEditCommentText(e.target.value)}
-                                    className="bg-background/50 text-sm"
-                                    rows={2}
-                                  />
-                                  <div className="flex space-x-2">
-                                    <Button size="sm" onClick={() => handleUpdateComment(comment.id)}>
-                                      Save
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                        setEditingComment(null);
-                                        setEditCommentText("");
-                                      }}
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p className="text-xs text-foreground bg-background/30 p-2 rounded border border-border/20">
-                                  {comment.comments}
-                                </p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
