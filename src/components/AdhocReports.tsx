@@ -69,74 +69,56 @@ const AdhocReports: React.FC = () => {
     loadData();
   }, []);
 
-  // Column visibility state
+  // Column visibility state - Only fields from the provided array structure
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>({
-    id: true,
-    l04_business_area_name: true,
-    l06_name: true,
-    named_no_name: false,
-    ads_book_code: false,
+    status: true,
+    aging_days: true,
+    created_date: true,
+    ads_book_code: true,
     ads_book_path: false,
     system: true,
-    legal_entity: false,
-    regulator: false,
+    legal_entity: true,
+    regulator: true,
     instrument_id: true,
-    equity_class_path: false,
+    equity_class_path: true,
     instrument_type: true,
     instrument_name: true,
-    position_tbbb_classification: false,
+    position_tbbb_classification: true,
     as_of_time: false,
     bb_underlying: false,
-    reason: true,
-    look_through: false,
     sod_dealt_bb_underlying: false,
     position_av: true,
-    tetb_av: true,
-    position_qty: false,
-    tetb_qty: false,
-    tetb_match: false,
-    status: true,
-    priority: true,
-    assigned_to: true,
-    created_date: true,
-    due_date: true,
-    sla_status: true,
-    aging_days: true
+    position_qty: true,
+    look_through: false,
+    tetb_qty: true,
+    categoryId: false,
+    id: true
   });
 
-  // Column definitions with friendly names
+  // Column definitions with friendly names - Only fields from the provided array structure
   const columnDefinitions = {
-    id: 'Exception ID',
-    l04_business_area_name: 'Business Area',
-    l06_name: 'L06 Name',
-    named_no_name: 'Named/No Name',
-    ads_book_code: 'ADS Book Code',
-    ads_book_path: 'ADS Book Path',
+    status: 'Status',
+    aging_days: 'Aging',
+    created_date: 'Processed Exceptions',
+    ads_book_code: 'SDS Book Code',
+    ads_book_path: 'SDS Book Path',
     system: 'System',
     legal_entity: 'Legal Entity',
     regulator: 'Regulator',
     instrument_id: 'Instrument ID',
-    equity_class_path: 'Equity Class Path',
+    equity_class_path: 'Equity Class Type',
     instrument_type: 'Instrument Type',
     instrument_name: 'Instrument Name',
     position_tbbb_classification: 'Position TBBB Classification',
     as_of_time: 'As Of Time',
-    bb_underlying: 'BB Underlying',
-    reason: 'Reason',
-    look_through: 'Look Through',
-    sod_dealt_bb_underlying: 'SOD Dealt BB Underlying',
+    bb_underlying: 'BB Underlyings',
+    sod_dealt_bb_underlying: 'SOD Delta on BB Underlying',
     position_av: 'Position AV',
-    tetb_av: 'TETB AV',
     position_qty: 'Position Qty',
-    tetb_qty: 'TETB Qty',
-    tetb_match: 'TETB Match',
-    status: 'Status',
-    priority: 'Priority',
-    assigned_to: 'Assigned To',
-    created_date: 'Created Date',
-    due_date: 'Due Date',
-    sla_status: 'SLA Status',
-    aging_days: 'Aging Days'
+    look_through: 'Look Through',
+    tetb_qty: 'Original Qty',
+    categoryId: 'Category ID',
+    id: 'Exception ID'
   };
 
   const filteredData = useMemo(() => {
@@ -267,37 +249,28 @@ const AdhocReports: React.FC = () => {
 
   const resetColumnSelection = () => {
     setVisibleColumns({
-      id: true,
-      l04_business_area_name: true,
-      l06_name: true,
-      named_no_name: false,
-      ads_book_code: false,
+      status: true,
+      aging_days: true,
+      created_date: true,
+      ads_book_code: true,
       ads_book_path: false,
       system: true,
-      legal_entity: false,
-      regulator: false,
+      legal_entity: true,
+      regulator: true,
       instrument_id: true,
-      equity_class_path: false,
+      equity_class_path: true,
       instrument_type: true,
       instrument_name: true,
-      position_tbbb_classification: false,
+      position_tbbb_classification: true,
       as_of_time: false,
       bb_underlying: false,
-      reason: true,
-      look_through: false,
       sod_dealt_bb_underlying: false,
       position_av: true,
-      tetb_av: true,
-      position_qty: false,
-      tetb_qty: false,
-      tetb_match: false,
-      status: true,
-      priority: true,
-      assigned_to: true,
-      created_date: true,
-      due_date: true,
-      sla_status: true,
-      aging_days: true
+      position_qty: true,
+      look_through: false,
+      tetb_qty: true,
+      categoryId: false,
+      id: true
     });
   };
 
@@ -393,12 +366,10 @@ const AdhocReports: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Unwind">Unwind</SelectItem>
-                  <SelectItem value="Centralise">Centralise</SelectItem>
-                  <SelectItem value="Writedown">Writedown</SelectItem>
-                  <SelectItem value="Insufficient Data">Insufficient Data</SelectItem>
-                  <SelectItem value="Challenge">Challenge</SelectItem>
-                  <SelectItem value="Reassignment">Reassignment</SelectItem>
+                  <SelectItem value="Open">Open</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Resolved">Resolved</SelectItem>
+                  <SelectItem value="Rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
             </div>

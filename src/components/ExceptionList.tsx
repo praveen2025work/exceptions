@@ -221,12 +221,11 @@ const ExceptionRow = React.memo<{
             <div>
               <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Business Information</h4>
               <div className="space-y-1 text-xs">
-                <p><span className="font-medium">Exception ID:</span> {exception.id}</p>
-                <p><span className="font-medium">Book Code:</span> {exception.ads_book_code}</p>
-                <p><span className="font-medium">Book Path:</span> {exception.ads_book_path}</p>
-                <p><span className="font-medium">L04 Area:</span> {exception.l04_business_area_name}</p>
-                <p><span className="font-medium">L06 Category:</span> {exception.l06_name}</p>
-                <p><span className="font-medium">Named PnL:</span> {exception.named_no_name}</p>
+                <p><span className="font-medium">Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>{exception.status || 'null'}</Badge></p>
+                <p><span className="font-medium">Aging:</span> {exception.aging_days}</p>
+                <p><span className="font-medium">Processed Exceptions:</span> {new Date(exception.created_date).toLocaleString()}</p>
+                <p><span className="font-medium">SDS Book Code:</span> {exception.ads_book_code}</p>
+                <p><span className="font-medium">SDS Book Path:</span> {exception.ads_book_path}</p>
                 <p><span className="font-medium">System:</span> {exception.system}</p>
                 <p><span className="font-medium">Legal Entity:</span> {exception.legal_entity}</p>
                 <p><span className="font-medium">Regulator:</span> {exception.regulator}</p>
@@ -236,38 +235,30 @@ const ExceptionRow = React.memo<{
               <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Instrument Details</h4>
               <div className="space-y-1 text-xs">
                 <p><span className="font-medium">Instrument ID:</span> {exception.instrument_id}</p>
-                <p><span className="font-medium">Instrument Name:</span> {exception.instrument_name}</p>
+                <p><span className="font-medium">Equity Class Type:</span> {exception.equity_class_path?.split('/').pop() || 'N/A'}</p>
                 <p><span className="font-medium">Instrument Type:</span> {exception.instrument_type}</p>
-                <p><span className="font-medium">Equity Class:</span> {exception.equity_class_path}</p>
-                <p><span className="font-medium">TBBB Classification:</span> {exception.position_tbbb_classification}</p>
-                <p><span className="font-medium">BB Underlying:</span> {exception.bb_underlying}</p>
-                <p><span className="font-medium">SOD Dealt BB:</span> {exception.sod_dealt_bb_underlying}</p>
+                <p><span className="font-medium">Instrument Name:</span> {exception.instrument_name}</p>
+                <p><span className="font-medium">Position TBBB Classification:</span> {exception.position_tbbb_classification}</p>
+                <p><span className="font-medium">As Of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
+                <p><span className="font-medium">BB Underlyings:</span> {exception.bb_underlying}</p>
+                <p><span className="font-medium">ESM Security Type:</span> {exception.equity_class_path?.split('/').pop() || 'N/A'}</p>
               </div>
             </div>
             <div>
               <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Position & Valuation</h4>
               <div className="space-y-1 text-xs">
+                <p><span className="font-medium">SOD Delta on BB Underlying:</span> {formatCurrency(exception.position_av)}</p>
                 <p><span className="font-medium">Position AV:</span> {formatCurrency(exception.position_av)}</p>
-                <p><span className="font-medium">TETB AV:</span> {formatCurrency(exception.tetb_av)}</p>
                 <p><span className="font-medium">Position Qty:</span> {formatNumber(exception.position_qty)}</p>
-                <p><span className="font-medium">TETB Qty:</span> {formatNumber(exception.tetb_qty)}</p>
-                <p><span className="font-medium">TETB Match:</span> {exception.tetb_match ? 'Yes' : 'No'}</p>
                 <p><span className="font-medium">Look Through:</span> {exception.look_through}</p>
+                <p><span className="font-medium">Original Qty:</span> {formatNumber(exception.tetb_qty)}</p>
+                <p><span className="font-medium">Category ID:</span> {exception.categoryId || 'null'}</p>
               </div>
             </div>
             <div>
-              <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Exception Management</h4>
+              <h4 className="font-medium mb-2 text-xs text-muted-foreground uppercase tracking-wide">Exception ID</h4>
               <div className="space-y-1 text-xs">
-                <p><span className="font-medium">Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getStatusColor(exception.status)}`}>{exception.status}</Badge></p>
-                <p><span className="font-medium">Priority:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getPriorityColor(exception.priority)}`}>{exception.priority}</Badge></p>
-                <p><span className="font-medium">SLA Status:</span> <Badge className={`text-xs px-1.5 py-0.5 ${getSLAStatusColor(exception.sla_status)}`}>{exception.sla_status}</Badge></p>
-                <p><span className="font-medium">Assigned To:</span> {exception.assigned_to}</p>
-                <p><span className="font-medium">Aging Days:</span> {exception.aging_days}</p>
-                <p><span className="font-medium">Category:</span> {exception.categoryName || 'N/A'}</p>
-                <p><span className="font-medium">Reason:</span> {exception.reason}</p>
-                <p><span className="font-medium">As of Time:</span> {new Date(exception.as_of_time).toLocaleString()}</p>
-                <p><span className="font-medium">Created Date:</span> {new Date(exception.created_date).toLocaleDateString()}</p>
-                <p><span className="font-medium">Due Date:</span> {new Date(exception.due_date).toLocaleDateString()}</p>
+                <p><span className="font-medium">Exception ID:</span> {exception.id}</p>
               </div>
             </div>
           </div>
