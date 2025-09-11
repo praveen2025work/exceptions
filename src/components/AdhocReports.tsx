@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { 
   Download, 
   Filter, 
@@ -24,7 +25,8 @@ import {
   BarChart3,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  CalendarIcon
 } from "lucide-react";
 import { 
   Table, 
@@ -37,20 +39,31 @@ import {
 import { fetchAndTransformExceptions } from "@/utils/apiDataTransform";
 import { Exception } from "@/types/exception";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 const AdhocReports: React.FC = () => {
   const [exceptions, setExceptions] = useState<Exception[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState("exceptions");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [priorityFilter, setPriorityFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [businessAreaFilter, setBusinessAreaFilter] = useState("");
-  const [l06Filter, setL06Filter] = useState("");
-  const [systemFilter, setSystemFilter] = useState("");
-  const [assignedToFilter, setAssignedToFilter] = useState("");
-  const [dateFromFilter, setDateFromFilter] = useState("");
-  const [dateToFilter, setDateToFilter] = useState("");
+  
+  // Similar filters from dashboard
+  const [filters, setFilters] = useState({
+    ads_book_code: "",
+    instrument_id: "",
+    system: "",
+    legal_entity: "",
+    regulator: "",
+    status: "",
+  });
+  
+  // Date range filter
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  
+  // Classification filter (Position TBBB Classification)
+  const [classificationFilter, setClassificationFilter] = useState<string>("all");
 
   useEffect(() => {
     const loadData = async () => {
@@ -121,67 +134,107 @@ const AdhocReports: React.FC = () => {
     id: 'Exception ID'
   };
 
+  // Memoized unique values for dropdowns
+  const uniqueValues = useMemo(() => ({
+    systems: Array.from(new Set(exceptions.map(e => e.system).filter(Boolean))),
+    legalEntities: Array.from(new Set(exceptions.map(e => e.legal_entity).filter(Boolean))),
+    regulators: Array.from(new Set(exceptions.map(e => e.regulator).filter(Boolean))),
+    statuses: Array.from(new Set(exceptions.map(e => e.status).filter(Boolean))),
+  }), [exceptions]);
+
   const filteredData = useMemo(() => {
     if (isLoading || !exceptions.length) {
       return [];
     }
     let filtered = [...exceptions];
 
-    if (statusFilter && statusFilter !== "all") {
-      filtered = filtered.filter(item => item.status === statusFilter);
-    }
-
-    if (priorityFilter && priorityFilter !== "all") {
-      filtered = filtered.filter(item => item.priority === priorityFilter);
-    }
-
+    // Search functionality
     if (searchTerm) {
-      const term = searchTerm.toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+      const searchableFields = [
+        'id',
+        'instrument_id',
+        'ads_book_code',
+        'instrument_name',
+        'system',
+        'legal_entity',
+        'regulator',
+        'status',
+        'categoryName'
+      ];
+      
       filtered = filtered.filter(item => 
-        Object.values(item).some(val => 
-          String(val).toLowerCase().includes(term)
+        searchableFields.some(field => 
+          item[field as keyof Exception]?.toString().toLowerCase().includes(searchLower)
         )
       );
     }
 
-    if (businessAreaFilter) {
-      filtered = filtered.filter(item => 
-        item.l04_business_area_name.toLowerCase().includes(businessAreaFilter.toLowerCase())
-      );
+    // Apply text filters with && and || support
+    const bookCodeFilter = filters.ads_book_code?.trim();
+    const instrumentIdFilter = filters.instrument_id?.trim();
+    
+    if (bookCodeFilter || instrumentIdFilter) {
+      const evaluateFilter = (filterValue: string, fieldValue: string) => {
+        if (!filterValue) return true;
+        
+        // Check for && operator
+        if (filterValue.includes('&&')) {
+          const terms = filterValue.split('&&').map(term => term.trim().toLowerCase());
+          return terms.every(term => fieldValue.toLowerCase().includes(term));
+        }
+        
+        // Check for || operator
+        if (filterValue.includes('||')) {
+          const terms = filterValue.split('||').map(term => term.trim().toLowerCase());
+          return terms.some(term => fieldValue.toLowerCase().includes(term));
+        }
+        
+        // Default single term search
+        return fieldValue.toLowerCase().includes(filterValue.toLowerCase());
+      };
+      
+      if (bookCodeFilter) {
+        filtered = filtered.filter(item => evaluateFilter(bookCodeFilter, item.ads_book_code || ''));
+      }
+      if (instrumentIdFilter) {
+        filtered = filtered.filter(item => evaluateFilter(instrumentIdFilter, item.instrument_id || ''));
+      }
     }
 
-    if (l06Filter) {
-      filtered = filtered.filter(item => 
-        item.l06_name.toLowerCase().includes(l06Filter.toLowerCase())
-      );
+    // Apply classification filter
+    if (classificationFilter && classificationFilter !== "all") {
+      filtered = filtered.filter(item => item.position_tbbb_classification === classificationFilter);
     }
 
-    if (systemFilter) {
-      filtered = filtered.filter(item => 
-        item.system.toLowerCase().includes(systemFilter.toLowerCase())
-      );
+    // Apply dropdown filters
+    if (filters.system && filters.system !== "all") {
+      filtered = filtered.filter(item => item.system === filters.system);
+    }
+    if (filters.legal_entity && filters.legal_entity !== "all") {
+      filtered = filtered.filter(item => item.legal_entity === filters.legal_entity);
+    }
+    if (filters.regulator && filters.regulator !== "all") {
+      filtered = filtered.filter(item => item.regulator === filters.regulator);
+    }
+    if (filters.status && filters.status !== "all") {
+      filtered = filtered.filter(item => item.status === filters.status);
     }
 
-    if (assignedToFilter) {
+    // Apply date range filter
+    if (dateRange?.from) {
       filtered = filtered.filter(item => 
-        item.assigned_to.toLowerCase().includes(assignedToFilter.toLowerCase())
+        new Date(item.created_date) >= dateRange.from!
       );
     }
-
-    if (dateFromFilter) {
+    if (dateRange?.to) {
       filtered = filtered.filter(item => 
-        new Date(item.created_date) >= new Date(dateFromFilter)
-      );
-    }
-
-    if (dateToFilter) {
-      filtered = filtered.filter(item => 
-        new Date(item.created_date) <= new Date(dateToFilter)
+        new Date(item.created_date) <= dateRange.to!
       );
     }
 
     return filtered;
-  }, [exceptions, isLoading, statusFilter, priorityFilter, searchTerm, businessAreaFilter, l06Filter, systemFilter, assignedToFilter, dateFromFilter, dateToFilter]);
+  }, [exceptions, isLoading, searchTerm, filters, classificationFilter, dateRange]);
 
   const visibleColumnKeys = useMemo(() => {
     return Object.keys(visibleColumns).filter(key => visibleColumns[key]);
@@ -236,15 +289,17 @@ const AdhocReports: React.FC = () => {
   };
 
   const clearFilters = () => {
-    setStatusFilter("all");
-    setPriorityFilter("all");
     setSearchTerm("");
-    setBusinessAreaFilter("");
-    setL06Filter("");
-    setSystemFilter("");
-    setAssignedToFilter("");
-    setDateFromFilter("");
-    setDateToFilter("");
+    setClassificationFilter("all");
+    setFilters({
+      ads_book_code: "",
+      instrument_id: "",
+      system: "",
+      legal_entity: "",
+      regulator: "",
+      status: "",
+    });
+    setDateRange(undefined);
   };
 
   const resetColumnSelection = () => {
@@ -349,19 +404,96 @@ const AdhocReports: React.FC = () => {
             </div>
           </div>
 
-          {/* Compact Filter Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+          {/* Position TBBB Classification Tabs */}
+          <div className="flex items-center gap-4 mb-4">
+            <Tabs value={classificationFilter} onValueChange={setClassificationFilter} className="w-auto">
+              <TabsList className="h-8 bg-muted/50">
+                <TabsTrigger value="all" className="text-xs px-3 data-[state=active]:bg-background">All</TabsTrigger>
+                <TabsTrigger value="BankingBook" className="text-xs px-3 data-[state=active]:bg-background">BankingBook</TabsTrigger>
+                <TabsTrigger value="Uncertain" className="text-xs px-3 data-[state=active]:bg-background">Uncertain</TabsTrigger>
+                <TabsTrigger value="CentraliseAndWritedown" className="text-xs px-3 data-[state=active]:bg-background">CentraliseAndWritedown</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* Filter Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3 items-end mb-4">
             <div>
+              <p className="text-xs mb-1 text-muted-foreground font-medium">Book Code</p>
               <Input
-                placeholder="Search all fields..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-8 text-xs"
+                placeholder="Book code (use &&, ||)..."
+                value={filters.ads_book_code}
+                onChange={(e) => setFilters({ ...filters, ads_book_code: e.target.value })}
+                className="h-7 text-xs"
               />
             </div>
             <div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 text-xs">
+              <p className="text-xs mb-1 text-muted-foreground font-medium">Instrument ID</p>
+              <Input
+                placeholder="Instrument ID (use &&, ||)..."
+                value={filters.instrument_id}
+                onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
+                className="h-7 text-xs"
+              />
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground font-medium">System</p>
+              <Select
+                value={filters.system || "all"}
+                onValueChange={(value) => setFilters({...filters, system: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue placeholder="System" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Systems</SelectItem>
+                  {uniqueValues.systems.map(system => (
+                    <SelectItem key={system} value={system}>{system}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground font-medium">Legal Entity</p>
+              <Select
+                value={filters.legal_entity || "all"}
+                onValueChange={(value) => setFilters({...filters, legal_entity: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue placeholder="Entity" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Entities</SelectItem>
+                  {uniqueValues.legalEntities.map(entity => (
+                    <SelectItem key={entity} value={entity}>{entity}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground font-medium">Regulator</p>
+              <Select
+                value={filters.regulator || "all"}
+                onValueChange={(value) => setFilters({...filters, regulator: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-7 text-xs">
+                  <SelectValue placeholder="Regulator" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Regulators</SelectItem>
+                  {uniqueValues.regulators.map(regulator => (
+                    <SelectItem key={regulator} value={regulator}>{regulator}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <p className="text-xs mb-1 text-muted-foreground font-medium">Status</p>
+              <Select
+                value={filters.status || "all"}
+                onValueChange={(value) => setFilters({...filters, status: value === "all" ? "" : value})}
+              >
+                <SelectTrigger className="h-7 text-xs">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -373,59 +505,56 @@ const AdhocReports: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="flex items-center gap-4 mb-4">
             <div>
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="Critical">Critical</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                </SelectContent>
-              </Select>
+              <p className="text-xs mb-1 text-muted-foreground font-medium">Date Range</p>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    variant={"outline"}
+                    className={cn(
+                      "w-[280px] justify-start text-left font-normal h-7 text-xs",
+                      !dateRange && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-3 w-3" />
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} -{" "}
+                          {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div>
+              <p className="text-xs mb-1 text-muted-foreground font-medium">Search</p>
               <Input
-                placeholder="Business area..."
-                value={businessAreaFilter}
-                onChange={(e) => setBusinessAreaFilter(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div>
-              <Input
-                placeholder="L06 name..."
-                value={l06Filter}
-                onChange={(e) => setL06Filter(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div>
-              <Input
-                placeholder="System..."
-                value={systemFilter}
-                onChange={(e) => setSystemFilter(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div>
-              <Input
-                placeholder="Assigned to..."
-                value={assignedToFilter}
-                onChange={(e) => setAssignedToFilter(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div>
-              <Input
-                type="date"
-                placeholder="Date from"
-                value={dateFromFilter}
-                onChange={(e) => setDateFromFilter(e.target.value)}
-                className="h-8 text-xs"
+                placeholder="Search all fields..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="h-7 text-xs w-64"
               />
             </div>
           </div>
@@ -439,17 +568,6 @@ const AdhocReports: React.FC = () => {
                 `Showing ${filteredData.length} of ${exceptions.length} records`
               )}
             </div>
-            {dateToFilter && (
-              <div>
-                <Input
-                  type="date"
-                  placeholder="Date to"
-                  value={dateToFilter}
-                  onChange={(e) => setDateToFilter(e.target.value)}
-                  className="h-6 w-32 text-xs"
-                />
-              </div>
-            )}
           </div>
         </div>
       </div>
