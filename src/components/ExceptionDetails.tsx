@@ -91,6 +91,7 @@ const ExceptionDetails = ({
   const [editCommentText, setEditCommentText] = useState("");
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showCommentSection, setShowCommentSection] = useState(false);
   const [currentUser] = useState("Pratik"); // Mock current user
   const { toast } = useToast();
 
@@ -417,37 +418,33 @@ const ExceptionDetails = ({
 
   return (
     <div className="w-full h-full overflow-hidden flex flex-col bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-0 shadow-2xl">
-      {/* Modern Header with Gradient */}
+      {/* Modern Header with Gradient - Reduced padding */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5"></div>
-        <div className="relative p-6 border-b border-border/50">
-          <div className="flex items-start justify-between mb-4">
+        <div className="relative p-4 border-b border-border/50">
+          <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Settings className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 rounded-lg bg-primary/10">
+                  <Settings className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Exception Details</h2>
-                  <p className="text-sm text-muted-foreground">
+                  <h2 className="text-lg font-semibold text-foreground">Exception Details</h2>
+                  <p className="text-xs text-muted-foreground">
                     {exceptionData.instrumentId} • {exceptionData.legalEntity}
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="text-xs font-mono px-3 py-1">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-mono px-2 py-0.5">
                   #{exceptionId}
                 </Badge>
-                <Badge variant={getStatusBadgeColor(status)} className="flex items-center gap-1.5 px-3 py-1">
+                <Badge variant={getStatusBadgeColor(status)} className="flex items-center gap-1 px-2 py-0.5">
                   {getStatusIcon(status)}
-                  <span className="font-medium">
+                  <span className="font-medium text-xs">
                     {status === "OPEN" ? "Open" : status === "IN PROGRESS" ? "In Progress" : status === "RESOLVED" ? "Resolved" : "Rejected"}
                   </span>
-                </Badge>
-                <Badge variant="outline" className={`px-3 py-1 ${getPriorityColor("High")}`}>
-                  <Target className="h-3 w-3 mr-1" />
-                  High Priority
                 </Badge>
               </div>
             </div>
@@ -463,10 +460,10 @@ const ExceptionDetails = ({
         </div>
       </div>
 
-      {/* Modern Tabs */}
+      {/* Modern Tabs - Reduced padding */}
       <div className="flex-1 overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-          <div className="px-6 pt-4">
+          <div className="px-4 pt-3">
             <TabsList className="grid w-full grid-cols-4 bg-muted/30 p-1 rounded-xl border border-border/50">
               <TabsTrigger 
                 value="details" 
@@ -499,27 +496,27 @@ const ExceptionDetails = ({
             </TabsList>
           </div>
 
-          <ScrollArea className="flex-1 px-6 pb-6">
-            <TabsContent value="details" className="mt-6 space-y-6">
-              {/* Status and Workflow Section */}
+          <ScrollArea className="flex-1 px-4 pb-4">
+            <TabsContent value="details" className="mt-4 space-y-4">
+              {/* Status and Workflow Section - Removed label */}
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Activity className="h-4 w-4 text-primary" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-primary/10">
+                      <Activity className="h-3 w-3 text-primary" />
                     </div>
-                    Status & Workflow Management
+                    Workflow Management
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
                         <Zap className="h-3 w-3" />
                         Status
                       </Label>
                       <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger className="bg-background/50 border-border/50">
+                        <SelectTrigger className="bg-background/50 border-border/50 h-8">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -530,13 +527,13 @@ const ExceptionDetails = ({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-foreground flex items-center gap-1.5">
                         <Settings className="h-3 w-3" />
                         Select Workflow
                       </Label>
                       <Select value={selectedWorkflow} onValueChange={setSelectedWorkflow}>
-                        <SelectTrigger className="bg-background/50 border-border/50">
+                        <SelectTrigger className="bg-background/50 border-border/50 h-8">
                           <SelectValue placeholder="Select workflow" />
                         </SelectTrigger>
                         <SelectContent>
@@ -552,126 +549,146 @@ const ExceptionDetails = ({
                 </CardContent>
               </Card>
 
-              {/* Commentary Section */}
+              {/* Commentary Section - Progressive disclosure */}
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <MessageSquare className="h-4 w-4 text-primary" />
-                    </div>
-                    Commentary & Discussion
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Add new comment */}
-                  <div className="space-y-3">
-                    <Textarea
-                      placeholder="Add your insights, observations, or next steps..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="bg-background/50 border-border/50 resize-none min-h-[100px]"
-                      rows={3}
-                    />
-                    <Button onClick={handleAddComment} size="sm" className="w-full">
-                      <Plus className="h-4 w-4 mr-2" />
+                <CardContent className="p-3">
+                  {!showCommentSection ? (
+                    <Button 
+                      onClick={() => setShowCommentSection(true)} 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full"
+                    >
+                      <Plus className="h-3 w-3 mr-2" />
                       Add Comment
                     </Button>
-                  </div>
-
-                  {/* Comments list */}
-                  <div className="space-y-4">
-                    {comments.map((comment) => (
-                      <div key={comment.id} className="bg-muted/30 border border-border/30 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.commentBy}`}
-                              />
-                              <AvatarFallback className="bg-primary/10 text-primary">
-                                {comment.commentBy.substring(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <span className="text-sm font-medium text-foreground">{comment.commentBy}</span>
-                              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {new Date(comment.commentDate).toLocaleString()}
-                              </p>
-                            </div>
-                          </div>
-                          {comment.commentBy === currentUser && (
-                            <div className="flex space-x-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingComment(comment.id);
-                                  setEditCommentText(comment.comments);
-                                }}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteComment(comment.id)}
-                                className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )}
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Add new comment */}
+                      <div className="space-y-2">
+                        <Textarea
+                          placeholder="Add your insights, observations, or next steps..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="bg-background/50 border-border/50 resize-none min-h-[80px] text-sm"
+                          rows={3}
+                        />
+                        <div className="flex gap-2">
+                          <Button onClick={handleAddComment} size="sm" className="flex-1">
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Comment
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              setShowCommentSection(false);
+                              setNewComment("");
+                            }} 
+                            variant="outline" 
+                            size="sm"
+                          >
+                            Cancel
+                          </Button>
                         </div>
-                        {editingComment === comment.id ? (
-                          <div className="space-y-3">
-                            <Textarea
-                              value={editCommentText}
-                              onChange={(e) => setEditCommentText(e.target.value)}
-                              className="bg-background/50"
-                              rows={2}
-                            />
-                            <div className="flex space-x-2">
-                              <Button size="sm" onClick={() => handleUpdateComment(comment.id)}>
-                                Save
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingComment(null);
-                                  setEditCommentText("");
-                                }}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-sm text-foreground bg-background/30 p-3 rounded border border-border/20">
-                            {comment.comments}
-                          </p>
-                        )}
                       </div>
-                    ))}
-                  </div>
+
+                      {/* Comments list */}
+                      {comments.length > 0 && (
+                        <div className="space-y-3 pt-2 border-t border-border/30">
+                          {comments.map((comment) => (
+                            <div key={comment.id} className="bg-muted/30 border border-border/30 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarImage
+                                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.commentBy}`}
+                                    />
+                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                      {comment.commentBy.substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <span className="text-xs font-medium text-foreground">{comment.commentBy}</span>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <Calendar className="h-2 w-2" />
+                                      {new Date(comment.commentDate).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                {comment.commentBy === currentUser && (
+                                  <div className="flex space-x-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setEditingComment(comment.id);
+                                        setEditCommentText(comment.comments);
+                                      }}
+                                      className="h-6 w-6 p-0"
+                                    >
+                                      <Edit className="h-2.5 w-2.5" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeleteComment(comment.id)}
+                                      className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                    >
+                                      <Trash2 className="h-2.5 w-2.5" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                              {editingComment === comment.id ? (
+                                <div className="space-y-2">
+                                  <Textarea
+                                    value={editCommentText}
+                                    onChange={(e) => setEditCommentText(e.target.value)}
+                                    className="bg-background/50 text-sm"
+                                    rows={2}
+                                  />
+                                  <div className="flex space-x-2">
+                                    <Button size="sm" onClick={() => handleUpdateComment(comment.id)}>
+                                      Save
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setEditingComment(null);
+                                        setEditCommentText("");
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-xs text-foreground bg-background/30 p-2 rounded border border-border/20">
+                                  {comment.comments}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="info" className="mt-6">
+            <TabsContent value="info" className="mt-4">
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Info className="h-4 w-4 text-primary" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-primary/10">
+                      <Info className="h-3 w-3 text-primary" />
                     </div>
                     Complete Exception Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Business Information */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 pb-2 border-b border-border/30">
@@ -864,18 +881,18 @@ const ExceptionDetails = ({
               </Card>
             </TabsContent>
 
-            <TabsContent value="audit" className="mt-6">
+            <TabsContent value="audit" className="mt-4">
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <History className="h-4 w-4 text-primary" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-primary/10">
+                      <History className="h-3 w-3 text-primary" />
                     </div>
                     Audit History & Timeline
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {auditTrail.map((entry, index) => {
                       const previousEntry = index < auditTrail.length - 1 ? auditTrail[index + 1] : undefined;
                       const changes = formatAuditChanges(entry, previousEntry);
@@ -954,13 +971,13 @@ const ExceptionDetails = ({
               </Card>
             </TabsContent>
 
-            <TabsContent value="documents" className="mt-6">
+            <TabsContent value="documents" className="mt-4">
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-3">
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Paperclip className="h-4 w-4 text-primary" />
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-primary/10">
+                        <Paperclip className="h-3 w-3 text-primary" />
                       </div>
                       Document Management
                     </CardTitle>
@@ -1057,14 +1074,14 @@ const ExceptionDetails = ({
         </Tabs>
       </div>
 
-      {/* Modern Footer */}
-      <div className="p-6 border-t border-border/50 bg-gradient-to-r from-muted/20 to-muted/10">
-        <div className="flex gap-3">
-          <Button onClick={handleSave} className="flex-1 shadow-sm">
-            <Save className="h-4 w-4 mr-2" />
+      {/* Modern Footer - Reduced padding */}
+      <div className="p-4 border-t border-border/50 bg-gradient-to-r from-muted/20 to-muted/10">
+        <div className="flex gap-2">
+          <Button onClick={handleSave} className="flex-1 shadow-sm h-8">
+            <Save className="h-3 w-3 mr-2" />
             Save Changes
           </Button>
-          <Button variant="outline" onClick={onClose} className="bg-background/50">
+          <Button variant="outline" onClick={onClose} className="bg-background/50 h-8">
             Cancel
           </Button>
         </div>

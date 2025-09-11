@@ -287,7 +287,7 @@ const ExceptionDashboard: React.FC<ExceptionDashboardProps> = ({
       {/* Details Panel - Fixed width when open */}
       <div 
         ref={detailsPanelRef}
-        className={`transition-all duration-300 ${showDetails ? 'w-96 flex-shrink-0' : 'w-0'} overflow-hidden border-l bg-background/50`}
+        className={`transition-all duration-300 ${showDetails ? 'w-[26rem] flex-shrink-0' : 'w-0'} overflow-hidden border-l bg-background/50`}
       >
         {showDetails && selectedException && (
           <div className="h-full">
