@@ -370,8 +370,17 @@ export const UploadTracking: React.FC = React.memo(() => {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Search and Action Buttons */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center space-x-2 flex-1">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by file name, created by, updated by, type, or status..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
         <div className="flex gap-2">
           <Button onClick={handleRefresh} variant="outline" size="sm">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -382,17 +391,6 @@ export const UploadTracking: React.FC = React.memo(() => {
             Add New Upload
           </Button>
         </div>
-      </div>
-
-      {/* Search */}
-      <div className="flex items-center space-x-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by file name, created by, updated by, type, or status..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
       </div>
 
       {/* Table */}
