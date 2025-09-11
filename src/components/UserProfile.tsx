@@ -126,24 +126,6 @@ export const UserProfile: React.FC = () => {
         <div className="p-2 space-y-3">
           <div className="grid grid-cols-1 gap-2 text-sm">
             <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-muted-foreground min-w-0 flex-shrink-0">Email:</span>
-              <span className="font-mono text-xs truncate">{user.emailAddress}</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-muted-foreground min-w-0 flex-shrink-0">Employee ID:</span>
-              <span className="font-mono text-xs">{user.employeeId}</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-muted-foreground min-w-0 flex-shrink-0">Username:</span>
-              <span className="font-mono text-xs">{user.userName}</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <span className="text-muted-foreground min-w-0 flex-shrink-0">SAM Account:</span>
               <span className="font-mono text-xs">{user.samAccountName}</span>
@@ -157,19 +139,37 @@ export const UserProfile: React.FC = () => {
               </div>
             )}
             
-            {user.distinguishedName && (
-              <div className="flex items-start gap-2">
-                <Building className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                <span className="text-muted-foreground min-w-0 flex-shrink-0">DN:</span>
-                <span className="font-mono text-xs break-all">{user.distinguishedName}</span>
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">Display Name:</span>
+              <span className="text-xs">{user.displayName}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">Email:</span>
+              <span className="font-mono text-xs truncate">{user.emailAddress}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">Employee ID:</span>
+              <span className="font-mono text-xs">{user.employeeId}</span>
+            </div>
+            
+            {user.name && (
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Name:</span>
+                <span className="text-xs">{user.name}</span>
               </div>
             )}
             
-            {user.domain && (
+            {user.givenName && (
               <div className="flex items-center gap-2">
-                <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-muted-foreground min-w-0 flex-shrink-0">Domain:</span>
-                <span className="font-mono text-xs">{user.domain}</span>
+                <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Given Name:</span>
+                <span className="text-xs">{user.givenName}</span>
               </div>
             )}
             
@@ -181,21 +181,19 @@ export const UserProfile: React.FC = () => {
               </div>
             )}
             
-            {location && (
+            {user.surname && (
               <div className="flex items-center gap-2">
-                <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-muted-foreground min-w-0 flex-shrink-0">Location:</span>
-                <Badge variant="secondary" className="text-xs">{location}</Badge>
+                <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Surname:</span>
+                <span className="text-xs">{user.surname}</span>
               </div>
             )}
             
-            {role && role !== 'User' && (
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="text-muted-foreground min-w-0 flex-shrink-0">Role:</span>
-                <Badge variant="outline" className="text-xs">{role}</Badge>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">Username:</span>
+              <span className="font-mono text-xs">{user.userName}</span>
+            </div>
           </div>
         </div>
         
