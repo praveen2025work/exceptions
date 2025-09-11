@@ -702,24 +702,24 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
           </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3 items-end">
-          <div className="xl:col-span-2">
-            <p className="text-xs mb-1 text-muted-foreground font-medium">Book Code & Instrument ID</p>
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Book code (use && for AND, || for OR)..."
-                value={filters.ads_book_code}
-                onChange={(e) => setFilters({ ...filters, ads_book_code: e.target.value })}
-                className="h-7 text-xs"
-              />
-              <Input
-                placeholder="Instrument ID (use && for AND, || for OR)..."
-                value={(filters as any).instrument_id}
-                onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
-                className="h-7 text-xs"
-              />
-            </div>
+          <div>
+            <p className="text-xs mb-1 text-muted-foreground font-medium">Book Code</p>
+            <Input
+              placeholder="Book code (use &&, ||)..."
+              value={filters.ads_book_code}
+              onChange={(e) => setFilters({ ...filters, ads_book_code: e.target.value })}
+              className="h-7 text-xs"
+            />
           </div>
-          
+          <div>
+            <p className="text-xs mb-1 text-muted-foreground font-medium">Instrument ID</p>
+            <Input
+              placeholder="Instrument ID (use &&, ||)..."
+              value={(filters as any).instrument_id}
+              onChange={(e) => setFilters({ ...filters, instrument_id: e.target.value })}
+              className="h-7 text-xs"
+            />
+          </div>
           <div>
             <p className="text-xs mb-1 text-muted-foreground font-medium">System</p>
             <Select
