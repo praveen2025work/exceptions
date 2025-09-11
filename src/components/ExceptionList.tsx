@@ -306,7 +306,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
   const [expandedRows, setExpandedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState(propFilters);
-
   const [classificationFilter, setClassificationFilter] = useState<string>("all");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -394,7 +393,6 @@ const ExceptionList: React.FC<ExceptionListProps> = ({
         if (instrumentIdFilter && !instrumentIdMatch) {
           return false;
         }
-=======
       }
 
       // Apply classification filter
