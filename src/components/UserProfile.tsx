@@ -4,18 +4,16 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/contexts/UserContext';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { User, Mail, Building, RefreshCw, LogOut } from 'lucide-react';
+import { User, Mail, Building } from 'lucide-react';
 
 export const UserProfile: React.FC = () => {
-  const { user, loading, error, refreshUser } = useUser();
+  const { user, loading, error } = useUser();
 
   if (loading) {
     return (
@@ -197,19 +195,7 @@ export const UserProfile: React.FC = () => {
           </div>
         </div>
         
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem onClick={refreshUser} className="cursor-pointer">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh Profile
-        </DropdownMenuItem>
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign Out
-        </DropdownMenuItem>
+
       </DropdownMenuContent>
     </DropdownMenu>
   );
