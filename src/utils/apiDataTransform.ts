@@ -1,7 +1,7 @@
 import { ApiException, Exception, CoreException, ExceptionCategory } from "@/types/exception";
 import { transformCoreToFunctional } from './dataTransform';
 import { apiService } from './apiService';
-import mockData from '../data/core-exceptions.json';
+import mockData from '../data/exceptions-100.json';
 
 // Helper function to determine priority based on aging
 const getPriority = (agingDays: number): 'Low' | 'Medium' | 'High' | 'Critical' => {
@@ -216,7 +216,8 @@ export const fetchAndTransformExceptions = async (forceRefresh = false): Promise
       console.log("Falling back to mock data due to API error.");
       
       // Fallback to mock data in case of API error
-      const mockTransformed = transformCoreToFunctional(mockData as CoreException[]);
+      const mockExceptions = (mockData as any).exceptions || mockData;
+      const mockTransformed = Array.isArray(mockExceptions) ? mockExceptions : transformCoreToFunctional(mockData as CoreException[]);
       
       // Cache mock data with shorter duration
       dataCache = {
@@ -229,15 +230,31 @@ export const fetchAndTransformExceptions = async (forceRefresh = false): Promise
   } else {
     // Use mock data if no API_URL is provided or if it's set to 'mock'
     console.log("Using mock data.");
-    const mockTransformed = transformCoreToFunctional(mockData as CoreException[]);
     
-    // Cache mock data
-    dataCache = {
-      data: mockTransformed,
-      timestamp: Date.now()
-    };
+    // Handle the new mock data format which has an 'exceptions' property
+    const mockExceptions = (mockData as any).exceptions || mockData;
     
-    return mockTransformed;
+    // If the mock data is already in the correct format, use it directly
+    if (Array.isArray(mockExceptions) && mockExceptions.length > 0 && mockExceptions[0].id) {
+      // Cache mock data
+      dataCache = {
+        data: mockExceptions,
+        timestamp: Date.now()
+      };
+      
+      return mockExceptions;
+    } else {
+      // Fallback to transformation if needed
+      const mockTransformed = transformCoreToFunctional(mockData as CoreException[]);
+      
+      // Cache mock data
+      dataCache = {
+        data: mockTransformed,
+        timestamp: Date.now()
+      };
+      
+      return mockTransformed;
+    }
   }
 };
 

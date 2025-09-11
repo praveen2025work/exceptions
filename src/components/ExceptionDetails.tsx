@@ -92,7 +92,7 @@ const ExceptionDetails = ({
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showCommentSection, setShowCommentSection] = useState(false);
-  const [currentUser] = useState("Pratik"); // Mock current user
+  const [currentUser] = useState("Alice"); // Mock current user
   const { toast } = useToast();
 
   // Mock exception data
@@ -191,7 +191,7 @@ const ExceptionDetails = ({
           id: 105,
           brid: "B001",
           comments: "test",
-          commentBy: "Pratik",
+          commentBy: "Alice",
           commentDate: "2025-09-10T21:19:02.830881300",
         }
       ];
@@ -498,15 +498,7 @@ const ExceptionDetails = ({
             <TabsContent value="details" className="mt-4 space-y-4">
               {/* Status and Workflow Section - Optimized width usage */}
               <Card className="border-0 shadow-sm bg-gradient-to-br from-card to-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-primary/10">
-                      <Activity className="h-3 w-3 text-primary" />
-                    </div>
-                    <span className="text-xs text-muted-foreground">Status & Workflow</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="pt-4 space-y-2">
                   <div className="flex gap-2">
                     <div className="flex-1 min-w-0">
                       <Label className="text-xs font-medium text-foreground flex items-center gap-1 mb-1">

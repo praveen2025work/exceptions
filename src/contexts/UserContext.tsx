@@ -47,18 +47,18 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      // Check if we're in mock environment
-      const isMockEnv = process.env.NEXT_PUBLIC_CO_DEV_ENV === 'mock' || process.env.NODE_ENV === 'development';
+      // Get the User Info API URL from environment variables
+      const userInfoApiUrl = process.env.NEXT_PUBLIC_USER_INFO_API_URL;
       
-      if (isMockEnv) {
+      // If no user info API URL is provided, or if it contains 'mock', use mock data
+      if (!userInfoApiUrl || userInfoApiUrl.toLowerCase().includes('mock') || process.env.NEXT_PUBLIC_CO_DEV_ENV === 'mock') {
         // Use random mock user data in mock environment
         const randomUser = mockUsers[Math.floor(Math.random() * mockUsers.length)];
         setUser(randomUser);
         return;
       }
       
-      // Get the User Info API URL from environment variables or use a default
-      const userInfoApiUrl = process.env.NEXT_PUBLIC_USER_INFO_API_URL || process.env.NEXT_PUBLIC_EXCEPTION_API_URL || 'http://localhost:3000';
+      // Make actual API call to get user info
       const response = await fetch(`${userInfoApiUrl}/api/getADUsers`, {
         method: 'GET',
         credentials: 'include', // Include credentials for Windows authentication

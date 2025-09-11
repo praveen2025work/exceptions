@@ -123,26 +123,80 @@ export const UserProfile: React.FC = () => {
         
         <DropdownMenuSeparator />
         
-        <div className="p-2 space-y-2">
-          <div className="flex items-center gap-2 text-sm">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Email:</span>
-            <span className="font-mono text-xs">{user.emailAddress}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Employee ID:</span>
-            <span className="font-mono text-xs">{user.employeeId}</span>
-          </div>
-          
-          {location && (
-            <div className="flex items-center gap-2 text-sm">
-              <Building className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Location:</span>
-              <Badge variant="secondary" className="text-xs">{location}</Badge>
+        <div className="p-2 space-y-3">
+          <div className="grid grid-cols-1 gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">Email:</span>
+              <span className="font-mono text-xs truncate">{user.emailAddress}</span>
             </div>
-          )}
+            
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">Employee ID:</span>
+              <span className="font-mono text-xs">{user.employeeId}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">Username:</span>
+              <span className="font-mono text-xs">{user.userName}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-muted-foreground min-w-0 flex-shrink-0">SAM Account:</span>
+              <span className="font-mono text-xs">{user.samAccountName}</span>
+            </div>
+            
+            {user.description && (
+              <div className="flex items-start gap-2">
+                <Building className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Description:</span>
+                <span className="text-xs break-words">{user.description}</span>
+              </div>
+            )}
+            
+            {user.distinguishedName && (
+              <div className="flex items-start gap-2">
+                <Building className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">DN:</span>
+                <span className="font-mono text-xs break-all">{user.distinguishedName}</span>
+              </div>
+            )}
+            
+            {user.domain && (
+              <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Domain:</span>
+                <span className="font-mono text-xs">{user.domain}</span>
+              </div>
+            )}
+            
+            {user.middleName && (
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Middle Name:</span>
+                <span className="text-xs">{user.middleName}</span>
+              </div>
+            )}
+            
+            {location && (
+              <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Location:</span>
+                <Badge variant="secondary" className="text-xs">{location}</Badge>
+              </div>
+            )}
+            
+            {role && role !== 'User' && (
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <span className="text-muted-foreground min-w-0 flex-shrink-0">Role:</span>
+                <Badge variant="outline" className="text-xs">{role}</Badge>
+              </div>
+            )}
+          </div>
         </div>
         
         <DropdownMenuSeparator />
